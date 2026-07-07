@@ -2,7 +2,6 @@ from fastapi import FastAPI,Depends
 from app.schemas import test
 from sqlalchemy.orm import Session
 from app.core.database import get_db,Base,engine
-
 from app.models import modeltest 
 Base.metadata.create_all(engine)
 
@@ -29,3 +28,4 @@ def get_test(db:Session=Depends(get_db)):
         return{"message":"no in db"}
     
     return test_return
+
