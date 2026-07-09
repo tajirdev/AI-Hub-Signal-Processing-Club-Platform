@@ -1,6 +1,7 @@
 from app.core.database import Base
-from sqlalchemy import Column,String,Integer,Boolean
+from sqlalchemy import Column,String,Integer,Boolean,DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 class Users(Base):
     __tablename__ = "users"
@@ -13,10 +14,10 @@ class Users(Base):
     avatar = Column(String)
     bio = Column(String)
     github_link = Column(String)
-    is_active = Column(Boolean)
-    created_at = Column(String)
-    updated_at = Column(String)
+    is_active = Column(Boolean,default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
 
-    userRole = relationship(" Users",back_populates="User")
+    userRole = relationship("UserRole",back_populates="User")
     
 
