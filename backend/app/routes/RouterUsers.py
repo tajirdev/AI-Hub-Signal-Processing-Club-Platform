@@ -5,8 +5,11 @@ from sqlalchemy.orm import Session
 from app.core import database
 from app .services.ServiceUsers import UserReg
 from app.core.auth import get_current_user
+from app.core.RoleAuth import RoleChecker
 
 UsersService = UserReg()
+admin_required = RoleChecker(["super_admin"])
+member_required = RoleChecker(["member", "editor", "super_admin"])
 
 
 router = APIRouter(
@@ -20,5 +23,9 @@ def post_users(request:SchemaUser.Users,db:Session=Depends(database.get_db)):
     return UsersService.registerUser(request,db)
 
 @router.get('/me')
-def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(get_current_user)):
+def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(member_required)):
     return UsersService.return_current_user(db,current_user_id=current_user.id)
+
+@router.get('/all')
+def get_all(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(admin_required)):
+    return UsersService.get_all(db,current_user_id=current_user.id)
