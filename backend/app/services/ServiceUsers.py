@@ -53,8 +53,9 @@ class UserReg:
 
     db.add(user_role)
     db.commit()
+    db.refresh(user_role)
     
-    return new_user
+    return {"message":"user has been created"}
    
    def return_current_user(self,db:Session,current_user_id:int):
         active_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
