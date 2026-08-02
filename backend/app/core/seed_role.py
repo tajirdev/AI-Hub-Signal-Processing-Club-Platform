@@ -35,7 +35,11 @@ def seed_roles(db: Session=Depends(get_db)):
 
         if not exists:
             db.add(Role(**role_data))
+            return{"message":"Roles seeded successfully"}
+
+        else:
+            return{"message":"seed already planted"}   
 
     db.commit()
 
-    print("Roles seeded successfully")
+    
