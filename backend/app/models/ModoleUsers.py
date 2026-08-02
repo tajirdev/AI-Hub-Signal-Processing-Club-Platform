@@ -6,17 +6,18 @@ from sqlalchemy.sql import func
 class Users(Base):
     __tablename__ = "users"
     id = Column(Integer,primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
+    first_name = Column(String(10))
+    last_name = Column(String(10))
     email = Column(String, unique=True,nullable=False)
-    user_name = Column(String,nullable=False,unique=True)
+    user_name = Column(String(10),nullable=False,unique=True)
     password_hash = Column(String)
     phone = Column(String)
     avatar = Column(String)
     bio = Column(String)
     github_link = Column(String)
     is_active = Column(Boolean,default=False, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=False)
+    updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),nullable=False)
     
 
     userRole = relationship("UserRole",back_populates="User")

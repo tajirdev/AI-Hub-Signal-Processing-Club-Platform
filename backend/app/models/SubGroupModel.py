@@ -13,7 +13,8 @@ class SubGroup(Base):
     icon = Column(String)
     cover_page = Column(String)
     lead_id = Column(Integer,ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=False)
+    upadated_at = Column(DateTime(timezone=True),server_default=func.now(), onupdate=func.now(), nullable=False)
 
     leader =  relationship("Users", back_populates="subgroup")
 

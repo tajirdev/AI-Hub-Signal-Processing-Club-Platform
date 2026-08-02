@@ -8,7 +8,7 @@ from sqlalchemy.exc  import IntegrityError
 
 
 
-class Sub_groups:
+class SubGroups:
 
     def __init__(self):
         pass
@@ -28,21 +28,25 @@ class Sub_groups:
             db.commit()
             db.refresh(new_subgroup)
         except IntegrityError:
+            db.rollback()
             raise HTTPException(status_code=400, detail="Conflict: Data already exists.")
 
         return new_subgroup
 
-    def get_all(self,db:Session,current_user_id : int):
+    def get_all(self,db:Session):
         groups = db.query(SubGroupModel.SubGroup).all()
 
 
         if not groups :
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="no groups in data base")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="no groups in data base"
+                )
 
         return groups
 
 
-    def get_single(self,id,db:Session,current_user_id:int):
+    def get_single(self,id,db:Session):
         group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
 
         if not group:
@@ -53,12 +57,12 @@ class Sub_groups:
         return group
 
 
-    def update_group(self,id,request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
+    def update_group(self,id,request:SubGroupSchm.SubGroup,db:Session):
         exist_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
 
         if not exist_group:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail= f"the group with that id {id} not found"
             )
 
@@ -74,7 +78,7 @@ class Sub_groups:
             db.commit()
             db.refresh(exist_group)
         except IntegrityError:
-            db.rollback(exist_group)
+            db.rollback()
 
             raise HTTPException (
                 status_code=400,
@@ -83,7 +87,7 @@ class Sub_groups:
         return exist_group
 
 
-    def delete_group(self,id,db:Session,current_user_id : int):
+    def delete_group(self,id,db:Session):
         group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id==id).delete(synchronize_session=False)
 
         if not group:
