@@ -19,5 +19,5 @@ class Members(Base):
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
 
     user = Relationship("Users",back_populates="member")
-    subgroup = Relationship("SubGroup",back_populates="sub_meber")
+    subgroup = Relationship("SubGroup",back_populates="sub_member")
 

@@ -1,8 +1,10 @@
 from app.schemas import MemberSchm
-from app.models import ModoleMembers,SubGroupModel
-from sqlalchemy.orm import Session
+from app.models import ModoleMembers,SubGroupModel,ModoleUsers
+from sqlalchemy.orm import Session,joinedload
 from fastapi import HTTPException,status
 from sqlalchemy.exc import IntegrityError
+
+from sqlalchemy import or_
 
 
 
@@ -32,7 +34,7 @@ class MembersServices:
         if exist_member:
             raise HTTPException(
                 status_code=400,
-                detail="your already member of sub group"
+                detail="your already member of this sub group"
             )
 
         new_member = ModoleMembers.Members(
@@ -56,5 +58,92 @@ class MembersServices:
             )
 
         return new_member
+
+    def GetAll(
+            self,
+            db:Session,
+            skip:int,
+            limit:int,
+            search : str |None =None,
+            sort_by: str = "joined_at",
+            order : str = "desc"
+            ):
+
+
+        
+
+
+        
+        query = (
+            db.query(ModoleMembers.Members)
+            .join(ModoleMembers.Members.user)
+            .join(ModoleMembers.Members.subgroup)
+            .options(
+                joinedload(ModoleMembers.Members.user),
+                joinedload(ModoleMembers.Members.subgroup)
+            )
+        )
+
+        if search:
+            query = query.filter(
+                or_(
+                ModoleUsers.Users.first_name.ilike(f"%{search}%"),
+                ModoleUsers.Users.last_name.ilike(f"%{search}%"),
+                ModoleMembers.Members.position.ilike(f"%{search}%"),
+                SubGroupModel.SubGroup.name.ilike(f"%{search}%")
+                )
+                                            
+            )
+
+        total =query.count()
+
+        sort_columns = {
+            "first_name": ModoleUsers.Users.first_name,
+            "last_name": ModoleUsers.Users.last_name,
+            "position": ModoleMembers.Members.position,
+            "joined_at": ModoleMembers.Members.joined_at,
+            "subgroup":SubGroupModel.SubGroup.name
+        }
+
+        column = sort_columns.get(sort_by,ModoleMembers.Members.joined_at)
+
+
+        if order.lower() == "asc":
+            query = query.order_by(column.asc())
+
+        else:
+            query = query.order_by(column.desc())
+
+        members = (
+            query
+            .offset(skip)
+            .limit(limit)
+            .all()
+        ) 
+
+
+        results = []
+
+        for member in members:
+            results.append({
+                "id":member.id,
+                "name": f"{member.user.first_name},{member.user.last_name}",
+                "sub_group":member.subgroup.name,
+                "position":member.position,
+                "github": member.github,
+                "linkedin":member.linkedin,
+                "portfolio":member.portfolio,
+                "joined_at":member.joined_at
+
+            })
+        
+        return{
+            "total":total,
+            "skip":skip,
+            "limit":limit,
+            "returned":len(results),
+            "results":results
+
+        } 
 
 

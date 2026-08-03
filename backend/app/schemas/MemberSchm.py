@@ -7,3 +7,17 @@ class Members(BaseModel):
     portfolio : str | None = None
 
 
+
+class ShowMembers(BaseModel):
+    full_name :str
+    sub_group : str
+    position : str
+    github : str 
+    linkedin : str
+    portfolio : str 
+
+    class Config:
+     from_attributes = True
+
+
+
