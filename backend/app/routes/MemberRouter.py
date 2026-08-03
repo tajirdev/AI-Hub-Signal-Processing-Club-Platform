@@ -57,3 +57,64 @@ def All(
     order : str = "desc"    
     ):
     return Services.GetAll(db,skip,limit,search,sort_by,order)
+
+
+@router.get("/me")
+def ReturnMe(
+    db:Session=Depends(get_db),
+    current_user :ModoleUsers.Users=Depends(get_current_user)
+
+):
+    return Services.GetMe(db,current_user_id=current_user.id)
+
+
+@router.get("/{member_id}")
+def ReturnSingle(
+    member_id,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(admin_required)
+):
+    return Services.GetSingle(member_id,db)
+
+@router.patch("/me")
+def PatchMe(
+    request:MemberSchm.Members,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(get_current_user)
+):
+    return Services.EditeMe(request,db,current_user_id=current_user.id)
+
+
+
+@router.put("/{member_id}")
+def PutSingle(
+    member_id:int,
+    sub_group_id :int,
+    request:MemberSchm.Members,
+    db:Session=Depends(get_db),
+    current_user : ModoleUsers.Users=Depends(admin_required)
+):
+
+    return Services.EditeSingle(member_id,sub_group_id , request,db)
+
+
+@router.delete("/me")
+def DeleteMe(
+    db:Session=Depends(get_db),
+    current_user :ModoleUsers.Users =Depends(get_current_user)
+):
+    return Services.RemoveMe(db,current_user_id=current_user.id)
+
+
+
+@router.delete("/{member_id}")
+def DeleteSingle(
+    member_id:int,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(admin_required)
+
+):
+    return Services.RemoveSingle(member_id,db)
+
+
+
