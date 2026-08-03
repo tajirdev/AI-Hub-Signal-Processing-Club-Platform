@@ -22,6 +22,7 @@ class Users(Base):
 
     userRole = relationship("UserRole",back_populates="User")
     subgroup = relationship("SubGroup", back_populates="leader")
+    member = relationship("Members",back_populates="user")
    
     
 
