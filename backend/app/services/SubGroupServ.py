@@ -74,7 +74,7 @@ class SubGroups:
 
 
         try:
-            db.add(exist_group)
+          
             db.commit()
             db.refresh(exist_group)
         except IntegrityError:
@@ -89,6 +89,8 @@ class SubGroups:
 
     def delete_group(self,id,db:Session):
         group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id==id).delete(synchronize_session=False)
+
+        db.commit()
 
         if not group:
             raise HTTPException(

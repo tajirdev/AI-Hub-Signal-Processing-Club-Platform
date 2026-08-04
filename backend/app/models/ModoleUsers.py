@@ -20,8 +20,9 @@ class Users(Base):
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),nullable=False)
     
 
-    userRole = relationship("UserRole",back_populates="User")
-    subgroup = relationship("SubGroup", back_populates="leader")
+    userRole = relationship("UserRole",back_populates="User",cascade="all, delete")
+    subgroup = relationship("SubGroup", back_populates="leader",cascade="all, delete")
+    member = relationship("Members",back_populates="user",cascade="all, delete")
    
     
 
