@@ -233,15 +233,23 @@ class MembersServices:
         ).delete(synchronize_session=False)
 
         db.commit()
+        
+
+        user = db.query(ModoleUsers.Users).filter(
+            ModoleUsers.Users.id == current_user_id
+        ).delete(synchronize_session=False)
+
+        db.commit()
 
         return {"message":"you have been deleted"}
 
 
     def RemoveSingle(self,member_id:int,db:Session):
+
         member = db.query(ModoleMembers.Members).filter(
             ModoleMembers.Members.id == member_id
         ).delete(synchronize_session=False)
-
+        
         db.commit()
 
 

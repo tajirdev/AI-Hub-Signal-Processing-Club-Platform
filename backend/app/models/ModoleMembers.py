@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 class Members(Base):
     __tablename__ = "members"
     id = Column(Integer,primary_key=True,nullable=False)
-    user_id = Column(Integer,ForeignKey("users.id"))
+    user_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
     subgroup_id = Column(Integer,ForeignKey("sub_groups.id"))
     position = Column(String(25))
     github = Column(String)

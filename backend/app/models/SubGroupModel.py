@@ -12,7 +12,7 @@ class SubGroup(Base):
     description = Column(String(1000))
     icon = Column(String)
     cover_page = Column(String)
-    lead_id = Column(Integer,ForeignKey("users.id"))
+    lead_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=False)
     upadated_at = Column(DateTime(timezone=True),server_default=func.now(), onupdate=func.now(), nullable=False)
 
