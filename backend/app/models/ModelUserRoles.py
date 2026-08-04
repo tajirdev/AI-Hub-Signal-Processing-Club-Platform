@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 class UserRole(Base):
     __tablename__ = "userrole"
     id = Column(Integer,primary_key=True)
-    user_id = Column(Integer,ForeignKey("users.id"))
+    user_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
     role_id = Column(Integer,ForeignKey("role.id"))
 
     User = relationship("Users",back_populates="userRole")
