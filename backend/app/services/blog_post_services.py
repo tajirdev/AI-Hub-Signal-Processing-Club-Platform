@@ -54,11 +54,16 @@ def get_all_blog_post(current_user,db:Session,
                     sort:str="published_at",order:str="desc"):
     roles=[ur.Roles.name for ur in current_user.userRole]
     post =db.query(BlogPost)
-    if "member" in roles:
-        post=post.filter(BlogPost.status==PostStatus.published)
-        
+    if "super_admin" in roles:
+        pass
+    
     elif "editor" in roles:
         post=post.filter((BlogPost.status==PostStatus.published)|(BlogPost.author_id==current_user.id)) 
+        
+    elif "member" in roles:
+        post=post.filter(BlogPost.status==PostStatus.published)
+        
+    
     #search
     if search:
         post=post.filter(or_(
@@ -91,14 +96,16 @@ def get_blog_post_by_id(post_id:int,current_user,db:Session):
     post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
-    
-    if "member" in roles:
-        if post.status != PostStatus.published:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
+    if "super_admin" in roles:
+        pass
         
     elif "editor" in roles:
         if(post.status != PostStatus.published and post.author_id != current_user.id):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
+    
+    elif "member" in roles:
+        if post.status != PostStatus.published:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")    
         
     return post    
 
@@ -107,7 +114,7 @@ def update_blog_post(post_id:int,data:BlogPostUpdate,current_user,db:Session):
     post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
-    if ("super_admin" in roles and post.author_id !=current_user.id):
+    if (post.author_id !=current_user.id and "super_admin" not in roles):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you cannot update this post")
     
     if data.title:
@@ -143,7 +150,7 @@ def delete_blog_post(post_id:int,current_user,db:Session):
     post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
-    if ("super_admin" in roles and post.author_id !=current_user.id):
+    if (post.author_id !=current_user.id and "super_admin" not in roles):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you cannot update this post")  
     
     db.delete(post)
