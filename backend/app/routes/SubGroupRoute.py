@@ -29,7 +29,7 @@ def new_group(
     return services.create_subgrp(request,db,current_user_id=current_user.id)
 
 
-@router.get("/all")
+@router.get("")
 def return_all(
     db:Session= Depends(get_db)
     ,current_user:ModoleUsers.Users = Depends(get_current_user)
