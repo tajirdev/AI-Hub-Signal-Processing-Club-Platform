@@ -23,6 +23,7 @@ class Users(Base):
     userRole = relationship("UserRole",back_populates="User",cascade="all, delete")
     subgroup = relationship("SubGroup", back_populates="leader",cascade="all, delete")
     member = relationship("Members",back_populates="user",cascade="all, delete")
+    event = relationship("Events",back_populates="user",cascade="all, delete")
    
     
 
