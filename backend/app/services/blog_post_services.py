@@ -130,7 +130,7 @@ def update_blog_post(post_id:int,data:BlogPostUpdate,current_user,db:Session):
         post.published_at=datetime.now()
     if data.status:
         if data.status not in [s.value for s in PostStatus]:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="invalid status.must be one of:{[s.value for s in PostStatus]}")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"invalid status.must be one of:{[s.value for s in PostStatus]}")
         post.status=data.status
         
     if data.category_ids:
