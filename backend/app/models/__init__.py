@@ -6,6 +6,7 @@ from .ModoleUsers import Users
 from .SubGroupModel import SubGroup
 from .blog_post import BlogPost,BlogCategory
 from .category import Category
+from .ModoleMembers import Members
 
 # This allows Alembic to see everything through Base.metadata
-__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category"]
+__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members"]
