@@ -5,7 +5,7 @@ from datetime import date
 
 
 class EventCreate(BaseModel):
-    title :str = Field(min_length=5,max_length=30)
+    title :str = Field(min_length=5,max_length=100)
     description :str = Field(min_length=30)
     location : str
     event_date :date

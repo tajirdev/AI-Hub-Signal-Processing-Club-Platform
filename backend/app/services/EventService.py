@@ -80,8 +80,167 @@ class Event:
                 event=event.order_by(desc(EventModel.Events.published_at)) 
                                 
         skip = (page - 1)* limit        
-        posts=event.offset(skip).limit(limit).all()
-        return posts
+        events=(
+            event
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        return events
+
+
+
+    def ReturnMy(self,db:Session,current_user_id:int):
+        events = db.query(EventModel.Events).filter(
+            EventModel.Events.created_by==current_user_id
+        ).all()
+
+        if not events:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="event of that user not found"
+            )
+
+        return events
+
+
+    def ReturnSingle(self,event_id:int,db:Session,current_user_id:int):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id 
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with the id of {event_id} not found"
+            )
+
+        return event
+
+
+    def EditeMy(self,event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id ==event_id
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with id of {event_id} not found"
+            )
+
+        if not event.created_by == current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="action not allowed your not the owner"
+            )
+
+        event.title = request.title 
+        event.description = request.description
+        event.location  = request.location
+        event.event_date = request.event_date
+        event.registration_link = request.registration_link
+        event.cover_image = request.cover_image
+        event.status = request.status
+
+
+        try:
+            db.commit()
+            db.refresh(event)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail="bad request"
+            )
+
+
+        return event
+        
+
+
+
+    def Upadate(self,event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id:int):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with id of {event_id} not found"
+            )
+
+        event.title = request.title 
+        event.description = request.description
+        event.location  = request.location
+        event.event_date = request.event_date
+        event.registration_link = request.registration_link
+        event.cover_image = request.cover_image
+        event.status = request.status
+
+        try:
+            db.commit()
+            db.refresh(event)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail="bad request"
+            )
+
+        return event
+
+
+
+    def RemoveEvent(self,event_id:int,db:Session):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id
+        ).delete(synchronize_session=False)
+
+        db.commit()
+
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with the id of {event_id} not found"
+            )
+
+        return {"message": f"evenet with id of {event_id} deleted"}
+
+    def RemoveMyEvent(self,event_id:int,db:Session,current_user_id:int):
+            available_event = db.query(EventModel.Events).filter(
+                EventModel.Events.id == event_id
+            )
+
+            event = available_event.first()
+
+            if not event:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail= f"event with the id of {event_id} not found"
+                )
+
+            if not event.created_by == current_user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="action not allowed your not the owner"
+                )
+
+
+
+
+            available_event.delete(synchronize_session=False)
+            db.commit()
+    
+            return {"message": f"evenet with id of {event_id} deleted"}
+
+
+   
+
+
+
 
 
 
