@@ -36,7 +36,7 @@ def get_blog_post(post_id:int,current_user:Users=Depends(member_required),db:Ses
     return get_blog_post_by_id(post_id,current_user,db)
 
 @router.put("/{post_id}",response_model=BlogPostResponse)
-def create_blog_post(post_id:int,data:BlogPostUpdate,current_user:Users=Depends(editor_required),db:Session=Depends(get_db)):
+def update_post(post_id:int,data:BlogPostUpdate,current_user:Users=Depends(editor_required),db:Session=Depends(get_db)):
     return update_blog_post(post_id,data,current_user,db)
 
 

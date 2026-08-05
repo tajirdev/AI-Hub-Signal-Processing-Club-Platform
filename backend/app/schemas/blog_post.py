@@ -2,6 +2,7 @@ from pydantic import BaseModel,Field,ConfigDict
 from app.models.blog_post import PostStatus
 from typing import Optional,List
 from datetime import datetime
+from app.schemas.category import CategoryResponse
 
 class  BlogPostCreate(BaseModel):
     title:str=Field(min_length=5,max_length=150)
@@ -20,11 +21,7 @@ class BlogPostUpdate(BaseModel):
     status:Optional[str]=None
     
     category_ids:Optional[list[int]]=None
-    
-class CategoryResponse(BaseModel):
-    id:int
-    name:str
-    model_config=ConfigDict(from_attributes=True)
+ 
         
 class BlogPostResponse(BaseModel):
     id:int

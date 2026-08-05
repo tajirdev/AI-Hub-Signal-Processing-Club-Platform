@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException,status
 from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate
-from app.models.blog_post import BlogPost,PostStatus,Category
+from app.models.blog_post import BlogPost,PostStatus
+from app.models.category import Category
 from datetime import datetime
 from sqlalchemy import or_,asc,desc
 

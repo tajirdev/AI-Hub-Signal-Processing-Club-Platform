@@ -8,14 +8,6 @@ class PostStatus(str,enum.Enum):
     draft="draft"
     published="published"
 
-
-class Category(Base):
-    __tablename__="categories"
-    id=Column(Integer,primary_key=True)
-    name=Column(String(100),unique=True,nullable=False)
-    
-    blog_posts=relationship("BlogPost",secondary="blog_categories",back_populates="categories")
-
 class BlogCategory(Base):
     __tablename__="blog_categories"
     
