@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,status
+from fastapi import APIRouter,Depends
 from typing import List
 from app.models.ModoleUsers import Users
 from sqlalchemy.orm import Session
@@ -15,8 +15,8 @@ router= APIRouter(
     tags=["Categories"]
 )
 
-@router.post("",response_model=CategoryResponse)
-def create(data:CategoryCreate,current_user:Users=Depends(admin_required),db:Session=Depends(get_db)):
+@router.post("/create",response_model=CategoryResponse)
+def create_category(data:CategoryCreate,current_user:Users=Depends(admin_required),db:Session=Depends(get_db)):
     return create_category(data,db)
 
 
