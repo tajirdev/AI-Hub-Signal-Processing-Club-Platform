@@ -11,11 +11,13 @@ from app.core import seed_role
 Base.metadata.create_all(engine)
 
 
-app = FastAPI()
+app = FastAPI(title="AI HUB PLATFORM API")
 
 app.include_router(RouterUsers.router)
 app.include_router(loginroute.router)
 app.include_router(seed_role.router)
 app.include_router(SubGroupRoute.router)
+app.include_router(blog_post.router)
+app.include_router(category.router)
 app.include_router(MemberRouter.router)
 app.include_router(project.router)
