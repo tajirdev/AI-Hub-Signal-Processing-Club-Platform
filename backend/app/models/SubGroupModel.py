@@ -17,5 +17,5 @@ class SubGroup(Base):
     upadated_at = Column(DateTime(timezone=True),server_default=func.now(), onupdate=func.now(), nullable=False)
 
     leader =  relationship("Users", back_populates="subgroup")
-
+    resource = relationship("Resource", back_populates="subgroup")
 

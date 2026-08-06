@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field, HttpUrl, model_validator
+from app.schemas.SchemaUser import Users
+
 
 class ResourceType(str, Enum):
     PDF = "PDF"
@@ -59,6 +61,7 @@ class ResourceResponse(ResourceBase):
     external_url: Optional[str]
     subgroup_id: int
     uploaded_by: int
+    uploader: Optional[Users]= None
     created_at: datetime
     updated_at: datetime
 

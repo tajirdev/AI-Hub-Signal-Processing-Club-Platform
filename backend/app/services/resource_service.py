@@ -1,9 +1,10 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.models.resource import Resource
+from app.models.resource import Resource,Role
 from app.models.ModoleUsers import Users
 from app.repositories.resource_repository import ResourceRepository
 from app.schemas.resourse import ResourceCreate, ResourceUpdate
+
 
 
 class ResourceService:
@@ -30,7 +31,8 @@ class ResourceService:
         if not resource:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
         #ownership check
-        if resource.uploaded_by != current_user.id:
+        roles=[ur.Roles.name for ur in current_user.userRole]
+        if resource.uploaded_by != current_user.id and "super_admin" not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to update this resource")
         return ResourceRepository.update_resource(db=db, db_resource=resource, resource=request)
 
@@ -40,7 +42,9 @@ class ResourceService:
         if not resource:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
         #ownership check
-        if resource.uploaded_by != current_user.id:
+    
+        roles=[ur.Roles.name for ur in current_user.userRole]
+        if (resource.uploaded_by != current_user.id and "super_admin" not in roles):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this resource")
         ResourceRepository.delete_resource(db=db, db_resource=resource)
         return {"message": "Resource deleted successfully"}

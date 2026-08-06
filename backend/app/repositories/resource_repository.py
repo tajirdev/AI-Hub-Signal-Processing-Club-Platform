@@ -1,14 +1,24 @@
 from typing import List, Optional
+from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from sqlalchemy import asc, desc, or_
 from app.models.resource import Resource
 from app.schemas.resourse import ResourceCreate, ResourceUpdate
-
+from app.models.SubGroupModel import SubGroup
 
 class ResourceRepository:
     @staticmethod
     def create_resource(db: Session, resource: ResourceCreate, uploaded_by: int) -> Resource:
-        db_resource = Resource(title=resource.title, description=resource.description, type=resource.type.value, file_url=str(resource.file_url) if resource.file_url else None, external_url=str(resource.external_url) if resource.external_url else None, subgroup_id=resource.subgroup_id, uploaded_by=uploaded_by)
+        subgroup= db.query(SubGroup).filter(SubGroup.id == resource.subgroup_id).first()
+        if not subgroup:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subgroup not found")
+        db_resource = Resource(title=resource.title, 
+                               description=resource.description, 
+                               type=resource.type.value, 
+                               file_url=str(resource.file_url) if resource.file_url else None, 
+                               external_url=str(resource.external_url) if resource.external_url else None,
+                                subgroup_id=resource.subgroup_id, uploaded_by=uploaded_by)
         db.add(db_resource)
         db.commit()
         db.refresh(db_resource)

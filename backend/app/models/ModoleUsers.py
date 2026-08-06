@@ -22,6 +22,6 @@ class Users(Base):
 
     userRole = relationship("UserRole",back_populates="User")
     subgroup = relationship("SubGroup", back_populates="leader")
-   
+    resource = relationship("Resource", back_populates="uploader")
     
 
