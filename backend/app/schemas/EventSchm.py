@@ -15,7 +15,6 @@ class EventCreate(BaseModel):
 
 
 class EventUpdate(BaseModel):
-    id : int
     title :str = Field(min_length=5,max_length=100)
     description :str = Field(min_length=30)
     location : str
