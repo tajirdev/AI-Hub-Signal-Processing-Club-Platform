@@ -1,0 +1,21 @@
+from sqlalchemy import Column, String, Integer, Text, ForeignKey, DateTime, func
+from sqlalchemy.orm import relationship
+from app.core.database import Base
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(100), nullable=False, index=True)
+    description = Column(Text, nullable=False)
+    repository_url = Column(String, nullable=True)
+    demo_url = Column(String, nullable=True)
+    thumbnail = Column(String, nullable=True)
+    status = Column(String, default="active")
+    technology_stack = Column(String, nullable=True)
+    
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())  
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    
