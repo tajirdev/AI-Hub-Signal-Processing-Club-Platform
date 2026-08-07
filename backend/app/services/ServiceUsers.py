@@ -1,9 +1,10 @@
 from fastapi import HTTPException,status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.schemas import SchemaUser
-from app.models import ModoleUsers,ModoleRoles,ModelUserRoles
+from app.schemas import SchemaUser,MediaScham
+from app.models import ModoleUsers,ModoleRoles,ModelUserRoles,media
 from app.core import security
+from .storage.local import delete_upload_file
 
 
 # all services should be here for user
@@ -16,7 +17,6 @@ class UserReg:
         email = request.email,
         password_hash = security.Hash.hash(request.password_hash),
         phone = request.phone,
-        avatar = request.avatar,
         bio = request.bio,
         github_link = request.github_link,
         user_name = request.user_name
@@ -64,6 +64,48 @@ class UserReg:
    def get_all(self,db:Session,current_user_id:int):
       users = db.query(ModoleUsers.Users).all()
       return users
-   
+
+
+   def UpdateAvatar(
+     self, 
+     db: Session,
+     current_user_id: int,
+     path: str,
+):
+    
+    avatar = db.query(media.Media).filter(
+        media.Media.uploaded_by == current_user_id
+    ).first()
+
+    user = db.query(ModoleUsers.Users).filter(
+       ModoleUsers.Users.id == current_user_id
+    ).first()
+
+    if avatar:
+  
+        avatar.filename = path
+        delete_upload_file(avatar.path)
+        avatar.path = path 
+        avatar.original_filename = "avatar"
+    else:
+       
+        avatar = media.Media(
+            filename=path,
+            path=path,
+            original_filename= "avatar",
+            uploaded_by=current_user_id,
+            size=0, 
+            mime_type="image/jpeg" 
+        )
+        db.add(avatar)
+        db.flush()
+    user.avatar_id =avatar.id
+
+    db.commit()
+    db.refresh(avatar)
+
+
+
+    return avatar
 
     

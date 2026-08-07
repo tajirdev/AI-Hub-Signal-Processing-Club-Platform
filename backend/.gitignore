@@ -20,3 +20,11 @@ Thumbs.db
 .idea/
 
 .app/
+
+
+# storage 
+
+uploads/*
+!uploads/.gitkeep
+uploads/*/*
+!uploads/*/.gitkeep
