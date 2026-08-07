@@ -22,19 +22,20 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db), cur
 #get all resources
 @router.get("/", response_model=list[ResourceResponse])
 def get_all_resources(
+    db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1),
     search: Optional[str] = None, 
     subgroup_id: Optional[int] = None, 
     sort: str = "created_at", 
-    order: str = "desc", resource_type: Optional[str] = None,
+    resource_type: Optional[str] = None,order: str = "desc",
     current_user: Users = Depends(member_required), 
-    db: Session = Depends(get_db)):
+    ):
 
     return ResourceService.get_all_resources(
-        db=db, page=page, 
-        limit=limit, search=search, 
-        subgroup_id=subgroup_id, sort=sort, order=order, resource_type=resource_type)
+        db, page, 
+        limit, search, 
+        subgroup_id, resource_type,sort, sort_order=order)
 
 #get a resource by id
 @router.get("/{resource_id}", response_model=ResourceResponse)
@@ -44,7 +45,7 @@ def get_resource_by_id(resource_id: int, current_user: Users = Depends(member_re
 #Update a resource
 @router.put("/{resource_id}", response_model=ResourceResponse)
 def update_resource(resource_id: int, resource: ResourceUpdate, current_user: Users = Depends(editor_required), db: Session = Depends(get_db)):
-    return ResourceService.update_resource(resource_id=resource_id, request=resource, db=db, current_user=current_user)
+    return ResourceService.update_resource(resource_id=resource_id, request=resource, current_user=current_user, db=db)
 
 #Delete a resource
 @router.delete("/{resource_id}")

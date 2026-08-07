@@ -2,7 +2,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field, HttpUrl, model_validator
-from app.schemas.SchemaUser import Users
 
 
 class ResourceType(str, Enum):
@@ -56,12 +55,11 @@ class ResourceUpdate(ResourceBase):
 class ResourceResponse(ResourceBase):
     id: int
     description: Optional[str]
-    type: ResourceType
-    file_url: Optional[str]
-    external_url: Optional[str]
+    type: Optional[ResourceType]=None
+    file_url: Optional[HttpUrl]=None
+    external_url: Optional[HttpUrl]=None
     subgroup_id: int
     uploaded_by: int
-    uploader: Optional[Users]= None
     created_at: datetime
     updated_at: datetime
 
