@@ -24,7 +24,26 @@ Thumbs.db
 
 # storage 
 
-uploads/*
+# Ignore everything inside uploads
+uploads/**
+
+# Keep the uploads directory
 !uploads/.gitkeep
-uploads/*/*
-!uploads/*/.gitkeep
+
+# Keep the folder structure
+!uploads/profile_pictures/
+!uploads/project_thumbnails/
+!uploads/blog_covers/
+!uploads/event_covers/
+!uploads/research_files/
+!uploads/subgroup_logos/
+!uploads/resources/
+
+# Keep each folder's .gitkeep
+!uploads/profile_pictures/.gitkeep
+!uploads/project_thumbnails/.gitkeep
+!uploads/blog_covers/.gitkeep
+!uploads/event_covers/.gitkeep
+!uploads/research_files/.gitkeep
+!uploads/subgroup_logos/.gitkeep
+!uploads/resources/.gitkeep
