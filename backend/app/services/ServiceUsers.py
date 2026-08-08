@@ -8,6 +8,8 @@ from app.core import security
 
 # all services should be here for user
 class UserReg:
+   def __init__(self):
+      pass
   
    def registerUser(self,request:SchemaUser.Users,db:Session):
     new_user =ModoleUsers.Users(

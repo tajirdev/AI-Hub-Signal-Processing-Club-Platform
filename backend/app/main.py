@@ -2,7 +2,7 @@ from fastapi import FastAPI,Depends
 from app.schemas import test
 from sqlalchemy.orm import Session
 from app.core.database import get_db,Base,engine
-from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project,blog_post,category,resource
+from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,project,blog_post,category,resource
 from app.core import seed_role
 
 
