@@ -26,7 +26,8 @@ class Users(Base):
    
     media = relationship("Media", foreign_keys="[Media.uploaded_by]", back_populates="user", cascade="all, delete")
     avatar_media = relationship("Media", foreign_keys="[Users.avatar_id]", back_populates="avatar")
+    subgroup = relationship("SubGroup", back_populates="leader")
+    resource = relationship("Resource", back_populates="uploader")
 
-   
     
 
