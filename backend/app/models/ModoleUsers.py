@@ -23,7 +23,8 @@ class Users(Base):
     userRole = relationship("UserRole",back_populates="User",cascade="all, delete")
     subgroup = relationship("SubGroup", back_populates="leader",cascade="all, delete")
     member = relationship("Members",back_populates="user",cascade="all, delete")
+    subgroup = relationship("SubGroup", back_populates="leader")
+    resource = relationship("Resource", back_populates="uploader")
 
-   
     
 
