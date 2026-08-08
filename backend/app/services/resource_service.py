@@ -1,8 +1,8 @@
-from turtle import reset
+
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.models.resource import Resource,Role
+from app.models.resource import Resource
 from app.models.ModoleUsers import Users
 from app.schemas.resourse import ResourceCreate, ResourceUpdate
 from app.models.SubGroupModel import SubGroup
