@@ -1,3 +1,6 @@
+""""
+
+
 import re
 from datetime import datetime
 from typing import Optional, List
@@ -217,3 +220,5 @@ def delete_research(research_id: int, current_user: Users, db: Session):
     db.delete(research)
     db.commit()
     return {"message": "Research entry deleted successfully"}
+
+    """

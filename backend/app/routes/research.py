@@ -1,3 +1,4 @@
+"""
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
@@ -71,3 +72,4 @@ def delete_research(
     db: Session = Depends(get_db)
 ):
     return research_service.delete_research(research_id, current_user, db)
+    """

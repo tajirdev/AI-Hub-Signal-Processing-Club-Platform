@@ -62,7 +62,7 @@ def remove_group(
     current_user:ModoleUsers.Users= Depends(admin_required)
     ):
 
-    return services.delete_group(id,db,current_user_id=current_user.id)
+    return services.delete_group(id,db)
 
 
 

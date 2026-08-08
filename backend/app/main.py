@@ -30,5 +30,5 @@ app.include_router(project.router)
 
 # Mount the static uploads directory
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.include_router(research.router)
+#app.include_router(research.router)
 
