@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,UploadFile,File,Form
+from fastapi import APIRouter,Depends,UploadFile,File
 from app.models import ModoleUsers
 from app.schemas import SchemaUser,MediaScham
 from sqlalchemy.orm import Session
@@ -59,6 +59,23 @@ def post_avatar(
 @router.get("/avatar",response_model=MediaScham.AvatarResponse)
 def GetAvatar(
     db:Session=Depends(database.get_db),
-    current_user:ModoleUsers.Users=Depends(get_current_user)
+    current_user:ModoleUsers.Users=Depends(member_required)
 ):
     return UsersService.ReturnAvatar(db,current_user_id=current_user.id)
+
+
+@router.delete("/avatar/{avatar_id}")
+def DeleteAvatar(
+  
+    avatar_id:int,
+    db:Session=Depends(database.get_db),
+    current_user:ModoleUsers.Users=Depends(member_required)
+    
+
+):
+
+
+    
+    
+    return UsersService.RemoveAvatar(avatar_id,db,current_user_id=current_user.id)
+    

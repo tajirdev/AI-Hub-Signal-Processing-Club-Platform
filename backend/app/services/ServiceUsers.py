@@ -1,11 +1,11 @@
 from fastapi import HTTPException,status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.schemas import SchemaUser,MediaScham
+from app.schemas import SchemaUser
 from app.models import ModoleUsers,ModoleRoles,ModelUserRoles,media
 from app.core import security
 from .storage.local import delete_upload_file
-
+from pathlib import Path
 
 # all services should be here for user
 class UserReg:
@@ -127,5 +127,63 @@ class UserReg:
       
 
       return avatar
+
+
+   def RemoveAvatar(self,avatar_id:int,db:Session,current_user_id:int):
+
+      user = db.query(ModoleUsers.Users).filter(
+         ModoleUsers.Users.id == current_user_id
+      ).first()
+
+      role = db.query(ModelUserRoles.UserRole).filter(
+         ModelUserRoles.UserRole.user_id == current_user_id
+      ).first()
+
+
+
+      admin = db.query(ModoleRoles.Role).filter(
+         ModoleRoles.Role.id == role.role_id
+      ).first()
+
+      exist_avatar = db.query(media.Media).filter(
+         media.Media.id == avatar_id
+      )
+
+      avatar = exist_avatar.first()
+
+      if not avatar:
+         raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail= f"avatar with id of {avatar_id} not found"
+         )
+
+      if admin.name != "super_admin" and avatar.id != user.avatar_id:
+         raise HTTPException(
+                     status_code=status.HTTP_403_FORBIDDEN,
+                     detail="your are not the owner"
+                  )
+
+      else:
+        delete_upload_file(avatar.path)
+        user.avatar_id = None
+        
+        db.delete(avatar)
+        db.commit()
+         
+
+      return {"message":"avatar have been deleted"}
+         
+
+      
+
+
+
+
+
+
+
+   
+
+      
 
     
