@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 
 
-class Media(BaseModel):
-    original_filename : str | None = None
+class AvatarResponse(BaseModel):
+    original_filename : str 
+    path : str
     
 
 

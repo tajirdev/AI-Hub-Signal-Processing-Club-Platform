@@ -108,4 +108,24 @@ class UserReg:
 
     return avatar
 
+
+   def ReturnAvatar(self,db:Session,current_user_id:int):
+
+      user = db.query(ModoleUsers.Users).filter(
+         ModoleUsers.Users.id == current_user_id
+      ).first()
+      avatar = db.query(media.Media).filter(
+         media.Media.id == user.avatar_id
+      ).first()
+
+      if not avatar:
+         raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="you don't have avatar upload one"
+         )
+
+      
+
+      return avatar
+
     

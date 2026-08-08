@@ -32,7 +32,7 @@ def get_all(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=D
     return UsersService.get_all(db,current_user_id=current_user.id)
 
 
-@router.post("/upload-avatar")
+@router.post("/avatar")
 def post_avatar(
     current_user: ModoleUsers.Users = Depends(get_current_user),
     file: UploadFile = File(...),
@@ -54,3 +54,11 @@ def post_avatar(
     )
 
     return updated_avatar
+
+
+@router.get("/avatar",response_model=MediaScham.AvatarResponse)
+def GetAvatar(
+    db:Session=Depends(database.get_db),
+    current_user:ModoleUsers.Users=Depends(get_current_user)
+):
+    return UsersService.ReturnAvatar(db,current_user_id=current_user.id)
