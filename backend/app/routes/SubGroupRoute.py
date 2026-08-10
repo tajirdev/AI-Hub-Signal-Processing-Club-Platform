@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,File,UploadFile
 from app.models import ModoleUsers
 from app.schemas import SubGroupSchm
 from sqlalchemy.orm import Session
@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.core.RoleAuth import RoleChecker
 from app.services import SubGroupServ
+from app.services.storage.local import save_upload_file,IMAGE_TYPES,UploadCategory
 
 admin_required = RoleChecker(["super_admin"])
 
@@ -63,6 +64,32 @@ def remove_group(
     ):
 
     return services.delete_group(id,db)
+
+
+@router.post("{subgroup_id}/cover_page")
+def PostCoverPage(
+    subgroup_id:int,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(admin_required),
+    file:UploadFile=File(...)
+):
+
+    file_path = save_upload_file(
+        file=file,
+        allowed_types=IMAGE_TYPES,
+        category=UploadCategory.SUBGROUP_LOGOS
+    )
+
+    updated_cover = services.AddCover(
+        path=file_path,
+        subGroup_id=subgroup_id,
+        db=db,
+        current_user_id=current_user.id
+    )
+
+    return updated_cover
+
+    
 
 
 

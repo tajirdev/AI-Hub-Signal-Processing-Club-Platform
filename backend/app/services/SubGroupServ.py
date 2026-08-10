@@ -1,8 +1,9 @@
 from app.schemas import SubGroupSchm
-from app.models import SubGroupModel
+from app.models import SubGroupModel,media,ModoleUsers
 from fastapi import HTTPException,status
 from sqlalchemy.orm  import Session
 from sqlalchemy.exc  import IntegrityError
+from .storage.local import delete_upload_file
 
 
 
@@ -34,8 +35,6 @@ class SubGroups:
             name = request.name,
             slug = slug,
             description = request.description,
-            icon = request.icon,
-            cover_page =request.cover_page,
             lead_id = current_user_id  
         )
 
@@ -85,8 +84,7 @@ class SubGroups:
         exist_group.name = request.name
         exist_group.slug = request.slug
         exist_group.description = request.description
-        exist_group.icon = request.icon
-        exist_group.cover_page = request.cover_page
+
 
 
         try:
@@ -115,6 +113,67 @@ class SubGroups:
             )
 
         return {"message":"group deleted succesfull"}
+  # this i service for uploading cover page 
+    def AddCover(
+            self,
+            subGroup_id:int,
+            db:Session,
+            current_user_id:int,
+            path:str
+            
+    ):
+
+        subgroup = db.query(SubGroupModel.SubGroup).filter(
+            SubGroupModel.SubGroup.id == subGroup_id
+            
+        ).first()
+
+        if not subgroup:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"sub group with that id of {subGroup_id} not found"
+            )
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == subgroup.cover_page_id
+        ).first()
+
+
+
+        if cover :
+            cover.filename = path
+            delete_upload_file(cover.path)
+            cover.path = path
+            cover.original_filename = "sub group cover"
+        else:
+            cover = media.Media(
+                filename = path,
+                path = path,
+                original_filename = "sub group cover",
+                mime_type="image/jpeg",
+                uploaded_by=current_user_id,
+
+            )
+
+            db.add(cover)
+            db.flush()
+        subgroup.cover_page_id = cover.id
+
+        db.commit()
+        db.refresh(cover)
+
+        return cover    
+
+
+
+            
+            
+
+
+
+
+
+    
 
 
 

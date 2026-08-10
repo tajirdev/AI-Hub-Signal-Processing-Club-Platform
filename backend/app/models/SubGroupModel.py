@@ -10,8 +10,8 @@ class SubGroup(Base):
     name = Column(String(25), unique=True, nullable=False)
     slug =Column(String(100), unique=True, nullable= False)
     description = Column(String(1000))
-    icon = Column(String)
-    cover_page = Column(String)
+    icon_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
+    cover_page_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
     lead_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=False)
     upadated_at = Column(DateTime(timezone=True),server_default=func.now(), onupdate=func.now(), nullable=False)
@@ -19,6 +19,9 @@ class SubGroup(Base):
     leader =  relationship("Users", back_populates="subgroup")
     resource = relationship("Resource", back_populates="subgroup")
     sub_member = relationship("Members",back_populates="subgroup")
+
+    Sub_icon = relationship("Media",foreign_keys="[SubGroup.icon_id]", back_populates="Icon")
+    sub_cover = relationship("Media",foreign_keys="[SubGroup.cover_page_id]",back_populates="cover")
 
 
 

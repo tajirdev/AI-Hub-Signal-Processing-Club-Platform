@@ -74,14 +74,16 @@ class UserReg:
      current_user_id: int,
      path: str,
 ):
-    
-    avatar = db.query(media.Media).filter(
-        media.Media.uploaded_by == current_user_id
-    ).first()
+
 
     user = db.query(ModoleUsers.Users).filter(
        ModoleUsers.Users.id == current_user_id
+        ).first()  
+    avatar = db.query(media.Media).filter(
+        media.Media.uploaded_by == user.avatar_id
     ).first()
+
+
 
     if avatar:
   
@@ -96,7 +98,6 @@ class UserReg:
             path=path,
             original_filename= "avatar",
             uploaded_by=current_user_id,
-            size=0, 
             mime_type="image/jpeg" 
         )
         db.add(avatar)

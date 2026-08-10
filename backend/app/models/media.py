@@ -11,7 +11,6 @@ class Media(Base):
     original_filename = Column(String(150),nullable=False)
     path = Column(String,nullable=False)
     mime_type = Column(String)
-    size = Column(Integer,nullable=False)
     uploaded_by = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
     created_at = Column(DateTime(timezone=True),server_default=func.now())
 
@@ -21,6 +20,8 @@ class Media(Base):
     
    
     avatar = relationship("Users", foreign_keys="[Users.avatar_id]", back_populates="avatar_media")
+    Icon = relationship("SubGroup", foreign_keys="[SubGroup.icon_id]", back_populates="Sub_icon")
+    cover = relationship("SubGroup", foreign_keys="[SubGroup.cover_page_id]",back_populates="sub_cover")
 
 
 
