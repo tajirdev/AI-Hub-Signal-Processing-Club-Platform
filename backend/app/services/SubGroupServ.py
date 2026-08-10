@@ -13,10 +13,26 @@ class SubGroups:
     def __init__(self):
         pass
 
+    def GenerateSlug(self,title:str,db:Session):
+        base_slug = title.lower().replace(" ", "-")
+
+        slug = base_slug
+
+        counter = 1
+
+        while db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.slug == slug).first():
+            slug = f"{base_slug}-{counter}"
+
+            counter = 1
+
+        return slug
+
     def create_subgrp(self,request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
+
+        slug =self.GenerateSlug(request.name,db)
         new_subgroup = SubGroupModel.SubGroup(
             name = request.name,
-            slug = request.slug,
+            slug = slug,
             description = request.description,
             icon = request.icon,
             cover_page =request.cover_page,
