@@ -113,7 +113,7 @@ class SubGroups:
             )
 
         return {"message":"group deleted succesfull"}
-  # this i service for uploading cover page 
+  # here is  where cover upload service started 
     def AddCover(
             self,
             subGroup_id:int,
@@ -162,7 +162,188 @@ class SubGroups:
         db.commit()
         db.refresh(cover)
 
-        return cover    
+        return cover 
+
+
+    def ReturnCover(self,subgroup_id:int,db:Session):
+
+        subgroup = db.query(SubGroupModel.SubGroup).filter(
+            SubGroupModel.SubGroup.id == subgroup_id
+        ).first()
+
+        if not subgroup:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"sub group with id of {subgroup_id} not found"
+            )
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == subgroup.cover_page_id
+        ).first()
+
+        if not cover:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="sub group do not have cover photo"
+            )
+        return cover  
+
+
+
+    def RemoveCover(self,subgroup_id:int,db:Session):
+        subgroup =db.query(SubGroupModel.SubGroup).filter(
+            SubGroupModel.SubGroup.id == subgroup_id
+        )  .first()
+
+        if not subgroup:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"subgroup with that id {subgroup_id} not found"
+            )
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == subgroup.cover_page_id
+        ).first()
+
+        if not  cover:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="you do not have cover page"
+
+            )
+
+        delete_upload_file(cover.path)
+        subgroup.cover_page_id = None
+
+        db.delete(cover)
+        db.commit()
+
+        return {"message":"cover has been deleted"}
+
+    # here is where route for Icon started
+
+    def AddIcon(
+                self,
+                subGroup_id:int,
+                db:Session,
+                current_user_id:int,
+                path:str
+                
+        ):
+    
+            subgroup = db.query(SubGroupModel.SubGroup).filter(
+                SubGroupModel.SubGroup.id == subGroup_id
+                
+            ).first()
+    
+            if not subgroup:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail= f"sub group with that id of {subGroup_id} not found"
+                )
+    
+            icon = db.query(media.Media).filter(
+                media.Media.id == subgroup.icon_id
+            ).first()
+    
+    
+    
+            if icon :
+                icon.filename = path
+                delete_upload_file(icon.path)
+                icon.path = path
+                icon.original_filename = "sub group icon"
+            else:
+                icon = media.Media(
+                    filename = path,
+                    path = path,
+                    original_filename = "sub group icon",
+                    mime_type="image/jpeg",
+                    uploaded_by=current_user_id,
+    
+                )
+    
+                db.add(icon)
+                db.flush()
+            subgroup.icon_id = icon.id
+    
+            db.commit()
+            db.refresh(icon)
+    
+            return icon 
+    
+    
+    def ReturnIcon(self,subgroup_id:int,db:Session):
+    
+            subgroup = db.query(SubGroupModel.SubGroup).filter(
+                SubGroupModel.SubGroup.id == subgroup_id
+            ).first()
+    
+            if not subgroup:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail= f"sub group with id of {subgroup_id} not found"
+                )
+    
+            icon = db.query(media.Media).filter(
+                media.Media.id == subgroup.icon_id
+            ).first()
+    
+            if not icon:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="sub group do not have icon photo"
+                )
+            return icon  
+    
+    
+    
+    def RemoveIcon(self,subgroup_id:int,db:Session):
+            subgroup =db.query(SubGroupModel.SubGroup).filter(
+                SubGroupModel.SubGroup.id == subgroup_id
+            )  .first()
+    
+            if not subgroup:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail= f"subgroup with that id {subgroup_id} not found"
+                )
+    
+            icon = db.query(media.Media).filter(
+                media.Media.id == subgroup.icon_id
+            ).first()
+    
+            if not  icon:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="you do not have id icon"
+    
+                )
+    
+            delete_upload_file(icon.path)
+            subgroup.cover_page_id = None
+    
+            db.delete(icon)
+            db.commit()
+    
+            return {"message":"cover has been deleted"}
+    
+    
+    
+    
+                
+                
+    
+    
+    
+    
+    
+        
+    
+    
+    
+            
+
 
 
 

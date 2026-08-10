@@ -76,6 +76,5 @@ def DeleteAvatar(
 
 
     
-    
     return UsersService.RemoveAvatar(avatar_id,db,current_user_id=current_user.id)
     
