@@ -10,7 +10,7 @@ from app.services.storage.local import save_upload_file,IMAGE_TYPES,UploadCatego
 
 admin_required = RoleChecker(["super_admin"])
 
-services = SubGroupServ.SubGroups()
+services = SubGroupServ.SubGroups
 
 
 

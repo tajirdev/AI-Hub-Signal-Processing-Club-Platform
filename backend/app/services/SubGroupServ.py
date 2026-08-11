@@ -11,10 +11,8 @@ from .storage.local import delete_upload_file
 
 class SubGroups:
 
-    def __init__(self):
-        pass
-
-    def GenerateSlug(self,title:str,db:Session):
+    @staticmethod
+    def GenerateSlug(title:str,db:Session):
         base_slug = title.lower().replace(" ", "-")
 
         slug = base_slug
@@ -24,13 +22,13 @@ class SubGroups:
         while db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.slug == slug).first():
             slug = f"{base_slug}-{counter}"
 
-            counter = 1
+            counter += 1
 
         return slug
+    @staticmethod
+    def create_subgrp(request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
 
-    def create_subgrp(self,request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
-
-        slug =self.GenerateSlug(request.name,db)
+        slug =SubGroups.GenerateSlug(request.name,db)
         new_subgroup = SubGroupModel.SubGroup(
             name = request.name,
             slug = slug,
@@ -47,8 +45,8 @@ class SubGroups:
             raise HTTPException(status_code=400, detail="Conflict: Data already exists.")
 
         return new_subgroup
-
-    def get_all(self,db:Session):
+    @staticmethod
+    def get_all(db:Session):
         groups = db.query(SubGroupModel.SubGroup).all()
 
 
@@ -60,8 +58,8 @@ class SubGroups:
 
         return groups
 
-
-    def get_single(self,id,db:Session):
+    @staticmethod
+    def get_single(id,db:Session):
         group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
 
         if not group:
@@ -71,9 +69,11 @@ class SubGroups:
             )
         return group
 
-
-    def update_group(self,id,request:SubGroupSchm.SubGroup,db:Session):
+    @staticmethod
+    def update_group(id,request:SubGroupSchm.SubGroup,db:Session):
         exist_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
+
+        slug =SubGroups.GenerateSlug(request.name,db)
 
         if not exist_group:
             raise HTTPException(
@@ -82,7 +82,7 @@ class SubGroups:
             )
 
         exist_group.name = request.name
-        exist_group.slug = request.slug
+        exist_group.slug = slug
         exist_group.description = request.description
 
 
@@ -100,8 +100,8 @@ class SubGroups:
             )
         return exist_group
 
-
-    def delete_group(self,id,db:Session):
+    @staticmethod
+    def delete_group(id,db:Session):
         group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id==id).delete(synchronize_session=False)
 
         db.commit()
@@ -114,8 +114,8 @@ class SubGroups:
 
         return {"message":"group deleted succesfull"}
   # here is  where cover upload service started 
+    @staticmethod
     def AddCover(
-            self,
             subGroup_id:int,
             db:Session,
             current_user_id:int,
@@ -164,8 +164,8 @@ class SubGroups:
 
         return cover 
 
-
-    def ReturnCover(self,subgroup_id:int,db:Session):
+    @staticmethod
+    def ReturnCover(subgroup_id:int,db:Session):
 
         subgroup = db.query(SubGroupModel.SubGroup).filter(
             SubGroupModel.SubGroup.id == subgroup_id
@@ -189,8 +189,8 @@ class SubGroups:
         return cover  
 
 
-
-    def RemoveCover(self,subgroup_id:int,db:Session):
+    @staticmethod
+    def RemoveCover(subgroup_id:int,db:Session):
         subgroup =db.query(SubGroupModel.SubGroup).filter(
             SubGroupModel.SubGroup.id == subgroup_id
         )  .first()
@@ -221,9 +221,9 @@ class SubGroups:
         return {"message":"cover has been deleted"}
 
     # here is where route for Icon started
-
+    @staticmethod
     def AddIcon(
-                self,
+                
                 subGroup_id:int,
                 db:Session,
                 current_user_id:int,
@@ -272,8 +272,8 @@ class SubGroups:
     
             return icon 
     
-    
-    def ReturnIcon(self,subgroup_id:int,db:Session):
+    @staticmethod
+    def ReturnIcon(subgroup_id:int,db:Session):
     
             subgroup = db.query(SubGroupModel.SubGroup).filter(
                 SubGroupModel.SubGroup.id == subgroup_id
@@ -297,8 +297,8 @@ class SubGroups:
             return icon  
     
     
-    
-    def RemoveIcon(self,subgroup_id:int,db:Session):
+    @staticmethod
+    def RemoveIcon(subgroup_id:int,db:Session):
             subgroup =db.query(SubGroupModel.SubGroup).filter(
                 SubGroupModel.SubGroup.id == subgroup_id
             )  .first()
@@ -321,12 +321,12 @@ class SubGroups:
                 )
     
             delete_upload_file(icon.path)
-            subgroup.cover_page_id = None
+            subgroup.icon_id = None
     
             db.delete(icon)
             db.commit()
     
-            return {"message":"cover has been deleted"}
+            return {"message":"icon has been deleted"}
     
     
     
