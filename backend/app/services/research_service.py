@@ -1,146 +1,182 @@
 import re
+from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from typing import List, Optional, Tuple, Type
+from sqlalchemy import or_, asc, desc
+from sqlalchemy.orm import Session, Query as SQLQuery
 from fastapi import HTTPException, status
-
 from app.models.research import Research, ResearchAuthor
-from app.models.ModoleMembers import Members
-from app.models.ModoleUsers import Users
-from app.schemas.research import ResearchCreate, ResearchUpdate, ResearchResponse, AuthorResponse
+from app.models.ModoleMembers import Members as Member
+from app.schemas.research import ResearchCreate, ResearchUpdate
+
+class AccessPolicy(ABC):
+    """Abstract Base Strategy for applying role-based access rules."""
+    
+    @abstractmethod
+    def apply_visibility_filter(self, query: SQLQuery, user_id: int) -> SQLQuery:
+        """Filter list queries according to role permissions."""
+        pass
+
+    @abstractmethod
+    def can_view_entry(self, entry: Research, user_id: int) -> bool:
+        """Check if role can view a specific entry."""
+        pass
+
+    @abstractmethod
+    def can_modify_entry(self, entry: Research, user_id: int) -> bool:
+        """Check if role can update or delete an entry."""
+        pass
+
+    @abstractmethod
+    def can_feature_entry(self) -> bool:
+        """Check if role can toggle the featured status."""
+        pass
 
 
-class ResearchService:
-    def __init__(self, db: Session):
-        self.db = db
+class SuperAdminPolicy(AccessPolicy):
+    """Super Admin has unconditional access across all actions."""
 
-    # Safe extraction of role to fix AttributeError across different user models
-    def _get_user_role(self, user: Users) -> str:
-        role_obj = getattr(user, "role", None) or getattr(user, "role_name", None) or getattr(user, "role_id", "")
-        if hasattr(role_obj, "name"):
-            return str(role_obj.name).lower()
-        return str(role_obj).lower()
+    def apply_visibility_filter(self, query: SQLQuery, user_id: int) -> SQLQuery:
+        return query
 
-    # Generate unique slug
-    def _generate_slug(self, title: str, current_id: Optional[int] = None) -> str:
-        base_slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+    def can_view_entry(self, entry: Research, user_id: int) -> bool:
+        return True
+
+    def can_modify_entry(self, entry: Research, user_id: int) -> bool:
+        return True
+
+    def can_feature_entry(self) -> bool:
+        return True
+
+
+class EditorPolicy(AccessPolicy):
+    """Editor can manage own entries and view published or own drafts."""
+
+    def apply_visibility_filter(self, query: SQLQuery, user_id: int) -> SQLQuery:
+        now = datetime.utcnow()
+        return query.filter(
+            or_(
+                Research.publication_date <= now,
+                Research.created_by == user_id
+            )
+        )
+
+    def can_view_entry(self, entry: Research, user_id: int) -> bool:
+        is_published = entry.publication_date is not None and entry.publication_date <= datetime.utcnow()
+        return is_published or entry.created_by == user_id
+
+    def can_modify_entry(self, entry: Research, user_id: int) -> bool:
+        return entry.created_by == user_id
+
+    def can_feature_entry(self) -> bool:
+        return False
+
+
+class MemberPolicy(AccessPolicy):
+    """Member has read-only access strictly to published entries."""
+
+    def apply_visibility_filter(self, query: SQLQuery, user_id: int) -> SQLQuery:
+        return query.filter(Research.publication_date <= datetime.utcnow())
+
+    def can_view_entry(self, entry: Research, user_id: int) -> bool:
+        return entry.publication_date is not None and entry.publication_date <= datetime.utcnow()
+
+    def can_modify_entry(self, entry: Research, user_id: int) -> bool:
+        return False
+
+    def can_feature_entry(self) -> bool:
+        return False
+
+
+class PolicyFactory:
+    """Factory creating policy strategies dynamically without conditional branching."""
+
+    _POLICIES = {
+        "super_admin": SuperAdminPolicy,
+        "editor": EditorPolicy,
+        "member": MemberPolicy
+    }
+
+    @classmethod
+    def get_policy(cls, user) -> AccessPolicy:
+        role_name = getattr(user.role, "name", str(user.role)).lower()
+        policy_class = cls._POLICIES.get(role_name, MemberPolicy)
+        return policy_class()
+
+class SlugGenerator:
+    """Encapsulates slug creation and collision resolution logic."""
+
+    @classmethod
+    def generate(cls, title: str, db: Session, exclude_id: Optional[int] = None) -> str:
+        base_slug = re.sub(r"[-\s]+", "-", re.sub(r"[^\w\s-]", "", title.lower()).strip())
         slug = base_slug
         counter = 1
 
-        query = self.db.query(Research).filter(Research.slug == slug)
-        if current_id:
-            query = query.filter(Research.id != current_id)
-
-        while self.db.query(query.exists()).scalar():
+        while cls._exists(slug, db, exclude_id):
             slug = f"{base_slug}-{counter}"
             counter += 1
-            query = self.db.query(Research).filter(Research.slug == slug)
-            if current_id:
-                query = query.filter(Research.id != current_id)
 
         return slug
 
-    # Validate author IDs against Members model
-    def _validate_authors(self, author_ids: Optional[List[int]]):
+    @staticmethod
+    def _exists(slug: str, db: Session, exclude_id: Optional[int]) -> bool:
+        query = db.query(Research).filter(Research.slug == slug)
+        if exclude_id:
+            query = query.filter(Research.id != exclude_id)
+        return query.first() is not None
+
+
+class AuthorValidator:
+    """Encapsulates author verification logic."""
+
+    @staticmethod
+    def validate(author_ids: List[int], db: Session) -> None:
         if not author_ids:
             return
-        records = self.db.query(Members.id).filter(Members.id.in_(author_ids)).all()
-        existing_ids = {r[0] for r in records}
-        missing_ids = set(author_ids) - existing_ids
-        
-        if missing_ids:
+        count = db.query(Member).filter(Member.id.in_(author_ids)).count()
+        if count != len(set(author_ids)):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Members with IDs {list(missing_ids)} do not exist."
+                detail="One or more provided author_ids do not exist."
             )
+class ResearchService:
+    def create(self, request: ResearchCreate, current_user, db: Session) -> Research:
+        policy = PolicyFactory.get_policy(current_user)
+        AuthorValidator.validate(request.author_ids, db)
 
-    # Format response object
-    def _to_response(self, research: Research) -> ResearchResponse:
-        authors = [
-            AuthorResponse(
-                id=assoc.member_id,
-                full_name=getattr(assoc.member, "full_name", None) or getattr(assoc.member, "name", None),
-                author_order=assoc.author_order
-            )
-            for assoc in sorted(research.authors_assoc, key=lambda x: x.author_order)
-        ]
-        return ResearchResponse(
-            id=research.id,
-            title=research.title,
-            slug=research.slug,
-            abstract=research.abstract,
-            content=research.content,
-            publication_date=research.publication_date,
-            pdf_url=research.pdf_url,
-            created_by=research.created_by,
-            featured=research.featured,
-            created_at=research.created_at,
-            updated_at=research.updated_at,
-            authors=authors
-        )
-
-    # Create research entry
-    def create(self, data: ResearchCreate, current_user: Users) -> ResearchResponse:
-        self._validate_authors(data.author_ids)
-        slug = self._generate_slug(data.title)
-
-        user_role = self._get_user_role(current_user)
-        is_super = (user_role == "super_admin")
-
-        research = Research(
-            title=data.title,
-            slug=slug,
-            abstract=data.abstract,
-            content=data.content,
-            publication_date=data.publication_date,
-            pdf_url=data.pdf_url,
+        entry = Research(
+            title=request.title,
+            slug=SlugGenerator.generate(request.title, db),
+            abstract=request.abstract,
+            content=request.content,
+            pdf_url=request.pdf_url,
+            publication_date=request.publication_date,
             created_by=current_user.id,
-            featured=data.featured if is_super else False
+            featured=request.featured if policy.can_feature_entry() else False
         )
-        self.db.add(research)
-        self.db.flush()
+        db.add(entry)
+        db.flush()
 
-        if data.author_ids:
-            for order, member_id in enumerate(data.author_ids, start=1):
-                self.db.add(ResearchAuthor(
-                    research_id=research.id, 
-                    member_id=member_id, 
-                    author_order=order
-                ))
+        self._assign_authors(entry.id, request.author_ids, db)
+        db.commit()
+        db.refresh(entry)
+        return entry
 
-        self.db.commit()
-        self.db.refresh(research)
-        return self._to_response(research)
-
-    # Get all research entries with pagination and RBAC
     def get_all(
         self,
-        current_user: Users,
-        search: Optional[str] = None,
-        featured: Optional[bool] = None,
+        current_user,
+        db: Session,
         page: int = 1,
         limit: int = 10,
+        search: Optional[str] = None,
         sort: str = "publication_date",
-        order: str = "desc"
-    ) -> List[ResearchResponse]:
-        query = self.db.query(Research)
-        user_role = self._get_user_role(current_user)
-        now = datetime.utcnow()
+        order: str = "desc",
+        featured: Optional[bool] = None
+    ) -> Tuple[List[Research], int]:
+        policy = PolicyFactory.get_policy(current_user)
+        query = policy.apply_visibility_filter(db.query(Research), current_user.id)
 
-        if user_role == "member":
-            query = query.filter(
-                Research.publication_date.isnot(None),
-                Research.publication_date <= now
-            )
-        elif user_role == "editor":
-            query = query.filter(
-                or_(
-                    Research.created_by == current_user.id,
-                    (Research.publication_date.isnot(None)) & (Research.publication_date <= now)
-                )
-            )
-
+        # Dynamic Search Filter
         if search:
             pattern = f"%{search}%"
             query = query.filter(
@@ -151,88 +187,74 @@ class ResearchService:
                 )
             )
 
+        # Featured Filter
         if featured is not None:
             query = query.filter(Research.featured == featured)
 
-        sort_col = getattr(Research, sort, Research.publication_date)
-        query = query.order_by(sort_col.asc() if order.lower() == "asc" else sort_col.desc())
+        # Sorting
+        sort_column = getattr(Research, sort, Research.publication_date)
+        sort_direction = desc if order.lower() == "desc" else asc
+        query = query.order_by(sort_direction(sort_column))
 
-        offset = (page - 1) * limit
-        results = query.offset(offset).limit(limit).all()
+        total = query.count()
+        entries = query.offset((page - 1) * limit).limit(limit).all()
+        return entries, total
 
-        return [self._to_response(item) for item in results]
+    def get_by_id(self, research_id: int, current_user, db: Session) -> Research:
+        entry = db.query(Research).filter(Research.id == research_id).first()
+        if not entry:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found.")
 
-    # Get single research entry by ID
-    def get_by_id(self, research_id: int, current_user: Users) -> ResearchResponse:
-        research = self.db.query(Research).filter(Research.id == research_id).first()
-        if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found")
+        policy = PolicyFactory.get_policy(current_user)
+        if not policy.can_view_entry(entry, current_user.id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found.")
 
-        user_role = self._get_user_role(current_user)
-        is_published = bool(research.publication_date and research.publication_date <= datetime.utcnow())
+        return entry
 
-        if user_role == "member" and not is_published:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found")
+    def update(self, research_id: int, request: ResearchUpdate, current_user, db: Session) -> Research:
+        entry = self.get_by_id(research_id, current_user, db)
+        policy = PolicyFactory.get_policy(current_user)
 
-        if user_role == "editor" and not is_published and research.created_by != current_user.id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found")
+        if not policy.can_modify_entry(entry, current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied.")
 
-        return self._to_response(research)
+        data = request.model_dump(exclude_unset=True)
 
-    # Update research entry
-    def update(self, research_id: int, data: ResearchUpdate, current_user: Users) -> ResearchResponse:
-        research = self.db.query(Research).filter(Research.id == research_id).first()
-        if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found")
+        if "title" in data:
+            entry.slug = SlugGenerator.generate(data["title"], db, exclude_id=entry.id)
 
-        user_role = self._get_user_role(current_user)
-        if research.created_by != current_user.id and user_role != "super_admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, 
-                detail="You do not have permission to edit this entry"
-            )
+        if "featured" in data:
+            entry.featured = data["featured"] if policy.can_feature_entry() else entry.featured
+            data.pop("featured")
 
-        update_data = data.model_dump(exclude_unset=True)
+        if "author_ids" in data:
+            author_ids = data.pop("author_ids")
+            if author_ids is not None:
+                AuthorValidator.validate(author_ids, db)
+                db.query(ResearchAuthor).filter(ResearchAuthor.research_id == entry.id).delete()
+                self._assign_authors(entry.id, author_ids, db)
 
-        if "featured" in update_data and user_role != "super_admin":
-            del update_data["featured"]
+        for field, value in data.items():
+            setattr(entry, field, value)
 
-        if "title" in update_data:
-            research.slug = self._generate_slug(update_data["title"], current_id=research.id)
+        db.commit()
+        db.refresh(entry)
+        return entry
 
-        if "author_ids" in update_data:
-            author_ids = update_data.pop("author_ids")
-            self._validate_authors(author_ids)
-            self.db.query(ResearchAuthor).filter(ResearchAuthor.research_id == research.id).delete()
-            if author_ids:
-                for order, member_id in enumerate(author_ids, start=1):
-                    self.db.add(ResearchAuthor(
-                        research_id=research.id, 
-                        member_id=member_id, 
-                        author_order=order
-                    ))
+    def delete(self, research_id: int, current_user, db: Session) -> None:
+        entry = self.get_by_id(research_id, current_user, db)
+        policy = PolicyFactory.get_policy(current_user)
 
-        for key, value in update_data.items():
-            setattr(research, key, value)
+        if not policy.can_modify_entry(entry, current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied.")
 
-        research.updated_at = datetime.utcnow()
-        self.db.commit()
-        self.db.refresh(research)
-        return self._to_response(research)
+        db.delete(entry)
+        db.commit()
 
-    # Delete research entry
-    def delete(self, research_id: int, current_user: Users):
-        research = self.db.query(Research).filter(Research.id == research_id).first()
-        if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research entry not found")
+    @staticmethod
+    def _assign_authors(research_id: int, author_ids: List[int], db: Session) -> None:
+        for order, member_id in enumerate(author_ids or [], start=1):
+            db.add(ResearchAuthor(research_id=research_id, member_id=member_id, author_order=order))
 
-        user_role = self._get_user_role(current_user)
-        if research.created_by != current_user.id and user_role != "super_admin":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, 
-                detail="You do not have permission to delete this entry"
-            )
 
-        self.db.delete(research)
-        self.db.commit()
-        return {"message": "Research entry deleted successfully"}
+research_service = ResearchService()

@@ -1,23 +1,26 @@
-from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, Field
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict, Field
+from app.core.RoleAuth import RoleChecker
 
-
-class AuthorResponse(BaseModel):
+class ResearchAuthorResponse(BaseModel):
     id: int
-    full_name: Optional[str] = None
+    user_id: int
+    position: Optional[str] = None
     author_order: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
-class ResearchCreate(BaseModel):
+class ResearchBase(BaseModel):
     title: str = Field(..., min_length=5, max_length=150)
     abstract: str = Field(..., min_length=30)
     content: str = Field(..., min_length=100)
     pdf_url: Optional[str] = None
     publication_date: Optional[datetime] = None
+
+
+class ResearchCreate(ResearchBase):
     author_ids: Optional[List[int]] = []
     featured: Optional[bool] = False
 
@@ -32,19 +35,21 @@ class ResearchUpdate(BaseModel):
     featured: Optional[bool] = None
 
 
-class ResearchResponse(BaseModel):
+class ResearchResponse(ResearchBase):
     id: int
-    title: str
     slug: str
-    abstract: str
-    content: str
-    publication_date: Optional[datetime]
-    pdf_url: Optional[str]
     created_by: int
     featured: bool
     created_at: datetime
     updated_at: datetime
-    authors: List[AuthorResponse] = []
+    authors: List[ResearchAuthorResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ResearchPaginatedResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    pages: int
+    data: List[ResearchResponse]
