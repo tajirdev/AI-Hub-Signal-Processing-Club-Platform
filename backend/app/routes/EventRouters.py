@@ -11,7 +11,7 @@ from app.services.storage.local import save_upload_file,UploadCategory,IMAGE_TYP
 
 
 
-services = EventService.Event()
+services = EventService.Event
 
 
 admin_required = RoleChecker(["super_admin"])

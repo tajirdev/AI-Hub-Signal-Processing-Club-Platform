@@ -10,12 +10,8 @@ from .storage.local import delete_upload_file
 
 
 class Event:
-    def __init__(self):
-        
-        pass
-
-
-    def CreateEvent(self,request:EventSchm.EventCreate,db:Session,current_user_id:int):
+    @staticmethod
+    def CreateEvent(request:EventSchm.EventCreate,db:Session,current_user_id:int):
         new_event= EventModel.Events(
             title = request.title,
             description  = request.description,
@@ -40,8 +36,9 @@ class Event:
                 detail="duplicated data"
             )        
         return new_event
-
-    def ReturnAll(self,current_user,db:Session,
+    
+    @staticmethod
+    def ReturnAll(current_user,db:Session,
                     page:int=1,search:str=None,
                     limit:int=10,
                     status:str=None,
@@ -88,8 +85,8 @@ class Event:
         return events
 
 
-
-    def ReturnMy(self,db:Session,current_user_id:int):
+    @staticmethod
+    def ReturnMy(db:Session,current_user_id:int):
         events = db.query(EventModel.Events).filter(
             EventModel.Events.created_by==current_user_id
         ).all()
@@ -102,8 +99,8 @@ class Event:
 
         return events
 
-
-    def ReturnSingle(self,event_id:int,db:Session,current_user_id:int):
+    @staticmethod
+    def ReturnSingle(event_id:int,db:Session,current_user_id:int):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id 
         ).first()
@@ -116,8 +113,8 @@ class Event:
 
         return event
 
-
-    def EditeMy(self,event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id):
+    @staticmethod
+    def EditeMy(event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id ==event_id
         ).first()
@@ -157,8 +154,8 @@ class Event:
         
 
 
-
-    def Upadate(self,event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id:int):
+    @staticmethod
+    def Upadate(event_id:int,request:EventSchm.EventUpdate,db:Session,current_user_id:int):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id
         ).first()
@@ -190,8 +187,8 @@ class Event:
         return event
 
 
-
-    def RemoveEvent(self,event_id:int,db:Session):
+    @staticmethod
+    def RemoveEvent(event_id:int,db:Session):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id
         ).delete(synchronize_session=False)
@@ -207,7 +204,8 @@ class Event:
 
         return {"message": f"evenet with id of {event_id} deleted"}
 
-    def RemoveMyEvent(self,event_id:int,db:Session,current_user_id:int):
+    @staticmethod
+    def RemoveMyEvent(event_id:int,db:Session,current_user_id:int):
             available_event = db.query(EventModel.Events).filter(
                 EventModel.Events.id == event_id
             )
@@ -234,8 +232,8 @@ class Event:
     
             return {"message": f"evenet with id of {event_id} deleted"}
 
-
-    def CreateCover(self,event_id:int,db:Session,path:str,current_user_id:int):
+    @staticmethod
+    def CreateCover(event_id:int,db:Session,path:str,current_user_id:int):
 
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id
@@ -279,8 +277,8 @@ class Event:
 
         return cover
 
-
-    def GetCover(self, event_id:int, db:Session,):
+    @staticmethod
+    def GetCover(event_id:int, db:Session,):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id
         ).first()
@@ -304,8 +302,8 @@ class Event:
 
         return cover
 
-
-    def RemoveCover(self, event_id:int,db:Session,current_user_id:int):
+    @staticmethod
+    def RemoveCover( event_id:int,db:Session,current_user_id:int):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id
         ).first()
