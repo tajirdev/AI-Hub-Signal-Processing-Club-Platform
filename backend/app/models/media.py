@@ -22,6 +22,7 @@ class Media(Base):
     avatar = relationship("Users", foreign_keys="[Users.avatar_id]", back_populates="avatar_media")
     Icon = relationship("SubGroup", foreign_keys="[SubGroup.icon_id]", back_populates="Sub_icon")
     cover = relationship("SubGroup", foreign_keys="[SubGroup.cover_page_id]",back_populates="sub_cover")
+    event = relationship("Events", foreign_keys="[Events.cover_image_id]",back_populates="cover")
 
 
 
