@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends
+from fastapi import APIRouter,Depends,File,UploadFile
 from app.schemas import EventSchm
 from app.models import ModoleUsers
 from app.core.RoleAuth import RoleChecker
@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.services import EventService
 from app.core.auth import get_current_user
 from typing import List
+from app.services.storage.local import save_upload_file,UploadCategory,IMAGE_TYPES
 
 
 
@@ -22,12 +23,11 @@ member_required = RoleChecker(["member", "editor", "super_admin"])
 
 
 router = APIRouter(
-    tags=["EVENTS"],
     prefix="/events"
 )
 
 
-@router.post("")
+@router.post("", tags=["EVENTS"])
 def PostNew(
     request:EventSchm.EventCreate,
     db:Session=Depends(get_db),
@@ -37,7 +37,7 @@ def PostNew(
 
 
 
-@router.get("",response_model=List[EventSchm.EventResponse])
+@router.get("",response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
 def get_blog(
     db:Session=Depends(get_db),
     page:int=1,search:str=None,
@@ -56,7 +56,7 @@ def get_blog(
 
 
 
-@router.get("/me",response_model=List[EventSchm.EventResponse])
+@router.get("/me",response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
 def GetMy(
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(editor_required)
@@ -64,7 +64,7 @@ def GetMy(
     return services.ReturnMy(db,current_user_id=current_user.id)
 
 
-@router.get("/{event_id}",response_model=EventSchm.EventResponse)
+@router.get("/{event_id}",response_model=EventSchm.EventResponse, tags=["EVENTS"])
 def GetSingle(
     event_id:int,
     db:Session=Depends(get_db),
@@ -74,7 +74,7 @@ def GetSingle(
     return services.ReturnSingle(event_id,db,current_user)
 
 
-@router.put("/{event.id}")
+@router.put("/{event_id}", tags=["EVENTS"])
 def PutSingle(
     event_id:int,
     request:EventSchm.EventUpdate,
@@ -84,7 +84,7 @@ def PutSingle(
     return services.Upadate(event_id,request,db,current_user_id=current_user.id)
 
 
-@router.delete("{event_id}")
+@router.delete("{event_id}", tags=["EVENTS"])
 def DeleteEvent(
     event_id:int,
     db:Session=Depends(get_db),
@@ -93,7 +93,7 @@ def DeleteEvent(
 ):
     return services.RemoveEvent(event_id,db)
 
-@router.put("/me/{event_id}")
+@router.put("/me/{event_id}", tags=["EVENTS"])
 def PutMy(
     event_id:int,
     request:EventSchm.EventUpdate,
@@ -103,7 +103,7 @@ def PutMy(
 ): return services.EditeMy(event_id,request,db,current_user_id=current_user.id)
 
 
-@router.delete("/me/{event_id}")
+@router.delete("/me/{event_id}", tags=["EVENTS"])
 def DeleteMyEvent(
     event_id:int,
     db:Session=Depends(get_db),
@@ -112,6 +112,47 @@ def DeleteMyEvent(
 ):
     return services.RemoveMyEvent(event_id,db,current_user_id=current_user.id)
 
+
+@router.post("{event_id}/cover", tags=["EVENTS COVER"])
+def Postcover(
+    event_id:int,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(editor_required),
+    file:UploadFile=File(...)
+
+):
+    file_path = save_upload_file(
+        file=file,
+        allowed_types=IMAGE_TYPES,
+        category=UploadCategory.EVENT_COVERS
+    )
+
+    upadate_cover = services.CreateCover(
+        event_id=event_id,
+        path=file_path,
+        db=db,
+        current_user_id=current_user.id,
+    )
+
+
+    return upadate_cover
+
+
+@router.get("{event_id}/cover",tags=["EVENTS COVER"])
+def GetCover(
+    event_id:int,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(editor_required)
+):
+    return services.GetCover(event_id,db)
+
+@router.delete("{event_id}/cover",tags=["EVENTS COVER"])
+def DeleteCover(
+    event_id:int,
+    db:Session=Depends(get_db),
+    current_user:ModoleUsers.Users=Depends(editor_required)
+):
+    return services.RemoveCover(event_id,db,current_user_id=current_user.id)    
     
 
 

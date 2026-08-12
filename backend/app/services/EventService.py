@@ -1,10 +1,11 @@
-from app.models import EventModel
+from app.models import EventModel,media,ModoleUsers,ModelUserRoles,ModoleRoles
 from app.schemas import EventSchm
 from sqlalchemy.orm import Session,joinedload
 from fastapi import status,HTTPException
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_,asc,desc
+from .storage.local import delete_upload_file
 
 
 
@@ -20,8 +21,6 @@ class Event:
             description  = request.description,
             location  = request.location,
             event_date = request.event_date,
-            registration_link = request.registration_link,
-            cover_image = request.cover_image,
             status  = request.status,
             created_by = current_user_id  
 
@@ -139,7 +138,6 @@ class Event:
         event.description = request.description
         event.location  = request.location
         event.event_date = request.event_date
-        event.registration_link = request.registration_link
         event.cover_image = request.cover_image
         event.status = request.status
 
@@ -235,6 +233,124 @@ class Event:
             db.commit()
     
             return {"message": f"evenet with id of {event_id} deleted"}
+
+
+    def CreateCover(self,event_id:int,db:Session,path:str,current_user_id:int):
+
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with that id of {event_id} not found"
+            )
+
+
+
+    
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == event.cover_image_id
+        ).first()
+
+        if cover:
+            cover.filename = path
+            delete_upload_file(cover.path)
+            cover.path = path
+            cover.original_filename = "cover page"
+        else:
+            cover = media.Media(
+                filename = path,      
+                path = path,
+                original_filename = "cover page",
+                mime_type="image/jpeg",
+                uploaded_by=current_user_id
+
+            )
+            db.add(cover)
+            db.flush()
+            event.cover_image_id = cover.id
+            db.commit()
+            db.refresh(cover)
+
+
+
+        return cover
+
+
+    def GetCover(self, event_id:int, db:Session,):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with id of {event_id} not found"
+
+            )
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == event.cover_image_id
+        ).first()
+
+        if not cover :
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="event has no cover image"
+            )
+
+        return cover
+
+
+    def RemoveCover(self, event_id:int,db:Session,current_user_id:int):
+        event = db.query(EventModel.Events).filter(
+            EventModel.Events.id == event_id
+        ).first()
+
+        if not event:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail= f"event with id of {event_id} not found"
+            )
+
+        user = db.query(ModoleUsers.Users).filter(
+            ModoleUsers.Users.id == current_user_id
+        ).first()
+
+        role = db.query(ModelUserRoles.UserRole).filter(
+            ModelUserRoles.UserRole.user_id == user.id
+        ).first()
+
+        admin = db.query(ModoleRoles.Role).filter(
+            ModoleRoles.Role.id == role.role_id
+        ).first()
+
+        
+
+        cover = db.query(media.Media).filter(
+            media.Media.id == event.cover_image_id
+        ).first()
+
+        if admin.name != "super_admin" and cover.uploaded_by !=user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your are not the owner"
+            )
+
+        if not cover:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="you don't have cover"
+            )
+
+        delete_upload_file(cover.path)
+        event.cover_image_id = None
+        db.delete(cover)
+        db.commit()
+        return {"message":"you have deleted cover image"}
 
 
    

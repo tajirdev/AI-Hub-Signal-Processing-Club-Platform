@@ -20,7 +20,7 @@ class Events(Base):
     location = Column(String)
     event_date = Column(Date,nullable=False,index=True)
     registration_link = Column(String(225))
-    cover_image = Column(String(225))
+    cover_image_id= Column(Integer,ForeignKey("media.id"))
     status = Column(Enum(EventStatus),default=EventStatus.draft,nullable=False,index=True)
     created_by = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),index=True)
     created_at = Column(DateTime(timezone=True),server_default=func.now(),nullable=False)
@@ -30,4 +30,5 @@ class Events(Base):
 
 
     user = relationship("Users",back_populates="event")
+    cover = relationship("Media",foreign_keys="[Events.cover_image_id]",back_populates="event")
 

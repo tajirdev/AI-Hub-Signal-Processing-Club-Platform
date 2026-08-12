@@ -10,7 +10,6 @@ class EventCreate(BaseModel):
     location : str
     event_date :date
     registration_link : str | None=None
-    cover_image : str | None=None
     status : EventStatus = EventStatus.draft
 
 
