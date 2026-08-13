@@ -217,7 +217,7 @@ class BlogPostService:
         return media
     
     @staticmethod
-    def removeblogCover(post_id:int,db:Session):
+    def removeblogCover(post_id:int,current_user,db:Session):
         roles=[ur.Roles.name for ur in current_user.userRole]
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if  not post:

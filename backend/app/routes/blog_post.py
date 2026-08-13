@@ -81,4 +81,4 @@ def getpostcover(post_id:int,
 def removepostcover(post_id:int,
                     db:Session=Depends(get_db),
                     current_user:Users=Depends(editor_required)):
-    return services.removeblogCover(post_id,db)        
+    return services.removeblogCover(post_id,current_user,db)        
