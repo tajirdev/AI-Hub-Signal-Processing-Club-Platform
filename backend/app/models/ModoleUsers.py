@@ -24,7 +24,7 @@ class Users(Base):
     subgroup = relationship("SubGroup", back_populates="leader",cascade="all, delete")
     member = relationship("Members",back_populates="user",cascade="all, delete")
     event = relationship("Events",back_populates="user",cascade="all, delete")
-   
+    research=relationship("Research",foreign_keys="Research.created_by",back_populates="user")
     media = relationship("Media", foreign_keys="[Media.uploaded_by]", back_populates="user", cascade="all, delete")
     avatar_media = relationship("Media", foreign_keys="[Users.avatar_id]", back_populates="avatar")
     subgroup = relationship("SubGroup", back_populates="leader")

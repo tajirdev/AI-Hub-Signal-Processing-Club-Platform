@@ -5,7 +5,7 @@ from app.core.database import get_db,Base,engine
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,EventRouters
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project,blog_post,category
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project,blog_post,category,resource
-from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,project,blog_post,category,resource
+from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,project,blog_post,category,resource,research
 from app.core import seed_role
 from fastapi.staticfiles import StaticFiles
 
@@ -22,6 +22,7 @@ app.include_router(loginroute.router)
 app.include_router(seed_role.router)
 app.include_router(SubGroupRoute.router)
 app.include_router(resource.router)
+app.include_router(research.router)
 app.include_router(blog_post.router)
 app.include_router(category.router)
 app.include_router(MemberRouter.router)
