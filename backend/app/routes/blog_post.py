@@ -1,11 +1,11 @@
-from fastapi import APIRouter,Depends,status,File,UploadFile
+from fastapi import APIRouter,Depends,status,File,UploadFile,Query
 from typing import List
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.ModoleUsers import Users
 from app.core.RoleAuth import RoleChecker
-from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate,BlogPostResponse
+from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate,BlogPostResponse,PaginationResponse
 from app.services.blog_post_services import BlogPostService
 from app.services.storage.local import save_upload_file,UploadCategory,IMAGE_TYPES
 
@@ -25,10 +25,10 @@ def create_blog_post(data:BlogPostCreate,current_user:Users=Depends(editor_requi
     return services.blog_post_create(data,current_user,db)
 
 
-@router.get("",tags=["Blog Post"],response_model=list[BlogPostResponse])
+@router.get("",tags=["Blog Post"],response_model=PaginationResponse)
 def get_blog(
-    page:int=1,search:str=None,
-    limit:int=10,category_id:int=None,
+    page:int=Query(1, ge=1),search:str=None,
+    limit:int=Query(10 ,ge=10),category_id:int=None,
     status:str=None,sort:str="published_at",
     order:str="desc",
     current_user:Users=Depends(member_required),db:Session=Depends(get_db)):
