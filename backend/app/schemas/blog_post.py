@@ -36,4 +36,11 @@ class BlogPostResponse(BaseModel):
     
     model_config=ConfigDict(from_attributes=True)
         
-   
+class PaginationResponse(BaseModel):
+       page:int
+       limit:int
+       total:int
+       total_pages:int
+       posts:List[BlogPostResponse]
+       
+       model_config=ConfigDict(from_attributes=True)

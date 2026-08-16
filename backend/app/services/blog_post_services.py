@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException,status,File,UploadFile
+from fastapi import HTTPException,status,File,UploadFile,Query
 from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate
 from app.models.blog_post import BlogPost,PostStatus
 from app.models.category import Category
@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy import or_,asc,desc
 from app.models.media import Media
 from .storage.local import delete_upload_file
+import math
 
 
 class BlogPostService:
@@ -52,8 +53,8 @@ class BlogPostService:
         return posts
         
     def get_all_blog_post(self,current_user,db:Session,
-                        page:int=1,search:str=None,
-                        limit:int=10,
+                        page:int=Query(1,ge=1),search:str=None,
+                        limit:int=Query(10,ge=10),
                         category_id:int=None,
                         status:str=None,
                         sort:str="published_at",order:str="desc"):
@@ -84,16 +85,29 @@ class BlogPostService:
             if order=="asc":
                 post=post.order_by(asc(BlogPost.title))
             else:
-                post=post.order_by(desc(BlogPost.title))    
+                post=post.order_by(desc(BlogPost.title)) 
+        elif sort=="published_at":
+            if order=="asc":
+                post=post.order_by(asc(BlogPost.published_at))
+            else:
+                post=post.order_by(desc(BlogPost.published_at))    
         else:
             if order =="asc":
                 post=post.order_by(asc(BlogPost.published_at))
             else:
                 post=post.order_by(desc(BlogPost.published_at)) 
                                 
-        skip = (page - 1)* limit        
+        skip = (page - 1)* limit 
+        total=post.count()       
+        total_pages=math.ceil(total/limit)
         posts=post.offset(skip).limit(limit).all()
-        return posts
+        return {
+            "page":page,
+            "limit":limit,
+            "total":total,
+            "total_pages":total_pages,
+            "posts":posts
+        }
 
 
     def get_blog_post_by_id(self,post_id:int,current_user,db:Session):
