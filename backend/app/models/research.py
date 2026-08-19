@@ -1,4 +1,4 @@
-from app.core.database import Base  
+﻿from app.core.database import Base  
 from sqlalchemy import Column,Integer,String,Date,ForeignKey,DateTime,Text,Boolean
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -7,7 +7,7 @@ class ResearchAuthor(Base):
     __tablename__="research_authors"
     #id=Column(Integer,primary_key=True)
     research_id=Column(Integer,ForeignKey("researchs.id",ondelete="CASCADE"),primary_key=True)
-    member_id=Column(Integer,ForeignKey("members.id",onupdate="CASCADE"),primary_key=True)
+    member_id=Column(Integer,ForeignKey("members.id",ondelete="CASCADE"),primary_key=True)
     author_order=Column(Integer,nullable=False)
     
     research=relationship("Research",back_populates="authors")

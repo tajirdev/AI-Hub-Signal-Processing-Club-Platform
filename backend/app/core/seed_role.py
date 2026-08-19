@@ -25,7 +25,7 @@ DEFAULT_ROLES = [
 
 @router.post("/db")
 def seed_roles(db: Session=Depends(get_db)):
-    
+    added_any = False
     for role_data in DEFAULT_ROLES:
         exists = (
             db.query(Role)
@@ -35,11 +35,11 @@ def seed_roles(db: Session=Depends(get_db)):
 
         if not exists:
             db.add(Role(**role_data))
-            return{"message":"Roles seeded successfully"}
-
-        else:
-            return{"message":"seed already planted"}   
+            added_any = True
 
     db.commit()
 
-    
+    if added_any:
+        return {"message": "Roles seeded successfully"}
+
+    return {"message": "seed already planted"}

@@ -84,7 +84,7 @@ def PutSingle(
     return services.Upadate(event_id,request,db,current_user_id=current_user.id)
 
 
-@router.delete("{event_id}", tags=["EVENTS"])
+@router.delete("/{event_id}", tags=["EVENTS"])
 def DeleteEvent(
     event_id:int,
     db:Session=Depends(get_db),
@@ -113,7 +113,7 @@ def DeleteMyEvent(
     return services.RemoveMyEvent(event_id,db,current_user_id=current_user.id)
 
 
-@router.post("{event_id}/cover", tags=["EVENTS COVER"])
+@router.post("/{event_id}/cover", tags=["EVENTS COVER"])
 def Postcover(
     event_id:int,
     db:Session=Depends(get_db),
@@ -138,7 +138,7 @@ def Postcover(
     return upadate_cover
 
 
-@router.get("{event_id}/cover",tags=["EVENTS COVER"])
+@router.get("/{event_id}/cover",tags=["EVENTS COVER"])
 def GetCover(
     event_id:int,
     db:Session=Depends(get_db),
@@ -146,7 +146,7 @@ def GetCover(
 ):
     return services.GetCover(event_id,db)
 
-@router.delete("{event_id}/cover",tags=["EVENTS COVER"])
+@router.delete("/{event_id}/cover",tags=["EVENTS COVER"])
 def DeleteCover(
     event_id:int,
     db:Session=Depends(get_db),

@@ -10,12 +10,8 @@ from app.models import ModoleUsers
 
 load_dotenv()
 
-SECRET_KEY  = "09d25e094faa6ca2556c818166b7a9563b93f7099d6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-
-
-
-
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
@@ -45,4 +41,4 @@ def verify_token(token: str,credentials_exception,db:Session):
    if user is None:
         raise credentials_exception
 
-   return user 
+   return user

@@ -87,6 +87,8 @@ class ResourceService:
             resource.description=request.description
         if request.subgroup_id:
             resource.subgroup_id=request.subgroup_id
+        db.commit()
+        db.refresh(resource)
         return resource
 
     @staticmethod
