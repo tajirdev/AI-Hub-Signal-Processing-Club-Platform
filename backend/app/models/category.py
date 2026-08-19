@@ -11,3 +11,4 @@ class Category(Base):
     updated_at=Column(DateTime,default=datetime.now,onupdate=datetime.now)
     
     blog_posts=relationship("BlogPost",secondary="blog_categories",back_populates="categories")
+    news=relationship("News",back_populates="category")

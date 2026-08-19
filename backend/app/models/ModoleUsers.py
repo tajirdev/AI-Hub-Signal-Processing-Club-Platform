@@ -29,6 +29,7 @@ class Users(Base):
     avatar_media = relationship("Media", foreign_keys="[Users.avatar_id]", back_populates="avatar")
     subgroup = relationship("SubGroup", back_populates="leader")
     resource = relationship("Resource", back_populates="uploader")
+    new=relationship("News",foreign_keys="News.author_id",back_populates="user")
 
     
 
