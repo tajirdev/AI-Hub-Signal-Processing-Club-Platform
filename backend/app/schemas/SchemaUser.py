@@ -1,4 +1,4 @@
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel,EmailStr,HttpUrl
 from datetime import datetime
 from typing import Optional
 
@@ -10,7 +10,7 @@ class Users(BaseModel):
     password_hash: str
     phone : str
     bio : str
-    github_link : str
+    github_link : HttpUrl
 
 class UserResponse(BaseModel):
     id: int
@@ -20,7 +20,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     bio: Optional[str] = None
-    github_link: Optional[str] = None
+    github_link: Optional[httpurl] = None
     is_active: bool
     created_at: datetime
 
