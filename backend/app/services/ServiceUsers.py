@@ -80,7 +80,7 @@ class UserReg:
        ModoleUsers.Users.id == current_user_id
         ).first()  
     avatar = db.query(media.Media).filter(
-        media.Media.uploaded_by == user.avatar_id
+        media.Media.id == user.avatar_id
     ).first()
 
 
@@ -138,21 +138,22 @@ class UserReg:
          ModoleUsers.Users.id == current_user_id
       ).first()
 
-      role = db.query(ModelUserRoles.UserRole).filter(
+      user_roles = db.query(ModelUserRoles.UserRole).filter(
          ModelUserRoles.UserRole.user_id == current_user_id
-      ).first()
+      ).all()
 
+      is_super_admin = False
+      for user_role in user_roles:
+         admin = db.query(ModoleRoles.Role).filter(
+            ModoleRoles.Role.id == user_role.role_id
+         ).first()
+         if admin and admin.name == "super_admin":
+            is_super_admin = True
+            break
 
-
-      admin = db.query(ModoleRoles.Role).filter(
-         ModoleRoles.Role.id == role.role_id
-      ).first()
-
-      exist_avatar = db.query(media.Media).filter(
+      avatar = db.query(media.Media).filter(
          media.Media.id == avatar_id
-      )
-
-      avatar = exist_avatar.first()
+      ).first()
 
       if not avatar:
          raise HTTPException(
@@ -160,19 +161,16 @@ class UserReg:
             detail= f"avatar with id of {avatar_id} not found"
          )
 
-      if admin.name != "super_admin" and avatar.id != user.avatar_id:
+      if not is_super_admin and avatar.id != user.avatar_id:
          raise HTTPException(
                      status_code=status.HTTP_403_FORBIDDEN,
                      detail="your are not the owner"
                   )
 
-      else:
-        delete_upload_file(avatar.path)
-        user.avatar_id = None
-        
-        db.delete(avatar)
-        db.commit()
-         
+      delete_upload_file(avatar.path)
+      user.avatar_id = None
+      db.delete(avatar)
+      db.commit()
 
       return {"message":"avatar have been deleted"}
          

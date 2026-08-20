@@ -11,7 +11,7 @@ class ResearchCreate(BaseModel):
     publication_date:datetime |None=None
     author_ids:list[int]
     
-    model_config=ConfigDict(from_attriibutes=True) 
+    model_config=ConfigDict(from_attributes=True) 
     
 class Researchupdate(BaseModel):
     title:Optional[str]=None
@@ -22,12 +22,12 @@ class Researchupdate(BaseModel):
     author_ids:list[int] | None
     featured:bool
 
-    model_config=ConfigDict(from_attriibutes=True) 
+    model_config=ConfigDict(from_attributes=True) 
     
 class ResearchAuthorResponse(BaseModel):
     member_id:int
     author_order:int
-    model_config=ConfigDict(from_attriibutes=True)
+    model_config=ConfigDict(from_attributes=True)
 
 class ResearchResponse(BaseModel):
     id:int
@@ -44,4 +44,4 @@ class ResearchResponse(BaseModel):
     
     authors:list[ResearchAuthorResponse]=[]
     
-    model_config=ConfigDict(from_attriibutes=True)    
+    model_config=ConfigDict(from_attributes=True)    

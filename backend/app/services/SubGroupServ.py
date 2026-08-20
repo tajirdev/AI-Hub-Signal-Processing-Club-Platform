@@ -145,6 +145,9 @@ class SubGroups:
             delete_upload_file(cover.path)
             cover.path = path
             cover.original_filename = "sub group cover"
+            db.commit()
+            db.refresh(cover)
+            return cover
         else:
             cover = media.Media(
                 filename = path,
@@ -253,6 +256,9 @@ class SubGroups:
                 delete_upload_file(icon.path)
                 icon.path = path
                 icon.original_filename = "sub group icon"
+                db.commit()
+                db.refresh(icon)
+                return icon
             else:
                 icon = media.Media(
                     filename = path,

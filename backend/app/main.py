@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI,Depends
 from app.schemas import test
 from sqlalchemy.orm import Session
@@ -6,16 +7,26 @@ from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,EventRo
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project,blog_post,category
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project,blog_post,category,resource
 from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter,project,blog_post,category,resource,research,news
+from app.routes import RouterUsers,loginroute,SubGroupRoute,MemberRouter, project, blog_post, category, research, resource
+from app.routes import EventRouters
 from app.core import seed_role
 from fastapi.staticfiles import StaticFiles
-
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(engine)
 
 
 app = FastAPI(title="AI HUB PLATFORM API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(RouterUsers.router)
 app.include_router(loginroute.router)
@@ -35,6 +46,5 @@ app.include_router(project.router)
 
 
 # Mount the static uploads directory
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-

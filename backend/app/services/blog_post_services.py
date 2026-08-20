@@ -143,12 +143,12 @@ class BlogPostService:
             post.content=data.content    
         if data.excerpt:
             post.excerpt=data.excerpt     
-        if (data.status == PostStatus.published and post.status!=PostStatus.published):
-            post.published_at=datetime.now()
         if data.status:
             if data.status not in [s.value for s in PostStatus]:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail=f"invalid status.must be one of:{[s.value for s in PostStatus]}")
-            post.status=data.status
+            post.status=PostStatus(data.status)
+            if data.status == PostStatus.published.value and post.status != PostStatus.published:
+                post.published_at=datetime.now()
             
         if data.category_ids:
             categories=db.query(Category).filter(Category.id.in_(data.category_ids)).all()
@@ -194,11 +194,13 @@ class BlogPostService:
         
         blog_media=db.query(Media).filter(Media.id==post.featured_image_id).first()
         if blog_media:
-            blog_media.filename=filename,
-            delete_upload_file(blog_media.path),
-            blog_media.path=path,
-            blog_media.mime_type=mime_type,
+            blog_media.filename=filename
+            delete_upload_file(blog_media.path)
+            blog_media.path=path
+            blog_media.mime_type=mime_type
             blog_media.original_filename=original_filename
+            db.commit()
+            db.refresh(blog_media)
             
         else:
             blog_media=Media(

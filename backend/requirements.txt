@@ -6,8 +6,6 @@ pyjwt
 python-multipart
 pymysql
 python-dotenv
-python-dotenv
 psycopg2-binary
 alembic
-python-dotenv
 pydantic[email]
