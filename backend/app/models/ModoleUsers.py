@@ -6,10 +6,10 @@ from sqlalchemy.sql import func
 class Users(Base):
     __tablename__ = "users"
     id = Column(Integer,primary_key=True)
-    first_name = Column(String(10))
-    last_name = Column(String(10))
+    first_name = Column(String(100))
+    last_name = Column(String(100))
     email = Column(String, unique=True,nullable=False)
-    user_name = Column(String(10),nullable=False,unique=True)
+    user_name = Column(String(100),nullable=False,unique=True)
     password_hash = Column(String)
     phone = Column(String)
     avatar_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
@@ -27,7 +27,6 @@ class Users(Base):
     research=relationship("Research",foreign_keys="Research.created_by",back_populates="user")
     media = relationship("Media", foreign_keys="[Media.uploaded_by]", back_populates="user", cascade="all, delete")
     avatar_media = relationship("Media", foreign_keys="[Users.avatar_id]", back_populates="avatar")
-    subgroup = relationship("SubGroup", back_populates="leader")
     resource = relationship("Resource", back_populates="uploader")
 
     

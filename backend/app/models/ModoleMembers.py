@@ -1,6 +1,6 @@
 from app.core.database import Base
 from sqlalchemy import Column,Integer,String,ForeignKey,DateTime,Boolean
-from sqlalchemy.orm import Relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func 
 
 
@@ -18,6 +18,6 @@ class Members(Base):
     joined_at = Column(DateTime(timezone=True),server_default=func.now())
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
 
-    user = Relationship("Users",back_populates="member")
-    subgroup = Relationship("SubGroup",back_populates="sub_member")
-    research_authors=Relationship("ResearchAuthor",back_populates="member")
+    user = relationship("Users",back_populates="member")
+    subgroup = relationship("SubGroup",back_populates="sub_member")
+    research_authors=relationship("ResearchAuthor",back_populates="member")

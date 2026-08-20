@@ -18,6 +18,7 @@ class Event:
             location  = request.location,
             event_date = request.event_date,
             status  = request.status,
+            registration_link = request.registration_link,
             created_by = current_user_id  
 
         )
@@ -100,7 +101,7 @@ class Event:
         return events
 
     @staticmethod
-    def ReturnSingle(event_id:int,db:Session,current_user_id:int):
+    def ReturnSingle(event_id:int,db:Session,current_user):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id 
         ).first()
@@ -135,7 +136,7 @@ class Event:
         event.description = request.description
         event.location  = request.location
         event.event_date = request.event_date
-        event.cover_image = request.cover_image
+        event.registration_link = request.registration_link
         event.status = request.status
 
 
@@ -152,6 +153,7 @@ class Event:
 
         return event
         
+
 
 
     @staticmethod
@@ -171,7 +173,6 @@ class Event:
         event.location  = request.location
         event.event_date = request.event_date
         event.registration_link = request.registration_link
-        event.cover_image = request.cover_image
         event.status = request.status
 
         try:
@@ -245,10 +246,6 @@ class Event:
                 detail= f"event with that id of {event_id} not found"
             )
 
-
-
-    
-
         cover = db.query(media.Media).filter(
             media.Media.id == event.cover_image_id
         ).first()
@@ -258,6 +255,8 @@ class Event:
             delete_upload_file(cover.path)
             cover.path = path
             cover.original_filename = "cover page"
+            db.commit()
+            db.refresh(cover)
         else:
             cover = media.Media(
                 filename = path,      
@@ -326,17 +325,9 @@ class Event:
             ModoleRoles.Role.id == role.role_id
         ).first()
 
-        
-
         cover = db.query(media.Media).filter(
             media.Media.id == event.cover_image_id
         ).first()
-
-        if admin.name != "super_admin" and cover.uploaded_by !=user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="your are not the owner"
-            )
 
         if not cover:
             raise HTTPException(
@@ -344,18 +335,14 @@ class Event:
                 detail="you don't have cover"
             )
 
+        if admin.name != "super_admin" and cover.uploaded_by !=user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="your are not the owner"
+            )
+
         delete_upload_file(cover.path)
         event.cover_image_id = None
         db.delete(cover)
         db.commit()
         return {"message":"you have deleted cover image"}
-
-
-   
-
-
-
-
-
-
-  

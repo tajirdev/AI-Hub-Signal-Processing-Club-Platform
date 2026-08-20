@@ -70,7 +70,7 @@ def ReturnMe(
 
 @router.get("/{member_id}")
 def ReturnSingle(
-    member_id,
+    member_id:int,
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(admin_required)
 ):

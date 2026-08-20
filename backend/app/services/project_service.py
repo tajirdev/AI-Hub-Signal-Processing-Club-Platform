@@ -49,12 +49,18 @@ def get_project_by_id(db: Session, project_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     return project
 
+def _is_super_admin(current_user) -> bool:
+    for ur in current_user.userRole:
+        if ur.Roles.name == "super_admin":
+            return True
+    return False
+
 def update_project(db: Session, project_id: int, project_data: ProjectUpdate, current_user):
     project = get_project_by_id(db, project_id)
 
     # Ownership & RBAC Check
     is_owner = project.created_by == current_user.id
-    is_admin = getattr(current_user, "role", None) == "super_admin"
+    is_admin = _is_super_admin(current_user)
 
     if not (is_owner or is_admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
@@ -72,7 +78,7 @@ def delete_project(db: Session, project_id: int, current_user):
 
     # Ownership & RBAC Check
     is_owner = project.created_by == current_user.id
-    is_admin = getattr(current_user, "role", None) == "super_admin"
+    is_admin = _is_super_admin(current_user)
 
     if not (is_owner or is_admin):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this project")

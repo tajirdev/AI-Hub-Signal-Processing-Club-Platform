@@ -26,16 +26,16 @@ def show_all(db:Session=Depends(get_db),current_user:Users=Depends(member_requir
             sort:str="publication_date",
             order:str="desc"
             ):
-    return ResearchServices.show_all(db,current_user)
+    return ResearchServices.show_all(db,current_user,page,search,limit,title,sort,order)
 
 @router.get("/{research_id}",response_model=ResearchResponse)
-def show_by_id(resarch_id:int,db:Session=Depends(get_db),current_user:Users=Depends(member_required)):
-    return ResearchServices.show_by_id(resarch_id,db,current_user)
+def show_by_id(research_id:int,db:Session=Depends(get_db),current_user:Users=Depends(member_required)):
+    return ResearchServices.show_by_id(research_id,db,current_user)
 
 @router.put("/{research_id}",response_model=ResearchResponse)
 def update(research_id:int,data:Researchupdate,db:Session=Depends(get_db),current_user:Users=Depends(editor_required)):
     return ResearchServices.update(research_id,data,db,current_user)
 
-@router.delete("/{reserearch_id}")
+@router.delete("/{research_id}")
 def delete(research_id:int,db:Session=Depends(get_db),current_user:Users=Depends(editor_required)):
     return ResearchServices.deleteresource(research_id,db,current_user)

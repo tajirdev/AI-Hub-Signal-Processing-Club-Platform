@@ -172,6 +172,11 @@ class MembersServices:
     def EditeMe(self,request:MemberSchm.Members,db:Session,current_user_id:int):
         me = db.query(ModoleMembers.Members).filter(ModoleMembers.Members.user_id==current_user_id).first()
 
+        if not me:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="you are not a member of any sub group"
+            )
 
         me.position = request.position
         me.github = request.github
@@ -233,15 +238,8 @@ class MembersServices:
         ).delete(synchronize_session=False)
 
         db.commit()
-        
 
-        user = db.query(ModoleUsers.Users).filter(
-            ModoleUsers.Users.id == current_user_id
-        ).delete(synchronize_session=False)
-
-        db.commit()
-
-        return {"message":"you have been deleted"}
+        return {"message":"you have been removed from the sub group"}
 
 
     def RemoveSingle(self,member_id:int,db:Session):

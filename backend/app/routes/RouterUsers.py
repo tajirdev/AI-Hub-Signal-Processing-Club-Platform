@@ -23,18 +23,18 @@ router = APIRouter(
 def post_users(request:SchemaUser.Users,db:Session=Depends(database.get_db)):
     return UsersService.registerUser(request,db)
 
-@router.get('/me')
+@router.get('/me', response_model=SchemaUser.UserResponse)
 def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(member_required)):
     return UsersService.return_current_user(db,current_user_id=current_user.id)
 
-@router.get('/all')
+@router.get('/all', response_model=list[SchemaUser.UserResponse])
 def get_all(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(admin_required)):
     return UsersService.get_all(db,current_user_id=current_user.id)
 
 
 @router.post("/avatar")
 def post_avatar(
-    current_user: ModoleUsers.Users = Depends(get_current_user),
+    current_user: ModoleUsers.Users = Depends(member_required),
     file: UploadFile = File(...),
     
     db: Session = Depends(database.get_db)

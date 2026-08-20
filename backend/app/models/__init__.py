@@ -6,15 +6,11 @@ from .ModoleUsers import Users
 from .SubGroupModel import SubGroup
 from .ModoleMembers import Members
 from .EventModel import Events
-
-# This allows Alembic to see everything through Base.metadata
-__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","Members","Events"]
 from .blog_post import BlogPost,BlogCategory
 from .category import Category
-from .ModoleMembers import Members
 from .media import Media
 from .research import Research
 from .resource import Resource
 
 # This allows Alembic to see everything through Base.metadata
-__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource"]
+__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","Events"]
