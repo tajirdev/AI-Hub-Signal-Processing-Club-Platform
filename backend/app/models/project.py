@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
+from datetime import datetime
 
 class Project(Base):
     __tablename__ = "projects"
@@ -8,17 +9,15 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), nullable=False, index=True)
     description = Column(Text, nullable=False)
-    repository_url = Column(String, nullable=True)
+    repository_url = Column(String, nullable=True,unique=False)
     demo_url = Column(String, nullable=True)
-    
-    thumbnail_id = Column(Integer, ForeignKey("media.id"), nullable=True)
-    
+    thumbnail_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
     status = Column(String, default="active")
     technology_stack = Column(String, nullable=True)
-
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime,default=datetime.now)
+    updated_at = Column(DateTime,default=datetime.now, onupdate=datetime.now)
 
     # Centralized Media Relationship
-    thumbnail = relationship("Media", foreign_keys=[thumbnail_id])
+    thumbnail = relationship("Media",back_populates="project")
+    creator=relationship("Users",back_populates="project")

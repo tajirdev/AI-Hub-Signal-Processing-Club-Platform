@@ -40,7 +40,7 @@ app.include_router(MemberRouter.router)
 app.include_router(EventRouters.router)
 app.include_router(news.router)
 app.include_router(project.router)
-app.include_router(project.cover_router)
+
 
 
 
