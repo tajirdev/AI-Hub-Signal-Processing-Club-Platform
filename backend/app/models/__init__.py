@@ -11,6 +11,8 @@ from .category import Category
 from .media import Media
 from .research import Research
 from .resource import Resource
+from .newsmodel import News
 
 # This allows Alembic to see everything through Base.metadata
+__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","News"]
 __all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","Events"]
