@@ -1,7 +1,7 @@
-
 from pydantic import BaseModel,Field
 from app.models.EventModel import EventStatus
-from datetime import date
+from datetime import date, datetime
+from typing import Optional
 
 
 class EventCreate(BaseModel):
@@ -19,31 +19,19 @@ class EventUpdate(BaseModel):
     location : str
     event_date :date
     registration_link : str | None=None
-    cover_image : str | None=None
     status :  EventStatus= EventStatus.draft
 
 class EventResponse(BaseModel):
+    id: int
     title :str 
     description :str
     location : str
     event_date :date
     registration_link : str | None=None
-    cover_image : str | None=None
+    cover_image_id : int | None=None
     status : str
+    created_by: int
 
 
     class Config:
         from_attributes = True
-
-
-
-    
-
-
-
-
-
-
-
-
-

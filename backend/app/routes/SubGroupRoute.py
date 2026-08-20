@@ -39,7 +39,7 @@ def return_all(
 
 @router.get("/{id}", tags= ["SUB GROUPS"])
 def return_single(
-    id,
+    id: int,
     db:Session = Depends(get_db),
     current_user:ModoleUsers.Users=Depends(admin_required)
     ):
@@ -66,7 +66,7 @@ def remove_group(
     return services.delete_group(id,db)
 
 # here is where cover upload router started
-@router.post("{subgroup_id}/cover_page",tags=["Cover"])
+@router.post("/{subgroup_id}/cover_page",tags=["Cover"])
 def PostCoverPage(
     subgroup_id:int,
     db:Session=Depends(get_db),
@@ -89,7 +89,7 @@ def PostCoverPage(
 
     return updated_cover
 
-@router.get("{subgroup_id}/cover_page",tags=["Cover"])
+@router.get("/{subgroup_id}/cover_page",tags=["Cover"])
 def GetCover(
     subgroup_id:int,
     db:Session=Depends(get_db),
@@ -98,7 +98,7 @@ def GetCover(
     return services.ReturnCover( subgroup_id,db)
 
 
-@router.delete("{subgroup_id}/cover_page",tags=["Cover"])
+@router.delete("/{subgroup_id}/cover_page",tags=["Cover"])
 def DeleteCover(
     subgroup_id:int,
     db:Session=Depends(get_db),
@@ -110,8 +110,8 @@ def DeleteCover(
 
     
 # here is where icon routers starts
-@router.post("{subgroup_id}/icon_page", tags=["Icon"])
-def PostCoverPage(
+@router.post("/{subgroup_id}/icon_page", tags=["Icon"])
+def PostIcon(
     subgroup_id:int,
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(admin_required),
@@ -124,17 +124,17 @@ def PostCoverPage(
         category=UploadCategory.SUBGROUP_LOGOS
     )
 
-    updated_cover = services.AddIcon(
+    updated_icon = services.AddIcon(
         path=file_path,
         subGroup_id=subgroup_id,
         db=db,
         current_user_id=current_user.id
     )
 
-    return updated_cover
+    return updated_icon
 
-@router.get("{subgroup_id}/icon_page",tags=["Icon"])
-def GetCover(
+@router.get("/{subgroup_id}/icon_page",tags=["Icon"])
+def GetIcon(
     subgroup_id:int,
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(admin_required)
@@ -142,8 +142,8 @@ def GetCover(
     return services.ReturnIcon( subgroup_id,db)
 
 
-@router.delete("{subgroup_id}/icon_page",tags=["Icon"])
-def DeleteCover(
+@router.delete("/{subgroup_id}/icon_page",tags=["Icon"])
+def DeleteIcon(
     subgroup_id:int,
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(admin_required)
@@ -151,9 +151,3 @@ def DeleteCover(
     return services.RemoveIcon(
         subgroup_id,db
     )
-
-    
-
-
-
-

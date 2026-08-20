@@ -80,58 +80,18 @@ class ProjectService:
         if project.created_by != current_user.id and current_user.role != "super_admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this project")
 
-        # Delete associated media file if it exists
-        if project.thumbnail_id:
-            media = db.query(Media).filter(Media.id == project.thumbnail_id).first()
-            if media:
-                delete_upload_file(media.path)
-                db.delete(media)
+def _is_super_admin(current_user) -> bool:
+    for ur in current_user.userRole:
+        if ur.Roles.name == "super_admin":
+            return True
+    return False
 
-        db.delete(project)
-        db.commit()
-        return {"message": "Project deleted successfully"}
+def update_project(db: Session, project_id: int, project_data: ProjectUpdate, current_user):
+    project = get_project_by_id(db, project_id)
 
-
-class ProjectCoverService:
-
-    @classmethod
-    def upload_cover(cls, project_id: int, file: UploadFile, db: Session, current_user):
-        project = db.query(Project).filter(Project.id == project_id).first()
-        if not project:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-
-        if project.created_by != current_user.id and current_user.role != "super_admin":
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
-
-        # Remove old cover image if it exists
-        if project.thumbnail_id:
-            old_media = db.query(Media).filter(Media.id == project.thumbnail_id).first()
-            if old_media:
-                delete_upload_file(old_media.path)
-                db.delete(old_media)
-
-        # Save the new uploaded file
-        file_path = save_upload_file(
-            file=file,
-            allowed_types=IMAGE_TYPES,
-            category=UploadCategory.PROJECT_THUMBNAILS
-        )
-
-        media_file = Media(
-            filename=file.filename,
-            path=file_path,
-            original_filename=file.filename,
-            file_size=file.size if hasattr(file, 'size') else 0,
-            mime_type=file.content_type,
-            uploaded_by=current_user.id
-        )
-        db.add(media_file)
-        db.commit()
-        db.refresh(media_file)
-
-        project.thumbnail_id = media_file.id
-        db.commit()
-        db.refresh(project)
+    # Ownership & RBAC Check
+    is_owner = project.created_by == current_user.id
+    is_admin = _is_super_admin(current_user)
 
         return ProjectResponse.from_orm_custom(project)
 
@@ -153,14 +113,9 @@ class ProjectCoverService:
         if project.created_by != current_user.id and current_user.role != "super_admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
 
-        if project.thumbnail_id:
-            media = db.query(Media).filter(Media.id == project.thumbnail_id).first()
-            if media:
-                delete_upload_file(media.path)
-                db.delete(media)
-            
-            project.thumbnail_id = None
-            db.commit()
+    # Ownership & RBAC Check
+    is_owner = project.created_by == current_user.id
+    is_admin = _is_super_admin(current_user)
 
         return {"message": "Project cover deleted successfully"}
 
