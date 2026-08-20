@@ -20,7 +20,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     bio: Optional[str] = None
-    github_link: Optional[httpurl] = None
+    github_link: Optional[HttpUrl] = None
     is_active: bool
     created_at: datetime
 
