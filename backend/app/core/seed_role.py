@@ -19,7 +19,10 @@ DEFAULT_ROLES = [
     {
         "name": "member",
         "description": "Default club member."
-    },
+    },    {
+        "name": "user",
+        "description": "registered account"
+    }
 ]
 
 @router.post("/db")
