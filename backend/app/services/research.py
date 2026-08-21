@@ -32,7 +32,7 @@ class ResearchServices():
             slug=ResearchServices.generate_slug(data.title,db),
             abstract=data.abstract,
             content=data.content,
-            pdf_url=str(data.pdf_url),
+            pdf_url=str(data.pdf_url) if data.pdf_url else None,
             featured=data.featured,
             created_by=current_user.id
           

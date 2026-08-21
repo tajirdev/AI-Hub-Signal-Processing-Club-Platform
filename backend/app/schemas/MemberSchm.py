@@ -1,10 +1,12 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class Members(BaseModel):
     position : str
-    github : str | None = None
-    linkedin : str | None = None
-    portfolio : str | None = None
+    github : Optional[str] = None
+    linkedin : Optional[str] = None
+    portfolio : Optional[str] = None
+    user_id : Optional[int] = None
 
 
 

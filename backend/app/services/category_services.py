@@ -34,6 +34,9 @@ class CategoryService:
         category=db.query(Category).filter(Category.id==category_id).first()
         if not category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="category not found")
+        existing=db.query(Category).filter(Category.name==data.name, Category.id != category_id).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category name already exists")
         category.name=data.name
         db.commit()
         db.refresh(category)
