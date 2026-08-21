@@ -1,6 +1,6 @@
-from pydantic import BaseModel,EmailStr,HttpUrl
+from pydantic import BaseModel, EmailStr, HttpUrl
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class Users(BaseModel):
     first_name : str
@@ -22,6 +22,8 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     github_link: Optional[HttpUrl] = None
     is_active: bool
+    roles: List[str] = []
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:

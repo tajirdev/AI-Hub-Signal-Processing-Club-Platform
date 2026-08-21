@@ -47,110 +47,131 @@ class News_Services():
 
 
     @staticmethod
-    def get_all_news(db:Session,
-                    page:int=Query(1,ge=1),
-                    limit:int=Query(10,ge=10,le=100),
-                    search:str=None,sort:str="desc",order:str=None
-                 
-                    ):
-    
-        news=db.query(News).filter(News.status==StatusCheck.published)
-        if not news:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="news not  yet published")
-        if search:
-            news=news.filter(or_(
-                News.title.ilike(f"%{search}%"),
-                News.content.ilike(f"%{search}%"),
-                News.summary.ilike("%{search}%")
-            ))
-    
-        if sort=="title":
-            if order=="asc":
-                news.order_by(asc(news.title))
+    def get_all_news(
+        db: Session,
+        page: int = Query(1, ge=1),
+        limit: int = Query(10, ge=10, le=100),
+        search: str = None,
+        sort: str = "desc",
+        order: str = None,
+        current_user = None,
+    ):
+        query = db.query(News)
+
+        if current_user:
+            roles = [ur.Roles.name for ur in current_user.userRole if ur.Roles]
+            if "super_admin" in roles:
+                pass
+            elif "editor" in roles:
+                query = query.filter(
+                    or_(
+                        News.status == StatusCheck.published,
+                        News.author_id == current_user.id,
+                    )
+                )
             else:
-                news.order_by(desc(news.title))  
-        elif sort=="published_at":
-            if order=="asc":
-                news=news.order_by(asc(News.created_at))
-            else:
-                news=news.order_by(desc(News.created_at))
+                query = query.filter(News.status == StatusCheck.published)
         else:
-            news=news.order_by(asc(News.published_at))    
-    
-        skip=(page-1)*limit
-        total=news.count()
-        total_pages=math.ceil(total / limit)
-        news=news.offset(skip).limit(limit).all()              
-            
-        return{
-            "page":page,
-            "limit":limit,
-            "total":total,
-            "total_pages":total_pages,
-            "news":news
-        
+            query = query.filter(News.status == StatusCheck.published)
+
+        if search:
+            query = query.filter(
+                or_(
+                    News.title.ilike(f"%{search}%"),
+                    News.content.ilike(f"%{search}%"),
+                    News.summary.ilike(f"%{search}%"),
+                )
+            )
+
+        if sort == "title":
+            if order == "asc":
+                query = query.order_by(asc(News.title))
+            else:
+                query = query.order_by(desc(News.title))
+        elif sort == "published_at":
+            if order == "asc":
+                query = query.order_by(asc(News.published_at))
+            else:
+                query = query.order_by(desc(News.published_at))
+        else:
+            if order == "asc":
+                query = query.order_by(asc(News.created_at))
+            else:
+                query = query.order_by(desc(News.created_at))
+
+        total = query.count()
+        total_pages = math.ceil(total / limit) if total > 0 else 0
+        skip = (page - 1) * limit
+        news = query.offset(skip).limit(limit).all() if total > 0 else []
+
+        return {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "news": news,
         }
 
-  
     @staticmethod
-    def get_news_id(news_id:int,db:Session):
-        news=db.query(News).filter(News.id==news_id).first()
+    def get_news_id(news_id: int, db: Session, current_user = None):
+        news = db.query(News).filter(News.id == news_id).first()
         if not news:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="news not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")
         if news.status != StatusCheck.published:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="news not yet published")
-    
-        return news
-    
-    
-    @staticmethod
-    def update_news(news_id:int,data:NewsUpdate,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
-        category=db.query(Category).filter(Category.id == data.category_id).first()
-        if not category:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="category not found")
-        news=db.query(News).filter(News.id==news_id).first()
-        if not news:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="news not found")
-        if (news.author_id != current_user.id and "super_admin" not in roles):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you cannot perform this action")
-    
-        if data.title:
-            news.title=data.title
-            news.slug=generate_slug(data.title,db)
-        if data.category_id:
-            news.category_id=data.category_id        
-        if data.content:
-            news.content=data.content 
-        if data.summary:
-            news.summary=data.summary
-        if data.status:
-            news.status=data.status
-            if data.status == StatusCheck.published:
-             news.published_at=datetime.now()
-            else:
-             news.published_at=None     
+            if current_user:
+                roles = [ur.Roles.name for ur in current_user.userRole if ur.Roles]
+                if "super_admin" in roles or ("editor" in roles and news.author_id == current_user.id):
+                    return news
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not yet published")
 
-    
-        db.commit()            
-        db.refresh(news)
-    
         return news
-    
-    
+
     @staticmethod
-    def delete_news(news_id:int,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
-        news=db.query(News).filter(News.id==news_id).first()
+    def update_news(news_id: int, data: NewsUpdate, current_user, db: Session):
+        roles = [ur.Roles.name for ur in current_user.userRole]
+        category = db.query(Category).filter(Category.id == data.category_id).first()
+        if not category:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="category not found")
+        news = db.query(News).filter(News.id == news_id).first()
         if not news:
-             HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")
+        if news.author_id != current_user.id and "super_admin" not in roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="you cannot perform this action")
+
+        if data.title:
+            news.title = data.title
+            news.slug = generate_slug(data.title, db)
+        if data.category_id:
+            news.category_id = data.category_id
+        if data.content:
+            news.content = data.content
+        if data.summary:
+            news.summary = data.summary
+        if data.status:
+            news.status = data.status
+            if data.status == StatusCheck.published:
+                news.published_at = datetime.now()
+            else:
+                news.published_at = None
+
+        db.commit()
+        db.refresh(news)
+
+        return news
+
+    @staticmethod
+    def delete_news(news_id: int, current_user, db: Session):
+        roles = [ur.Roles.name for ur in current_user.userRole]
+        news = db.query(News).filter(News.id == news_id).first()
+        if not news:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")
         if "super_admin" not in roles and news.author_id != current_user.id:
-            raise HTTPException(status_code =status.HTTP_403_FORBIDDEN,detail="you cannot perform this action")
-        
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="you cannot perform this action")
+
         db.delete(news)
         db.commit()
-    
+
         return {
-            "message":"news daleted succesfuly"
+            "message": "news deleted successfully"
         }
     
