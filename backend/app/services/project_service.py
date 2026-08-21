@@ -1,32 +1,33 @@
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, status, UploadFile,File
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.project import Project
 from app.models.media import Media
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from .storage.local import save_upload_file, delete_upload_file, UploadCategory, IMAGE_TYPES
+import math
 
-class ProjectService:
+class ProjectService():
 
-    @classmethod
-    def create_project(cls, db: Session, request: ProjectCreate, user_id: int):
+    @staticmethod
+    def create_project(request:ProjectCreate,current_user,db:Session):
         # Create a new project without any image file
         new_project = Project(
             title=request.title,
             description=request.description,
-            repository_url=request.repository_url,
-            demo_url=request.demo_url,
+            repository_url=str(request.repository_url),
+            demo_url=str(request.demo_url),
             status=request.status or "active",
             technology_stack=request.technology_stack,
-            created_by=user_id
+            created_by=current_user.id
         )
         db.add(new_project)
         db.commit()
         db.refresh(new_project)
-        return ProjectResponse.from_orm_custom(new_project)
+        return new_project
 
-    @classmethod
-    def get_projects(cls, db: Session, page: int = 1, limit: int = 10, search: Optional[str] = None, sort: Optional[str] = "created_at", order: Optional[str] = "desc"):
+    @staticmethod
+    def get_projects(db: Session, page: int = 1, limit: int = 10, search: Optional[str] = None, sort: Optional[str] = "created_at", order: Optional[str] = "desc"):
         query = db.query(Project)
         
         if search:
@@ -44,80 +45,125 @@ class ProjectService:
             query = query.order_by(sort_column.asc())
 
         offset = (page - 1) * limit
+        total=query.count()
+        total_pages=math.ceil( total / limit)
         projects = query.offset(offset).limit(limit).all()
-        return [ProjectResponse.from_orm_custom(p) for p in projects]
+        return {
+            "page":page,
+            "total_projects":total,
+            "limit":limit,
+            "total_pages":total_pages,
+            "projects":projects
+        }
 
-    @classmethod
-    def get_project_by_id(cls, db: Session, project_id: int):
+    @staticmethod
+    def get_project_by_id(db: Session, project_id: int):
         project = db.query(Project).filter(Project.id == project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-        return ProjectResponse.from_orm_custom(project)
+        return project
 
-    @classmethod
-    def update_project(cls, db: Session, project_id: int, request: ProjectUpdate, current_user):
+    @staticmethod
+    def update_project(db: Session, project_id: int, request: ProjectUpdate, current_user):
         project = db.query(Project).filter(Project.id == project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
         if project.created_by != current_user.id and current_user.role != "super_admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
-
-        update_data = request.dict(exclude_unset=True)
-        for key, value in update_data.items():
-            setattr(project, key, value)
-
+        
+        project.title=request.title,
+        project.description=request.description,
+        project.demo_url=request.demo_url,
+        project.status=request.status,
+        project.technology_stack=request.technology_stack
+        
         db.commit()
         db.refresh(project)
-        return ProjectResponse.from_orm_custom(project)
+        return  project
 
-    @classmethod
-    def delete_project(cls, db: Session, project_id: int, current_user):
+    @staticmethod
+    def delete_project(db: Session, project_id: int, current_user):
         project = db.query(Project).filter(Project.id == project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
         if project.created_by != current_user.id and current_user.role != "super_admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this project")
-
-def _is_super_admin(current_user) -> bool:
-    for ur in current_user.userRole:
-        if ur.Roles.name == "super_admin":
-            return True
-    return False
-
-def update_project(db: Session, project_id: int, project_data: ProjectUpdate, current_user):
-    project = get_project_by_id(db, project_id)
-
-    # Ownership & RBAC Check
-    is_owner = project.created_by == current_user.id
-    is_admin = _is_super_admin(current_user)
-
-        return ProjectResponse.from_orm_custom(project)
-
-    @classmethod
-    def get_cover(cls, project_id: int, db: Session):
+        
+        db.delete(project)
+        db.commit()
+        return {
+            "message":"project delete successful"
+        }
+    @staticmethod
+    def project_cover(project_id:int,
+                            db:Session,
+                            path:str,
+                            current_user:int,
+                            original_filename:str,
+                            mime_type:str,
+                            filename:str):
+        project=db.query(Project).filter(Project.id==project_id).first()
+        if not project:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="project not found")
+        if (project.created_by != current_user.id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you  cannot perform these action")
+        cover=db.query(Media).filter(Media.id==project.thumbnail_id).first()
+        if cover:
+            cover.filename=filename
+            delete_upload_file(cover.path)
+            cover.path=path,
+            cover.mime_type=mime_type,
+            cover.original_filename
+            
+            db.commit()
+            db.refresh(cover)
+            
+        else:
+            
+            cover=Media(
+                filename=filename,
+                original_filename=original_filename,
+                mime_type=mime_type,
+                path=path,
+                uploaded_by=current_user.id
+        )
+        db.add(cover)
+        db.flush()
+        project.thumbnail_id=cover.id
+        
+        db.commit()
+        db.refresh(cover)
+        
+        return cover
+        
+        
+    @staticmethod
+    def get_cover(project_id: int, db: Session):
         project = db.query(Project).filter(Project.id == project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-        if not project.thumbnail:
+        cover=db.query(Media).filter(Media.id==project.thumbnail_id).first()
+        if not cover:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cover not found")
         return project.thumbnail
 
-    @classmethod
-    def remove_cover(cls, project_id: int, db: Session, current_user):
+    @staticmethod
+    def remove_cover(project_id: int, db: Session, current_user):
         project = db.query(Project).filter(Project.id == project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-
+        
         if project.created_by != current_user.id and current_user.role != "super_admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
-
-    # Ownership & RBAC Check
-    is_owner = project.created_by == current_user.id
-    is_admin = _is_super_admin(current_user)
-
+        
+        cover=db.query(Media).filter(Media.id==project.thumbnail_id).first()
+        if not cover:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cover not found")
+    
+        db.delete(cover)
+        db.commit()
+        
         return {"message": "Project cover deleted successfully"}
 
-projectService = ProjectService()
-projectCoverService = ProjectCoverService()

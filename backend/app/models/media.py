@@ -17,7 +17,7 @@ class Media(Base):
    
 
     user = relationship("Users", foreign_keys="[Media.uploaded_by]", back_populates="media")
-    
+    project=relationship("Project",foreign_keys="Project.thumbnail_id",back_populates="thumbnail")
     blog=relationship("BlogPost",foreign_keys="BlogPost.featured_image_id",back_populates="media")
     avatar = relationship("Users", foreign_keys="[Users.avatar_id]", back_populates="avatar_media")
     Icon = relationship("SubGroup", foreign_keys="[SubGroup.icon_id]", back_populates="Sub_icon")
