@@ -1,0 +1,15 @@
+export const Routes = {
+  Login: { path: "/login" },
+  Overview: { path: "/overview" },
+  Users: { path: "/users" },
+  Members: { path: "/members" },
+  Subgroups: { path: "/subgroups" },
+  BlogPosts: { path: "/blog-posts" },
+  Categories: { path: "/categories" },
+  News: { path: "/news" },
+  Events: { path: "/events" },
+  Projects: { path: "/projects" },
+  Research: { path: "/research" },
+  Resources: { path: "/resources" },
+  NotFound: { path: "/404" },
+};
