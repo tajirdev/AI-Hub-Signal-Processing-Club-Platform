@@ -3,12 +3,14 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { eventsAPI } from '../api/events';
+import { categoriesAPI } from '../api/categories';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faImage, faCalendarAlt, faMapMarkerAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faImage, faCalendarAlt, faMapMarkerAlt, faExternalLinkAlt, faTag } from '@fortawesome/free-solid-svg-icons';
 
 export default function Events() {
   const [events, setEvents] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -26,6 +28,7 @@ export default function Events() {
     event_date: '',
     location: '',
     registration_link: '',
+    category_id: '',
     status: 'published',
   });
 
@@ -34,6 +37,15 @@ export default function Events() {
   const [uploadEvent, setUploadEvent] = useState(null);
   const [coverFile, setCoverFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoriesAPI.getAll();
+      setCategories(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  };
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -64,6 +76,10 @@ export default function Events() {
   };
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     fetchEvents();
   }, [page, search]);
 
@@ -72,9 +88,10 @@ export default function Events() {
     setFormData({
       title: '',
       description: '',
-      event_date: new Date().toISOString().slice(0, 16),
+      event_date: new Date().toISOString().slice(0, 10),
       location: 'MUST Main Campus / Virtual',
       registration_link: '',
+      category_id: categories.length > 0 ? categories[0].id : '',
       status: 'published',
     });
     setIsModalOpen(true);
@@ -85,9 +102,10 @@ export default function Events() {
     setFormData({
       title: evt.title || '',
       description: evt.description || '',
-      event_date: evt.event_date ? new Date(evt.event_date).toISOString().slice(0, 16) : '',
+      event_date: evt.event_date ? evt.event_date.slice(0, 10) : '',
       location: evt.location || '',
       registration_link: evt.registration_link || '',
+      category_id: evt.category_id || (evt.category ? evt.category.id : ''),
       status: evt.status || 'published',
     });
     setIsModalOpen(true);
@@ -95,11 +113,20 @@ export default function Events() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.description && formData.description.length < 30) {
+      setToast({ type: 'error', message: 'Description must be at least 30 characters' });
+      return;
+    }
     setSubmitting(true);
     try {
       const payload = {
-        ...formData,
-        event_date: new Date(formData.event_date).toISOString(),
+        title: formData.title,
+        description: formData.description,
+        event_date: formData.event_date ? formData.event_date.slice(0, 10) : new Date().toISOString().slice(0, 10),
+        location: formData.location,
+        registration_link: formData.registration_link || null,
+        category_id: formData.category_id ? parseInt(formData.category_id, 10) : null,
+        status: formData.status || 'published',
       };
 
       if (editingEvent) {
@@ -116,7 +143,7 @@ export default function Events() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save event',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save event'),
       });
     } finally {
       setSubmitting(false);
@@ -181,10 +208,19 @@ export default function Events() {
       ),
     },
     {
+      header: 'Category',
+      render: (e) => (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+          <FontAwesomeIcon icon={faTag} className="mr-1 text-[9px]" />
+          {e.category?.name || categories.find((c) => c.id === e.category_id)?.name || 'General'}
+        </span>
+      ),
+    },
+    {
       header: 'Date & Time',
       render: (e) => (
         <span className="text-xs font-semibold text-gray-800">
-          {e.event_date ? new Date(e.event_date).toLocaleString() : 'TBA'}
+          {e.event_date ? new Date(e.event_date).toLocaleDateString() : 'TBA'}
         </span>
       ),
     },
@@ -268,7 +304,7 @@ export default function Events() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingEvent ? 'Edit Event Schedule' : 'Schedule Club Event'}
-        subtitle="Specify event timing, venue/link, and description."
+        subtitle="Specify event timing, venue/link, category, and description."
         onSubmit={handleSubmit}
         submitText={editingEvent ? 'Save Changes' : 'Schedule Event'}
         submitting={submitting}
@@ -285,16 +321,31 @@ export default function Events() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Date & Time *</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Event Date *</label>
             <input
-              type="datetime-local"
+              type="date"
               required
               value={formData.event_date}
               onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Category</label>
+            <select
+              value={formData.category_id}
+              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="">-- No Category --</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Status *</label>

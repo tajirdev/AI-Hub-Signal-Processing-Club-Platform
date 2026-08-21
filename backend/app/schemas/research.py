@@ -14,15 +14,15 @@ class ResearchCreate(BaseModel):
     model_config=ConfigDict(from_attributes=True) 
     
 class Researchupdate(BaseModel):
-    title:Optional[str]=None
-    abstract:str | None
-    content:str | None
-    pdf_url:Optional[HttpUrl]=None
-    publication_date:datetime |None=None
-    author_ids:list[int] | None
-    featured:bool
+    title: Optional[str] = None
+    abstract: Optional[str] = None
+    content: Optional[str] = None
+    pdf_url: Optional[HttpUrl] = None
+    publication_date: Optional[datetime] = None
+    author_ids: Optional[list[int]] = None
+    featured: Optional[bool] = False
 
-    model_config=ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True) 
     
 class ResearchAuthorResponse(BaseModel):
     member_id:int

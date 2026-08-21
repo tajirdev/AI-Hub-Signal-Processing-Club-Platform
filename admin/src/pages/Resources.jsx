@@ -35,18 +35,16 @@ export default function Resources() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    resource_type: 'PDF',
-    sub_group_id: '',
+    type: 'PDF',
+    subgroup_id: '',
     url: '',
-    file_url: '',
-    is_public: true,
   });
 
   const resourceTypes = [
     { value: 'PDF', label: 'PDF Document', icon: faFilePdf, color: 'text-red-600 bg-red-50' },
     { value: 'VIDEO', label: 'Video Lecture', icon: faVideo, color: 'text-blue-600 bg-blue-50' },
     { value: 'DATASET', label: 'Dataset', icon: faDatabase, color: 'text-amber-600 bg-amber-50' },
-    { value: 'CODE', label: 'Source Code / Notebook', icon: faCode, color: 'text-purple-600 bg-purple-50' },
+    { value: 'PRESENTATION', label: 'Presentation / Slides', icon: faCode, color: 'text-purple-600 bg-purple-50' },
     { value: 'EXTERNAL_LINK', label: 'External Resource', icon: faLink, color: 'text-emerald-600 bg-emerald-50' },
   ];
 
@@ -60,7 +58,7 @@ export default function Resources() {
           search: search || undefined,
           resource_type: selectedType || undefined,
         }),
-        subgroupsAPI.getAll(),
+        subgroupsAPI.getAll().catch(() => []),
       ]);
 
       if (resRes && resRes.resources) {
@@ -93,11 +91,9 @@ export default function Resources() {
     setFormData({
       title: '',
       description: '',
-      resource_type: 'PDF',
-      sub_group_id: subgroups[0]?.id || '',
+      type: 'PDF',
+      subgroup_id: subgroups[0]?.id || '',
       url: '',
-      file_url: '',
-      is_public: true,
     });
     setIsModalOpen(true);
   };
@@ -107,24 +103,39 @@ export default function Resources() {
     setFormData({
       title: res.title || '',
       description: res.description || '',
-      resource_type: res.resource_type || 'PDF',
-      sub_group_id: res.sub_group_id || subgroups[0]?.id || '',
-      url: res.url || '',
-      file_url: res.file_url || '',
-      is_public: res.is_public ?? true,
+      type: res.type || 'PDF',
+      subgroup_id: res.subgroup_id || subgroups[0]?.id || '',
+      url: res.external_url || res.file_url || '',
     });
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.subgroup_id) {
+      setToast({ type: 'error', message: 'Please select a subgroup' });
+      return;
+    }
+    if (!formData.url) {
+      setToast({ type: 'error', message: 'Please provide a resource URL' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const payload = {
+        title: formData.title,
+        description: formData.description || null,
+        type: formData.type || 'PDF',
+        subgroup_id: parseInt(formData.subgroup_id, 10),
+        external_url: formData.url,
+        file_url: null,
+      };
+
       if (editingResource) {
-        await resourcesAPI.update(editingResource.id, formData);
+        await resourcesAPI.update(editingResource.id, payload);
         setToast({ type: 'success', message: 'Resource updated successfully' });
       } else {
-        await resourcesAPI.create(formData);
+        await resourcesAPI.create(payload);
         setToast({ type: 'success', message: 'Resource added to library' });
       }
       setIsModalOpen(false);
@@ -134,7 +145,7 @@ export default function Resources() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save resource',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save resource'),
       });
     } finally {
       setSubmitting(false);
@@ -157,7 +168,7 @@ export default function Resources() {
     {
       header: 'Resource',
       render: (r) => {
-        const typeConfig = resourceTypes.find((t) => t.value === r.resource_type) || resourceTypes[0];
+        const typeConfig = resourceTypes.find((t) => t.value === r.type) || resourceTypes[0];
         return (
           <div className="flex items-center space-x-3">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs flex-shrink-0 ${typeConfig.color}`}>
@@ -175,25 +186,25 @@ export default function Resources() {
       header: 'Type',
       render: (r) => (
         <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-700">
-          {r.resource_type}
+          {r.type}
         </span>
       ),
     },
     {
       header: 'Subgroup',
       render: (r) => {
-        const sg = subgroups.find((s) => s.id === r.sub_group_id);
+        const sg = subgroups.find((s) => s.id === r.subgroup_id);
         return (
           <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700">
-            {sg ? sg.title : `Group #${r.sub_group_id}`}
+            {sg ? sg.name : `Subgroup #${r.subgroup_id}`}
           </span>
         );
       },
     },
     {
-      header: 'Link',
+      header: 'Resource Link',
       render: (r) => {
-        const targetUrl = r.url || r.file_url;
+        const targetUrl = r.external_url || r.file_url;
         return targetUrl ? (
           <a
             href={targetUrl}
@@ -210,14 +221,10 @@ export default function Resources() {
       },
     },
     {
-      header: 'Access',
+      header: 'Created',
       render: (r) => (
-        <span
-          className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-            r.is_public ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          {r.is_public ? 'Public' : 'Members Only'}
+        <span className="text-[11px] text-gray-500 font-medium">
+          {r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A'}
         </span>
       ),
     },
@@ -301,8 +308,8 @@ export default function Resources() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">Resource Type *</label>
             <select
               required
-              value={formData.resource_type}
-              onChange={(e) => setFormData({ ...formData, resource_type: e.target.value })}
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               {resourceTypes.map((t) => (
@@ -316,13 +323,14 @@ export default function Resources() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">Subgroup *</label>
             <select
               required
-              value={formData.sub_group_id}
-              onChange={(e) => setFormData({ ...formData, sub_group_id: e.target.value })}
+              value={formData.subgroup_id}
+              onChange={(e) => setFormData({ ...formData, subgroup_id: e.target.value })}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
+              <option value="">-- Select Subgroup --</option>
               {subgroups.map((sg) => (
                 <option key={sg.id} value={sg.id}>
-                  {sg.title}
+                  {sg.name}
                 </option>
               ))}
             </select>
@@ -330,7 +338,7 @@ export default function Resources() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Resource / File URL *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Resource / External URL *</label>
           <input
             type="url"
             required
@@ -342,22 +350,9 @@ export default function Resources() {
         </div>
 
         <div>
-          <label className="flex items-center space-x-2 text-xs font-semibold text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.is_public}
-              onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
-              className="rounded text-blue-600 focus:ring-blue-500"
-            />
-            <span>Make this resource publicly downloadable</span>
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Description *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
           <textarea
             rows="3"
-            required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Description of contents, software tools required, and prerequisites..."

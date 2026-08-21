@@ -91,11 +91,12 @@ export default function BlogPosts() {
 
   const handleOpenEdit = (post) => {
     setEditingPost(post);
+    const catId = post.categories && post.categories.length > 0 ? post.categories[0].id : (post.category_id || categories[0]?.id || '');
     setFormData({
       title: post.title || '',
-      summary: post.summary || '',
+      summary: post.excerpt || post.summary || '',
       content: post.content || '',
-      category_id: post.category_id || categories[0]?.id || '',
+      category_id: catId,
       status: post.status || 'draft',
     });
     setIsModalOpen(true);
@@ -103,13 +104,25 @@ export default function BlogPosts() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.content && formData.content.length < 100) {
+      setToast({ type: 'error', message: 'Article content must be at least 100 characters.' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const payload = {
+        title: formData.title,
+        excerpt: formData.summary || null,
+        content: formData.content,
+        category_ids: formData.category_id ? [parseInt(formData.category_id, 10)] : [],
+        status: formData.status || 'draft',
+      };
+
       if (editingPost) {
-        await blogAPI.update(editingPost.id, formData);
+        await blogAPI.update(editingPost.id, payload);
         setToast({ type: 'success', message: 'Blog post updated successfully' });
       } else {
-        await blogAPI.create(formData);
+        await blogAPI.create(payload);
         setToast({ type: 'success', message: 'Blog post created successfully' });
       }
       setIsModalOpen(false);
@@ -119,7 +132,7 @@ export default function BlogPosts() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save blog post',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save blog post'),
       });
     } finally {
       setSubmitting(false);
@@ -179,7 +192,7 @@ export default function BlogPosts() {
           </div>
           <div>
             <p className="font-bold text-gray-900 text-xs line-clamp-1">{p.title}</p>
-            <p className="text-[11px] text-gray-500 line-clamp-1">{p.summary}</p>
+            <p className="text-[11px] text-gray-500 line-clamp-1">{p.excerpt || p.summary}</p>
           </div>
         </div>
       ),
@@ -187,10 +200,12 @@ export default function BlogPosts() {
     {
       header: 'Category',
       render: (p) => {
-        const cat = categories.find((c) => c.id === p.category_id);
+        const catNames = p.categories && p.categories.length > 0
+          ? p.categories.map((c) => c.name).join(', ')
+          : categories.find((c) => c.id === p.category_id)?.name;
         return (
           <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            {cat ? cat.name : `Category #${p.category_id}`}
+            {catNames || 'General'}
           </span>
         );
       },
@@ -355,13 +370,13 @@ export default function BlogPosts() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Article Body Content *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Article Body Content (at least 100 characters) *</label>
           <textarea
             rows="8"
             required
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            placeholder="Detailed writeup, code snippets, formulas, and findings..."
+            placeholder="Detailed writeup, code snippets, formulas, and findings (min 100 characters)..."
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
           />
         </div>

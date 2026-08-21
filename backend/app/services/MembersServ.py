@@ -14,11 +14,12 @@ class MembersServices:
 
 
     def CreateMember(self,sub_group_id,request:MemberSchm.Members,db:Session,current_user_id:int):
+        target_user_id = request.user_id if request.user_id is not None else current_user_id
 
         exist_sub_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id== sub_group_id).first()
 
         exist_member = db.query(ModoleMembers.Members).filter(
-            ModoleMembers.Members.user_id == current_user_id,
+            ModoleMembers.Members.user_id == target_user_id,
             ModoleMembers.Members.subgroup_id ==sub_group_id
             ).first()
 
@@ -34,7 +35,7 @@ class MembersServices:
         if exist_member:
             raise HTTPException(
                 status_code=400,
-                detail="your already member of this sub group"
+                detail="User is already a member of this subgroup"
             )
 
         new_member = ModoleMembers.Members(
@@ -42,7 +43,7 @@ class MembersServices:
             github = request.github,
             linkedin = request.linkedin,
             portfolio = request.portfolio,
-            user_id = current_user_id,
+            user_id = target_user_id,
             subgroup_id = sub_group_id 
 
         )

@@ -18,7 +18,7 @@ export default function Subgroups() {
   const [editingSubgroup, setEditingSubgroup] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
   });
 
@@ -48,14 +48,14 @@ export default function Subgroups() {
 
   const handleOpenCreate = () => {
     setEditingSubgroup(null);
-    setFormData({ title: '', description: '' });
+    setFormData({ name: '', description: '' });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (sg) => {
     setEditingSubgroup(sg);
     setFormData({
-      title: sg.title || '',
+      name: sg.name || '',
       description: sg.description || '',
     });
     setIsModalOpen(true);
@@ -63,13 +63,22 @@ export default function Subgroups() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.description && formData.description.length < 30) {
+      setToast({ type: 'error', message: 'Description must be at least 30 characters' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+      };
+
       if (editingSubgroup) {
-        await subgroupsAPI.update(editingSubgroup.id, formData);
+        await subgroupsAPI.update(editingSubgroup.id, payload);
         setToast({ type: 'success', message: 'Subgroup updated successfully' });
       } else {
-        await subgroupsAPI.create(formData);
+        await subgroupsAPI.create(payload);
         setToast({ type: 'success', message: 'Subgroup created successfully' });
       }
       setIsModalOpen(false);
@@ -79,7 +88,7 @@ export default function Subgroups() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save subgroup',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save subgroup'),
       });
     } finally {
       setSubmitting(false);
@@ -130,7 +139,7 @@ export default function Subgroups() {
   const filteredSubgroups = subgroups.filter((sg) => {
     const term = search.toLowerCase();
     return (
-      (sg.title || '').toLowerCase().includes(term) ||
+      (sg.name || '').toLowerCase().includes(term) ||
       (sg.description || '').toLowerCase().includes(term)
     );
   });
@@ -144,11 +153,11 @@ export default function Subgroups() {
             {sg.icon_url ? (
               <img src={getImageUrl(sg.icon_url)} alt="Icon" className="w-full h-full object-cover" />
             ) : (
-              <span>{sg.title?.charAt(0) || 'S'}</span>
+              <span>{sg.name?.charAt(0) || 'S'}</span>
             )}
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-xs">{sg.title}</p>
+            <p className="font-bold text-gray-900 text-xs">{sg.name}</p>
             <p className="text-[11px] text-gray-500 font-mono">slug: {sg.slug}</p>
           </div>
         </div>
@@ -237,25 +246,25 @@ export default function Subgroups() {
         submitting={submitting}
       >
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Subgroup Title *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Subgroup Name *</label>
           <input
             type="text"
             required
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="e.g. Signal & Audio Processing"
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Description *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Description (at least 30 characters) *</label>
           <textarea
             rows="4"
             required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Objectives, scope, and target research domains..."
+            placeholder="Objectives, scope, and target research domains (min 30 characters)..."
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
@@ -266,7 +275,7 @@ export default function Subgroups() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         title={`Upload Subgroup ${uploadType === 'cover' ? 'Cover Image' : 'Icon'}`}
-        subtitle={`Select an image file for "${uploadSubgroup?.title}".`}
+        subtitle={`Select an image file for "${uploadSubgroup?.name}".`}
         onSubmit={handleUploadSubmit}
         submitText="Upload Image"
         submitting={uploading}

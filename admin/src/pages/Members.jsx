@@ -4,12 +4,15 @@ import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { membersAPI } from '../api/members';
 import { subgroupsAPI } from '../api/subgroups';
+import { usersAPI } from '../api/users';
+import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faExternalLinkAlt, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
 
 export default function Members() {
   const [members, setMembers] = useState([]);
   const [subgroups, setSubgroups] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedSubgroup, setSelectedSubgroup] = useState('');
@@ -23,32 +26,36 @@ export default function Members() {
   const [editingMember, setEditingMember] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: '',
-    bio: '',
-    image_url: '',
-    linkedin_url: '',
-    github_url: '',
-    sub_group_id: '',
+    user_id: '',
+    position: '',
+    subgroup_id: '',
+    github: '',
+    linkedin: '',
+    portfolio: '',
   });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [membersRes, subgroupsRes] = await Promise.all([
+      const [membersRes, subgroupsRes, usersRes] = await Promise.all([
         membersAPI.getAll({
-          page,
+          skip: (page - 1) * 10,
           limit: 10,
           search: search || undefined,
-          subgroup_id: selectedSubgroup || undefined,
         }),
-        subgroupsAPI.getAll(),
+        subgroupsAPI.getAll().catch(() => []),
+        usersAPI.getAll().catch(() => []),
       ]);
 
-      if (membersRes && membersRes.member) {
-        setMembers(membersRes.member);
-        setTotalPages(membersRes.total_pages || 1);
+      const subList = Array.isArray(subgroupsRes) ? subgroupsRes : [];
+      setSubgroups(subList);
+
+      const userList = Array.isArray(usersRes) ? usersRes : [];
+      setUsers(userList);
+
+      if (membersRes && Array.isArray(membersRes.results)) {
+        setMembers(membersRes.results);
+        setTotalPages(Math.ceil((membersRes.total || 0) / 10) || 1);
         setTotalItems(membersRes.total || 0);
       } else if (Array.isArray(membersRes)) {
         setMembers(membersRes);
@@ -57,8 +64,6 @@ export default function Members() {
       } else {
         setMembers([]);
       }
-
-      setSubgroups(Array.isArray(subgroupsRes) ? subgroupsRes : []);
     } catch (err) {
       console.error(err);
       setToast({ type: 'error', message: 'Failed to fetch members' });
@@ -74,42 +79,51 @@ export default function Members() {
   const handleOpenCreate = () => {
     setEditingMember(null);
     setFormData({
-      name: '',
-      email: '',
-      role: 'Member',
-      bio: '',
-      image_url: '',
-      linkedin_url: '',
-      github_url: '',
-      sub_group_id: subgroups[0]?.id || '',
+      user_id: '',
+      position: 'Member',
+      subgroup_id: subgroups.length > 0 ? subgroups[0].id : '',
+      github: '',
+      linkedin: '',
+      portfolio: '',
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (member) => {
     setEditingMember(member);
+    const sgObj = subgroups.find((s) => s.name === member.sub_group);
     setFormData({
-      name: member.name || '',
-      email: member.email || '',
-      role: member.role || '',
-      bio: member.bio || '',
-      image_url: member.image_url || '',
-      linkedin_url: member.linkedin_url || '',
-      github_url: member.github_url || '',
-      sub_group_id: member.sub_group_id || subgroups[0]?.id || '',
+      user_id: member.user_id || '',
+      position: member.position || '',
+      subgroup_id: sgObj ? sgObj.id : (subgroups[0]?.id || ''),
+      github: member.github || '',
+      linkedin: member.linkedin || '',
+      portfolio: member.portfolio || '',
     });
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.subgroup_id) {
+      setToast({ type: 'error', message: 'Please select a subgroup' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const payload = {
+        position: formData.position || 'Member',
+        github: formData.github || null,
+        linkedin: formData.linkedin || null,
+        portfolio: formData.portfolio || null,
+        user_id: formData.user_id ? parseInt(formData.user_id, 10) : undefined,
+      };
+
       if (editingMember) {
-        await membersAPI.update(editingMember.id, formData.sub_group_id, formData);
+        await membersAPI.update(editingMember.id, formData.subgroup_id, payload);
         setToast({ type: 'success', message: 'Member updated successfully' });
       } else {
-        await membersAPI.create(formData.sub_group_id, formData);
+        await membersAPI.create(formData.subgroup_id, payload);
         setToast({ type: 'success', message: 'Member created successfully' });
       }
       setIsModalOpen(false);
@@ -119,7 +133,7 @@ export default function Members() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save member',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save member'),
       });
     } finally {
       setSubmitting(false);
@@ -144,44 +158,41 @@ export default function Members() {
       render: (m) => (
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs overflow-hidden border border-amber-200">
-            {m.image_url ? (
-              <img src={m.image_url} alt="Profile" className="w-full h-full object-cover" />
+            {m.avatar_url ? (
+              <img src={getImageUrl(m.avatar_url)} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <span>{m.name?.charAt(0) || 'M'}</span>
             )}
           </div>
           <div>
             <p className="font-bold text-gray-900 text-xs">{m.name}</p>
-            <p className="text-[11px] text-gray-500">{m.email}</p>
+            <p className="text-[11px] text-gray-500">Joined: {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : 'Active'}</p>
           </div>
         </div>
       ),
     },
     {
-      header: 'Position / Role',
-      accessor: 'role',
+      header: 'Position',
+      accessor: 'position',
       render: (m) => (
-        <span className="font-medium text-gray-800 text-xs">{m.role || 'Member'}</span>
+        <span className="font-medium text-gray-800 text-xs">{m.position || 'Member'}</span>
       ),
     },
     {
       header: 'Subgroup',
-      render: (m) => {
-        const sg = subgroups.find((s) => s.id === m.sub_group_id);
-        return (
-          <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-            {sg ? sg.title : `Group #${m.sub_group_id}`}
-          </span>
-        );
-      },
+      render: (m) => (
+        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+          {m.sub_group || 'General'}
+        </span>
+      ),
     },
     {
-      header: 'Socials',
+      header: 'Socials & Portfolio',
       render: (m) => (
         <div className="flex items-center space-x-2 text-[11px]">
-          {m.github_url && (
+          {m.github && (
             <a
-              href={m.github_url}
+              href={m.github}
               target="_blank"
               rel="noreferrer"
               className="text-gray-600 hover:text-gray-900 inline-flex items-center space-x-0.5"
@@ -190,14 +201,25 @@ export default function Members() {
               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[9px]" />
             </a>
           )}
-          {m.linkedin_url && (
+          {m.linkedin && (
             <a
-              href={m.linkedin_url}
+              href={m.linkedin}
               target="_blank"
               rel="noreferrer"
               className="text-blue-600 hover:text-blue-800 inline-flex items-center space-x-0.5"
             >
               <span>LinkedIn</span>
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[9px]" />
+            </a>
+          )}
+          {m.portfolio && (
+            <a
+              href={m.portfolio}
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-600 hover:text-emerald-800 inline-flex items-center space-x-0.5"
+            >
+              <span>Portfolio</span>
               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[9px]" />
             </a>
           )}
@@ -232,7 +254,7 @@ export default function Members() {
             <option value="">All Subgroups</option>
             {subgroups.map((sg) => (
               <option key={sg.id} value={sg.id}>
-                {sg.title}
+                {sg.name}
               </option>
             ))}
           </select>
@@ -262,43 +284,38 @@ export default function Members() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingMember ? 'Edit Member Profile' : 'Add New Club Member'}
-        subtitle="Enter the member information and assign their subgroup."
+        subtitle="Assign member position, subgroup, and professional portfolio links."
         onSubmit={handleSubmit}
         submitText={editingMember ? 'Save Changes' : 'Create Member'}
         submitting={submitting}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {!editingMember && users.length > 0 && (
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Select User (Optional - default is current admin)</label>
+            <select
+              value={formData.user_id}
+              onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+            >
+              <option value="">-- Current Logged-in User --</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.first_name} {u.last_name} ({u.email})
+                </option>
+              ))}
+            </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Email *</label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Role / Position *</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Position / Role *</label>
             <input
               type="text"
               required
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              placeholder="e.g. Lead Researcher, Software Engineer"
+              value={formData.position}
+              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+              placeholder="e.g. Lead Researcher, ML Engineer"
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
@@ -306,28 +323,18 @@ export default function Members() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">Assign Subgroup *</label>
             <select
               required
-              value={formData.sub_group_id}
-              onChange={(e) => setFormData({ ...formData, sub_group_id: e.target.value })}
+              value={formData.subgroup_id}
+              onChange={(e) => setFormData({ ...formData, subgroup_id: e.target.value })}
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
+              <option value="">-- Select Subgroup --</option>
               {subgroups.map((sg) => (
                 <option key={sg.id} value={sg.id}>
-                  {sg.title}
+                  {sg.name}
                 </option>
               ))}
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Avatar Image URL</label>
-          <input
-            type="url"
-            value={formData.image_url}
-            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-            placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -335,8 +342,8 @@ export default function Members() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">GitHub Profile URL</label>
             <input
               type="url"
-              value={formData.github_url}
-              onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+              value={formData.github}
+              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
               placeholder="https://github.com/username"
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
@@ -345,8 +352,8 @@ export default function Members() {
             <label className="block text-xs font-semibold text-gray-700 mb-1">LinkedIn Profile URL</label>
             <input
               type="url"
-              value={formData.linkedin_url}
-              onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+              value={formData.linkedin}
+              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
               placeholder="https://linkedin.com/in/username"
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
@@ -354,11 +361,12 @@ export default function Members() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Member Bio</label>
-          <textarea
-            rows="3"
-            value={formData.bio}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Personal Portfolio / Website</label>
+          <input
+            type="url"
+            value={formData.portfolio}
+            onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
+            placeholder="https://myportfolio.dev"
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>

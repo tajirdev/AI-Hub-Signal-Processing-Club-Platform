@@ -12,17 +12,21 @@ export const membersAPI = {
   },
 
   create: async (subgroupId, data) => {
-    const response = await client.post(`/member/${subgroupId}`, data);
+    const sid = parseInt(subgroupId, 10);
+    const response = await client.post(`/member/${sid}`, data);
     return response.data;
   },
 
   update: async (memberId, subgroupId, data) => {
-    const response = await client.put(`/member/${memberId}?sub_group_id=${subgroupId}`, data);
+    const mid = parseInt(memberId, 10);
+    const sid = parseInt(subgroupId, 10);
+    const response = await client.put(`/member/${mid}?sub_group_id=${sid}`, data);
     return response.data;
   },
 
   delete: async (memberId) => {
-    const response = await client.delete(`/member/${memberId}`);
+    const mid = parseInt(memberId, 10);
+    const response = await client.delete(`/member/${mid}`);
     return response.data;
   },
 };

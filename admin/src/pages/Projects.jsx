@@ -24,7 +24,8 @@ export default function Projects() {
     description: '',
     repository_url: '',
     demo_url: '',
-    is_active: true,
+    technology_stack: '',
+    status: 'active',
   });
 
   const fetchProjects = async () => {
@@ -66,7 +67,8 @@ export default function Projects() {
       description: '',
       repository_url: '',
       demo_url: '',
-      is_active: true,
+      technology_stack: 'Python, PyTorch, React',
+      status: 'active',
     });
     setIsModalOpen(true);
   };
@@ -78,20 +80,34 @@ export default function Projects() {
       description: proj.description || '',
       repository_url: proj.repository_url || '',
       demo_url: proj.demo_url || '',
-      is_active: proj.is_active ?? true,
+      technology_stack: proj.technology_stack || '',
+      status: proj.status || 'active',
     });
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.description && formData.description.length < 30) {
+      setToast({ type: 'error', message: 'Description must be at least 30 characters.' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        repository_url: formData.repository_url || null,
+        demo_url: formData.demo_url || null,
+        technology_stack: formData.technology_stack || null,
+        status: formData.status || 'active',
+      };
+
       if (editingProject) {
-        await projectsAPI.update(editingProject.id, formData);
+        await projectsAPI.update(editingProject.id, payload);
         setToast({ type: 'success', message: 'Project updated successfully' });
       } else {
-        await projectsAPI.create(formData);
+        await projectsAPI.create(payload);
         setToast({ type: 'success', message: 'Project added to showcase' });
       }
       setIsModalOpen(false);
@@ -101,7 +117,7 @@ export default function Projects() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save project',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save project'),
       });
     } finally {
       setSubmitting(false);
@@ -130,7 +146,7 @@ export default function Projects() {
           </div>
           <div>
             <p className="font-bold text-gray-900 text-xs line-clamp-1">{p.title}</p>
-            <p className="text-[11px] text-gray-500 line-clamp-1">{p.description}</p>
+            <p className="text-[11px] text-gray-500 line-clamp-1">{p.technology_stack || p.description}</p>
           </div>
         </div>
       ),
@@ -168,14 +184,14 @@ export default function Projects() {
       ),
     },
     {
-      header: 'Showcase Status',
+      header: 'Status',
       render: (p) => (
         <span
           className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-            p.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
+            p.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
           }`}
         >
-          {p.is_active ? 'Active' : 'Archived'}
+          {p.status || 'Active'}
         </span>
       ),
     },
@@ -263,26 +279,38 @@ export default function Projects() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
-          <select
-            value={formData.is_active}
-            onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
-            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <option value="true">Active (Showcased)</option>
-            <option value="false">Archived (Hidden)</option>
-          </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Technology Stack</label>
+            <input
+              type="text"
+              value={formData.technology_stack}
+              onChange={(e) => setFormData({ ...formData, technology_stack: e.target.value })}
+              placeholder="e.g. PyTorch, FastAPI, React, Docker"
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              <option value="active">Active (Showcased)</option>
+              <option value="archived">Archived (Hidden)</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Description *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Description (at least 30 characters) *</label>
           <textarea
             rows="4"
             required
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Tech stack, engineering approach, system architecture..."
+            placeholder="Tech stack, engineering approach, system architecture (min 30 characters)..."
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>

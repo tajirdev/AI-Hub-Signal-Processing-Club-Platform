@@ -10,7 +10,7 @@ class Users(BaseModel):
     password_hash: str
     phone : str
     bio : str
-    github_link : HttpUrl
+    github_link : Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int
@@ -20,7 +20,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     bio: Optional[str] = None
-    github_link: Optional[HttpUrl] = None
+    github_link: Optional[str] = None
     is_active: bool
     roles: List[str] = []
     avatar_url: Optional[str] = None

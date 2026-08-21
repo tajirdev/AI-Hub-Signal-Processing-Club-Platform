@@ -1,5 +1,5 @@
 from app.schemas.news import NewsCreate,NewsUpdate
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 from app.models.category import Category
 from app.models.newsmodel import News,StatusCheck
@@ -56,7 +56,7 @@ class News_Services():
         order: str = None,
         current_user = None,
     ):
-        query = db.query(News)
+        query = db.query(News).options(joinedload(News.category))
 
         if current_user:
             roles = [ur.Roles.name for ur in current_user.userRole if ur.Roles]
@@ -129,9 +129,10 @@ class News_Services():
     @staticmethod
     def update_news(news_id: int, data: NewsUpdate, current_user, db: Session):
         roles = [ur.Roles.name for ur in current_user.userRole]
-        category = db.query(Category).filter(Category.id == data.category_id).first()
-        if not category:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="category not found")
+        if data.category_id is not None:
+            category = db.query(Category).filter(Category.id == data.category_id).first()
+            if not category:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="category not found")
         news = db.query(News).filter(News.id == news_id).first()
         if not news:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")

@@ -97,11 +97,20 @@ export default function News() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const payload = {
+        title: formData.title,
+        summary: formData.summary,
+        content: formData.content,
+        news_type: formData.news_type,
+        status: formData.status,
+        category_id: parseInt(formData.category_id, 10),
+      };
+
       if (editingNews) {
-        await newsAPI.update(editingNews.id, formData);
+        await newsAPI.update(editingNews.id, payload);
         setToast({ type: 'success', message: 'News article updated successfully' });
       } else {
-        await newsAPI.create(formData);
+        await newsAPI.create(payload);
         setToast({ type: 'success', message: 'News announcement published successfully' });
       }
       setIsModalOpen(false);
@@ -111,7 +120,7 @@ export default function News() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save news',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save news'),
       });
     } finally {
       setSubmitting(false);
@@ -143,6 +152,14 @@ export default function News() {
             <p className="text-[11px] text-gray-500 line-clamp-1">{n.summary}</p>
           </div>
         </div>
+      ),
+    },
+    {
+      header: 'Category',
+      render: (n) => (
+        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          {n.category?.name || categories.find((c) => c.id === n.category_id)?.name || 'General'}
+        </span>
       ),
     },
     {

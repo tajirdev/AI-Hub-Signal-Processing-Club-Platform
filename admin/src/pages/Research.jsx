@@ -27,8 +27,8 @@ export default function Research() {
     content: '',
     pdf_url: '',
     publication_date: '',
-    is_featured: false,
-    authors: [],
+    featured: false,
+    author_ids: [],
   });
 
   const fetchData = async () => {
@@ -40,7 +40,7 @@ export default function Research() {
           limit: 10,
           search: search || undefined,
         }),
-        membersAPI.getAll(),
+        membersAPI.getAll().catch(() => ({ results: [] })),
       ]);
 
       if (resRes && resRes.research) {
@@ -55,7 +55,10 @@ export default function Research() {
         setResearchList([]);
       }
 
-      setMembers(memRes && memRes.member ? memRes.member : Array.isArray(memRes) ? memRes : []);
+      const memList = memRes && Array.isArray(memRes.results)
+        ? memRes.results
+        : (Array.isArray(memRes) ? memRes : []);
+      setMembers(memList);
     } catch (err) {
       console.error(err);
       setToast({ type: 'error', message: 'Failed to fetch research papers' });
@@ -76,27 +79,26 @@ export default function Research() {
       content: '',
       pdf_url: '',
       publication_date: new Date().toISOString().slice(0, 10),
-      is_featured: false,
-      authors: members[0]?.id ? [{ member_id: members[0].id, order: 1 }] : [],
+      featured: false,
+      author_ids: members.length > 0 ? [members[0].id] : [],
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (paper) => {
     setEditingResearch(paper);
+    const existingAuthorIds = Array.isArray(paper.authors) && paper.authors.length > 0
+      ? paper.authors.map((a) => a.member_id || a.id)
+      : (members.length > 0 ? [members[0].id] : []);
+
     setFormData({
       title: paper.title || '',
       abstract: paper.abstract || '',
       content: paper.content || '',
       pdf_url: paper.pdf_url || '',
       publication_date: paper.publication_date ? new Date(paper.publication_date).toISOString().slice(0, 10) : '',
-      is_featured: paper.is_featured ?? false,
-      authors: Array.isArray(paper.authors) && paper.authors.length > 0
-        ? paper.authors.map((a, i) => ({
-            member_id: a.member_id || a.id,
-            order: a.order || i + 1,
-          }))
-        : [],
+      featured: paper.featured ?? false,
+      author_ids: existingAuthorIds,
     });
     setIsModalOpen(true);
   };
@@ -105,35 +107,45 @@ export default function Research() {
     if (members.length === 0) return;
     setFormData({
       ...formData,
-      authors: [
-        ...formData.authors,
-        { member_id: members[0].id, order: formData.authors.length + 1 },
-      ],
+      author_ids: [...formData.author_ids, members[0].id],
     });
   };
 
   const handleRemoveAuthor = (index) => {
     setFormData({
       ...formData,
-      authors: formData.authors.filter((_, idx) => idx !== index),
+      author_ids: formData.author_ids.filter((_, idx) => idx !== index),
     });
   };
 
-  const handleAuthorChange = (index, field, value) => {
-    const updated = [...formData.authors];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, authors: updated });
+  const handleAuthorChange = (index, memberId) => {
+    const updated = [...formData.author_ids];
+    updated[index] = memberId;
+    setFormData({ ...formData, author_ids: updated });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.abstract && (formData.abstract.length < 30 || formData.abstract.length > 100)) {
+      setToast({ type: 'error', message: 'Abstract must be between 30 and 100 characters.' });
+      return;
+    }
+    if (!formData.author_ids || formData.author_ids.length === 0) {
+      setToast({ type: 'error', message: 'Please select at least one member author.' });
+      return;
+    }
     setSubmitting(true);
     try {
       const payload = {
-        ...formData,
+        title: formData.title,
+        abstract: formData.abstract,
+        content: formData.content || 'Comprehensive research methodology and findings writeup.',
+        pdf_url: formData.pdf_url ? formData.pdf_url : null,
+        featured: Boolean(formData.featured),
         publication_date: formData.publication_date
           ? new Date(formData.publication_date).toISOString()
           : null,
+        author_ids: formData.author_ids.map((id) => parseInt(id, 10)),
       };
 
       if (editingResearch) {
@@ -150,7 +162,7 @@ export default function Research() {
       const detail = err.response?.data?.detail;
       setToast({
         type: 'error',
-        message: typeof detail === 'string' ? detail : 'Failed to save research paper',
+        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save research paper'),
       });
     } finally {
       setSubmitting(false);
@@ -180,7 +192,7 @@ export default function Research() {
           <div>
             <div className="flex items-center space-x-2">
               <p className="font-bold text-gray-900 text-xs line-clamp-1">{r.title}</p>
-              {r.is_featured && (
+              {r.featured && (
                 <span className="text-amber-500 text-xs" title="Featured Publication">
                   <FontAwesomeIcon icon={faStar} />
                 </span>
@@ -196,7 +208,14 @@ export default function Research() {
       render: (r) => (
         <div className="text-[11px] text-gray-600 font-medium">
           {Array.isArray(r.authors) && r.authors.length > 0 ? (
-            <span>{r.authors.map((a) => a.name || `Member #${a.member_id}`).join(', ')}</span>
+            <span>
+              {r.authors
+                .map((a) => {
+                  const m = members.find((mem) => mem.id === (a.member_id || a.id));
+                  return m ? m.name : `Member #${a.member_id || a.id}`;
+                })
+                .join(', ')}
+            </span>
           ) : (
             <span className="text-gray-400">Club Research Team</span>
           )}
@@ -316,8 +335,8 @@ export default function Research() {
           <label className="flex items-center space-x-2 text-xs font-semibold text-gray-700 cursor-pointer">
             <input
               type="checkbox"
-              checked={formData.is_featured}
-              onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+              checked={formData.featured}
+              onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
               className="rounded text-blue-600 focus:ring-blue-500"
             />
             <span>Feature this paper on platform spotlight</span>
@@ -327,7 +346,7 @@ export default function Research() {
         {/* Dynamic Authors Section */}
         <div className="border-t border-gray-100 pt-3">
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-xs font-bold text-gray-800">Co-Authors & Order</label>
+            <label className="block text-xs font-bold text-gray-800">Member Authors *</label>
             <button
               type="button"
               onClick={handleAddAuthor}
@@ -338,30 +357,20 @@ export default function Research() {
             </button>
           </div>
 
-          {formData.authors.map((auth, idx) => (
+          {formData.author_ids.map((authId, idx) => (
             <div key={idx} className="flex items-center space-x-3 mb-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
               <div className="flex-1">
                 <select
-                  value={auth.member_id}
-                  onChange={(e) => handleAuthorChange(idx, 'member_id', parseInt(e.target.value, 10))}
+                  value={authId}
+                  onChange={(e) => handleAuthorChange(idx, parseInt(e.target.value, 10))}
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white"
                 >
                   {members.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.name} ({m.role})
+                      {m.name} ({m.position || m.role})
                     </option>
                   ))}
                 </select>
-              </div>
-              <div className="w-20">
-                <input
-                  type="number"
-                  min="1"
-                  value={auth.order}
-                  onChange={(e) => handleAuthorChange(idx, 'order', parseInt(e.target.value, 10))}
-                  placeholder="Order"
-                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white text-center"
-                />
               </div>
               <button
                 type="button"
@@ -375,13 +384,13 @@ export default function Research() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Abstract *</label>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Abstract (30 - 100 characters) *</label>
           <textarea
             rows="3"
             required
             value={formData.abstract}
             onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
-            placeholder="Executive summary of the methodology and results..."
+            placeholder="Executive summary of the methodology and results (30 to 100 characters)..."
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
