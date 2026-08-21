@@ -30,5 +30,17 @@ class Users(Base):
     resource = relationship("Resource", back_populates="uploader")
     new=relationship("News",foreign_keys="News.author_id",back_populates="user")
     project=relationship("Project",foreign_keys="Project.created_by",back_populates="creator")
+    @property
+    def roles(self) -> list[str]:
+        if self.userRole:
+            return [ur.Roles.name for ur in self.userRole if ur.Roles]
+        return []
+
+    @property
+    def avatar_url(self) -> str | None:
+        if self.avatar_media:
+            return self.avatar_media.path
+        return None
+
     
 

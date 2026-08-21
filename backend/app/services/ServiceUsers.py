@@ -20,7 +20,7 @@ class UserReg:
         password_hash = security.Hash.hash(request.password_hash),
         phone = request.phone,
         bio = request.bio,
-        github_link = request.github_link,
+        github_link = str(request.github_link) if request.github_link else None,
         user_name = request.user_name
         
 

@@ -19,6 +19,7 @@ class Event:
             event_date = request.event_date,
             status  = request.status,
             registration_link = request.registration_link,
+            category_id = request.category_id,
             created_by = current_user_id  
 
         )
@@ -132,13 +133,20 @@ class Event:
                 detail="action not allowed your not the owner"
             )
 
-        event.title = request.title 
-        event.description = request.description
-        event.location  = request.location
-        event.event_date = request.event_date
-        event.registration_link = request.registration_link
-        event.status = request.status
-
+        if request.title is not None:
+            event.title = request.title 
+        if request.description is not None:
+            event.description = request.description
+        if request.location is not None:
+            event.location  = request.location
+        if request.event_date is not None:
+            event.event_date = request.event_date
+        if request.registration_link is not None:
+            event.registration_link = request.registration_link
+        if request.status is not None:
+            event.status = request.status
+        if request.category_id is not None:
+            event.category_id = request.category_id
 
         try:
             db.commit()
@@ -149,7 +157,6 @@ class Event:
                 status_code=400,
                 detail="bad request"
             )
-
 
         return event
         
@@ -168,12 +175,20 @@ class Event:
                 detail= f"event with id of {event_id} not found"
             )
 
-        event.title = request.title 
-        event.description = request.description
-        event.location  = request.location
-        event.event_date = request.event_date
-        event.registration_link = request.registration_link
-        event.status = request.status
+        if request.title is not None:
+            event.title = request.title 
+        if request.description is not None:
+            event.description = request.description
+        if request.location is not None:
+            event.location  = request.location
+        if request.event_date is not None:
+            event.event_date = request.event_date
+        if request.registration_link is not None:
+            event.registration_link = request.registration_link
+        if request.status is not None:
+            event.status = request.status
+        if request.category_id is not None:
+            event.category_id = request.category_id
 
         try:
             db.commit()
