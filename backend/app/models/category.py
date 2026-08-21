@@ -12,3 +12,4 @@ class Category(Base):
     
     blog_posts=relationship("BlogPost",secondary="blog_categories",back_populates="categories")
     news=relationship("News",back_populates="category")
+    events=relationship("Events",back_populates="category")

@@ -48,15 +48,7 @@ class SubGroups:
     @staticmethod
     def get_all(db:Session):
         groups = db.query(SubGroupModel.SubGroup).all()
-
-
-        if not groups :
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="no groups in data base"
-                )
-
-        return groups
+        return groups or []
 
     @staticmethod
     def get_single(id,db:Session):
