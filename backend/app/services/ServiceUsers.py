@@ -38,7 +38,7 @@ class UserReg:
 
     member_role = (
         db.query(ModoleRoles.Role)
-        .filter(ModoleRoles.Role.name == "member")
+        .filter(ModoleRoles.Role.name == "user")
         .first()
     )
 

@@ -24,7 +24,7 @@ def post_users(request:SchemaUser.Users,db:Session=Depends(database.get_db)):
     return UsersService.registerUser(request,db)
 
 @router.get('/me', response_model=SchemaUser.UserResponse)
-def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(member_required)):
+def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(get_current_user)):
     return UsersService.return_current_user(db,current_user_id=current_user.id)
 
 @router.get('/all', response_model=list[SchemaUser.UserResponse])
