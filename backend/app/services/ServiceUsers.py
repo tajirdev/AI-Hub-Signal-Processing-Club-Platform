@@ -20,7 +20,7 @@ class UserReg:
         password_hash = security.Hash.hash(request.password_hash),
         phone = request.phone,
         bio = request.bio,
-        github_link = str(request.github_link) if request.github_link else None,
+       
         user_name = request.user_name
         
 
@@ -63,7 +63,7 @@ class UserReg:
         active_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
         return active_user
    
-   def get_all(self,db:Session,current_user_id:int):
+   def get_all(self,db:Session):
       users = db.query(ModoleUsers.Users).all()
       return users
 
