@@ -29,6 +29,12 @@ class Users(Base):
     resource = relationship("Resource", back_populates="uploader")
     new=relationship("News",foreign_keys="News.author_id",back_populates="user")
     project=relationship("Project",foreign_keys="Project.created_by",back_populates="creator")
+
+    reviewed_applications = relationship(
+        "Application",
+        foreign_keys="Application.reviewed_by",
+        back_populates="reviewer"
+        )
     @property
     def roles(self) -> list[str]:
         if self.userRole:
