@@ -41,7 +41,7 @@ class Application(Base):
     )
 
     registration_number = Column(
-        String(30),
+        Integer,
         nullable=False,
         unique=True,
         index=True
