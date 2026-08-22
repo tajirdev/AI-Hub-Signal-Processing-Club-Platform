@@ -19,7 +19,6 @@ class ResourceService:
         db_resource = Resource(title=resource.title, 
                                    description=resource.description, 
                                    type=resource.type.value, 
-                                   file_url=str(resource.file_url) if resource.file_url else None, 
                                    external_url=str(resource.external_url) if resource.external_url else None,
                                     subgroup_id=resource.subgroup_id, uploaded_by=uploaded_by)
         db.add(db_resource)
@@ -76,17 +75,17 @@ class ResourceService:
         roles = current_user.roles
         if resource.uploaded_by != current_user.id and "super_admin" not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to update this resource")
-        if request.title:
+        if request.title is not None:
             resource.title=request.title
-        if request.type:
+        if request.type is not None:
             resource.type=request.type     
-        if request.external_url:
+        if request.external_url is not None:
             resource.external_url=request.external_url
-        if request.file_url:
-            resource.file_url=request.file_url
-        if request.description:
+        if request.file_id is not None:
+            resource.file_id=request.file_id
+        if request.description is not None:
             resource.description=request.description
-        if request.subgroup_id:
+        if request.subgroup_id is not None:
             resource.subgroup_id=request.subgroup_id
         db.commit()
         db.refresh(resource)
@@ -94,6 +93,8 @@ class ResourceService:
 
     @staticmethod
     def delete_resource(resource_id: int, db: Session, current_user: Users):
+        from app.services.storage.local import delete_upload_file
+        from app.models.media import Media
         resource=db.query(Resource).filter(Resource.id==resource_id).first()
         if not resource:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
@@ -102,7 +103,72 @@ class ResourceService:
         roles = current_user.roles
         if (resource.uploaded_by != current_user.id and "super_admin" not in roles):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this resource")
+        
+        if resource.file_id:
+            media_record = db.query(Media).filter(Media.id == resource.file_id).first()
+            if media_record:
+                delete_upload_file(media_record.path)
+                db.delete(media_record)
+
         db.delete(resource)
         db.commit()
         return {"message": "Resource deleted successfully"}
+
+from app.models.media import Media
+from app.services.storage.local import delete_upload_file
+
+class ResourceMediaService:
+    @staticmethod
+    def CreateFile(resource_id: int, path: str, mime_type: str, original_filename: str, db: Session, current_user_id: int):
+        resource = db.query(Resource).filter(Resource.id == resource_id).first()
+        if not resource:
+            raise HTTPException(status_code=404, detail="Resource not found")
+            
+        user = db.query(Users).filter(Users.id == current_user_id).first()
+        if resource.uploaded_by != current_user_id and "super_admin" not in user.roles:
+            raise HTTPException(status_code=403, detail="Not authorized")
+            
+        media_record = db.query(Media).filter(Media.id == resource.file_id).first()
+        
+        if media_record:
+            delete_upload_file(media_record.path)
+            media_record.path = path
+            media_record.filename = path
+            media_record.mime_type = mime_type
+            media_record.original_filename = original_filename
+        else:
+            media_record = Media(
+                filename=path,
+                path=path,
+                original_filename=original_filename,
+                uploaded_by=current_user_id,
+                mime_type=mime_type
+            )
+            db.add(media_record)
+            db.flush()
+            
+        resource.file_id = media_record.id
+        db.commit()
+        db.refresh(media_record)
+        return media_record
+        
+    @staticmethod
+    def RemoveFile(resource_id: int, db: Session, current_user_id: int):
+        resource = db.query(Resource).filter(Resource.id == resource_id).first()
+        if not resource:
+            raise HTTPException(status_code=404, detail="Resource not found")
+            
+        user = db.query(Users).filter(Users.id == current_user_id).first()
+        if resource.uploaded_by != current_user_id and "super_admin" not in user.roles:
+            raise HTTPException(status_code=403, detail="Not authorized")
+            
+        media_record = db.query(Media).filter(Media.id == resource.file_id).first()
+        if not media_record:
+            raise HTTPException(status_code=404, detail="No file found for this resource")
+            
+        delete_upload_file(media_record.path)
+        resource.file_id = None
+        db.delete(media_record)
+        db.commit()
+        return {"message": "File deleted successfully"}
 

@@ -1,11 +1,13 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.RoleAuth import RoleChecker
 from app.models.ModoleUsers import Users
 from app.schemas.resourse import ResourceCreate, ResourceUpdate, ResourceResponse
-from app.services.resource_service import ResourceService
+from app.services.resource_service import ResourceService, ResourceMediaService
+from app.services.storage.local import save_upload_file, UploadCategory, DOCUMENT_TYPES, IMAGE_TYPES, VIDEO_TYPES
+
 router = APIRouter(
     prefix="/resources",
     tags=["Resources"],)
@@ -51,3 +53,33 @@ def update_resource(resource_id: int, resource: ResourceUpdate, current_user: Us
 @router.delete("/{resource_id}")
 def delete_resource(resource_id: int, current_user: Users = Depends(editor_required), db: Session = Depends(get_db)):
     return ResourceService.delete_resource(resource_id, db, current_user)
+
+@router.post("/{resource_id}/file", tags=["RESOURCES FILE"])
+def post_file(
+    resource_id: int,
+    db: Session = Depends(get_db),
+    current_user: Users = Depends(editor_required),
+    file: UploadFile = File(...)
+):
+    allowed = DOCUMENT_TYPES + IMAGE_TYPES + VIDEO_TYPES
+    file_path = save_upload_file(
+        file=file,
+        allowed_types=allowed,
+        category=UploadCategory.RESOURCES
+    )
+    return ResourceMediaService.CreateFile(
+        resource_id=resource_id,
+        path=file_path,
+        mime_type=file.content_type,
+        original_filename=file.filename,
+        db=db,
+        current_user_id=current_user.id
+    )
+
+@router.delete("/{resource_id}/file", tags=["RESOURCES FILE"])
+def delete_file(
+    resource_id: int,
+    db: Session = Depends(get_db),
+    current_user: Users = Depends(editor_required)
+):
+    return ResourceMediaService.RemoveFile(resource_id, db, current_user.id)

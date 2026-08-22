@@ -15,7 +15,7 @@ class Resource(Base):
     title = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     type = Column(String(30), nullable=False)
-    file_url = Column(String(500), nullable=True)
+    file_id = Column(Integer, ForeignKey("media.id"), nullable=True)
     external_url = Column(String(500), nullable=True)
     subgroup_id = Column(Integer, ForeignKey("sub_groups.id"), nullable=False)
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -24,8 +24,9 @@ class Resource(Base):
 
     uploader = relationship("Users", back_populates="resource")
     subgroup = relationship("SubGroup", back_populates="resource")
+    file = relationship("Media", foreign_keys=[file_id])
 
     __table_args__ = (
-        CheckConstraint("file_url IS NOT NULL OR external_url IS NOT NULL", name="check_file_or_external_url"),
+        CheckConstraint("file_id IS NOT NULL OR external_url IS NOT NULL", name="check_file_id_or_external_url"),
     )
 

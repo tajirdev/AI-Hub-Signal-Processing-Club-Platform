@@ -1,11 +1,16 @@
 from app.schemas.research import ResearchCreate,Researchupdate
 from sqlalchemy.orm import Session
 from app.models.research import Research,ResearchAuthor
+from app.models.ModoleUsers import Users
 from app.models.ModoleMembers import Members
 from fastapi import HTTPException,status
 from app.models.ModoleRoles import Role
 from sqlalchemy import or_,asc,desc
 import math
+from app.models.media import Media
+from app.services.storage.local import delete_upload_file
+from app.services.storage.local import delete_upload_file
+from app.models.media import Media
 
 class ResearchServices(): 
     
@@ -32,7 +37,6 @@ class ResearchServices():
             slug=ResearchServices.generate_slug(data.title,db),
             abstract=data.abstract,
             content=data.content,
-            pdf_url=str(data.pdf_url) if data.pdf_url else None,
             featured=data.featured,
             created_by=current_user.id
           
@@ -125,15 +129,15 @@ class ResearchServices():
             if len(member) != len(data.author_ids):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="One or  more authors  not found")
             research.authors.clear()
-        if data.title:
+        if data.title is not None:
             research.title=data.title
             research.slug=ResearchServices.generate_slug(data.title,db)
-        if data.abstract:
+        if data.abstract is not None:
             research.abstract=data.abstract
-        if data.content:
+        if data.content is not None:
             research.content=data.content
-        if data.pdf_url:
-            research.pdf_url=str(data.pdf_url)
+        if data.file_id is not None:
+            research.file_id=data.file_id
         
        
         if data.author_ids is not None:
@@ -151,6 +155,7 @@ class ResearchServices():
     
     @staticmethod
     def deleteresource(research_id,db:Session,current_user):
+
         research=db.query(Research).filter(Research.id==research_id).first()
         if not research:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
@@ -163,9 +168,72 @@ class ResearchServices():
             if(research.created_by != current_user.id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you not  have action to perform this")
             
+        if research.file_id:
+            media_record = db.query(Media).filter(Media.id == research.file_id).first()
+            if media_record:
+                delete_upload_file(media_record.path)
+                db.delete(media_record)
+
         db.delete(research)
         db.commit()
         
         return {
             "message":"research delete succesful"
         }
+
+
+class ResearchMediaService:
+    @staticmethod
+    def CreateFile(research_id: int, path: str, mime_type: str, original_filename: str, db: Session, current_user_id: int):
+        research = db.query(Research).filter(Research.id == research_id).first()
+        if not research:
+            raise HTTPException(status_code=404, detail="Research not found")
+            
+        user = db.query(Users).filter(Users.id == current_user_id).first()
+        if research.created_by != current_user_id and "super_admin" not in user.roles:
+            raise HTTPException(status_code=403, detail="Not authorized")
+            
+        media_record = db.query(Media).filter(Media.id == research.file_id).first()
+        
+        if media_record:
+            delete_upload_file(media_record.path)
+            media_record.path = path
+            media_record.filename = path
+            media_record.mime_type = mime_type
+            media_record.original_filename = original_filename
+        else:
+            media_record = Media(
+                filename=path,
+                path=path,
+                original_filename=original_filename,
+                uploaded_by=current_user_id,
+                mime_type=mime_type
+            )
+            db.add(media_record)
+            db.flush()
+            
+        research.file_id = media_record.id
+        db.commit()
+        db.refresh(media_record)
+        return media_record
+        
+    @staticmethod
+    def RemoveFile(research_id: int, db: Session, current_user_id: int):
+        research = db.query(Research).filter(Research.id == research_id).first()
+        if not research:
+            raise HTTPException(status_code=404, detail="Research not found")
+            
+        user = db.query(Users).filter(Users.id == current_user_id).first()
+        if research.created_by != current_user_id and "super_admin" not in user.roles:
+            raise HTTPException(status_code=403, detail="Not authorized")
+            
+        media_record = db.query(Media).filter(Media.id == research.file_id).first()
+        if not media_record:
+            raise HTTPException(status_code=404, detail="No file found for this research")
+            
+        delete_upload_file(media_record.path)
+        research.file_id = None
+        db.delete(media_record)
+        db.commit()
+        return {"message": "File deleted successfully"}
+

@@ -8,3 +8,11 @@ class AvatarResponse(BaseModel):
     class Config:
         from_attributes = True
         populate_by_name = True
+class MediaResponse(BaseModel):
+    id: int
+    path: str
+    original_filename: str
+
+    class Config:
+        from_attributes = True
+

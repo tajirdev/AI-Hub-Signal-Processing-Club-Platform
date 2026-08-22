@@ -1,12 +1,13 @@
 from pydantic import BaseModel,HttpUrl,ConfigDict,Field
 from datetime import date,datetime
 from typing import Optional
+from app.schemas.MediaScham import MediaResponse
 
 class ResearchCreate(BaseModel):
     title:str=Field(min_length=5,max_length=150)
     abstract:str=Field(min_length=30,max_length=100)
     content:str
-    pdf_url:HttpUrl |None=None
+    file_id: Optional[int] = None
     featured:bool=False
     publication_date:datetime |None=None
     author_ids:list[int]
@@ -17,7 +18,7 @@ class Researchupdate(BaseModel):
     title: Optional[str] = None
     abstract: Optional[str] = None
     content: Optional[str] = None
-    pdf_url: Optional[HttpUrl] = None
+    file_id: Optional[int] = None
     publication_date: Optional[datetime] = None
     author_ids: Optional[list[int]] = None
     featured: Optional[bool] = False
@@ -36,7 +37,8 @@ class ResearchResponse(BaseModel):
     publication_date:datetime |None
     abstract:str
     content:str
-    pdf_url:Optional[HttpUrl]=None
+    file_id: Optional[int] = None
+    file: Optional['MediaResponse'] = None
     featured:bool
     created_by:int
     created_at:datetime
