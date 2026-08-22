@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI } from '../api/users';
 import { authAPI } from '../api/auth';
+import { getImageUrl } from '../api/client';
 import Toast from '../components/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faUserCircle, faCamera, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 export default function Profile() {
-  const { user, login } = useAuth();
+  const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
@@ -17,12 +18,47 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [avatar, setAvatar] = useState(user?.avatar_url || null);
+
+  useEffect(() => {
+    fetchAvatar();
+  }, []);
+
+  const fetchAvatar = async () => {
+    try {
+      const av = await usersAPI.getAvatar();
+      if (av && av.path) {
+        setAvatar(av.path);
+        setUser({ ...user, avatar_url: av.path });
+        localStorage.setItem('user', JSON.stringify({ ...user, avatar_url: av.path }));
+      }
+    } catch (err) {
+      // Ignored
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setLoading(true);
+      await usersAPI.uploadAvatar(file);
+      await fetchAvatar();
+      setToast({ type: 'success', message: 'Avatar updated successfully!' });
+    } catch (err) {
+      setToast({ type: 'error', message: 'Failed to upload avatar' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await usersAPI.updateMe(formData);
+      setUser({ ...user, ...formData });
+      localStorage.setItem('user', JSON.stringify({ ...user, ...formData }));
       setToast({ type: 'success', message: 'Profile updated successfully!' });
     } catch (err) {
       setToast({ type: 'error', message: 'Failed to update profile' });
@@ -33,16 +69,27 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center space-x-6">
-        <div className="w-24 h-24 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-4xl shadow-inner border border-blue-100">
-          <FontAwesomeIcon icon={faUserCircle} />
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="relative w-24 h-24 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-4xl shadow-inner border border-blue-100 overflow-hidden">
+            {avatar ? (
+              <img src={getImageUrl(avatar)} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <FontAwesomeIcon icon={faUserCircle} />
+            )}
+          </div>
+          <label className="cursor-pointer flex items-center space-x-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
+            <FontAwesomeIcon icon={faCamera} />
+            <span>Upload Photo</span>
+            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+          </label>
         </div>
-        <div>
+        <div className="text-center sm:text-left flex-1 mt-2">
           <h1 className="text-2xl font-bold text-gray-900">{user?.first_name} {user?.last_name}</h1>
           <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
             {user?.roles?.map((role) => (
-              <span key={role} className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800">
+              <span key={role} className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800 border border-blue-200">
                 {role}
               </span>
             ))}
