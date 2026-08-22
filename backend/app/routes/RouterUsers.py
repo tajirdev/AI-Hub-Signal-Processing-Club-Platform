@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,UploadFile,File
 from app.models import ModoleUsers
-from app.schemas import SchemaUser,MediaScham
+from app.schemas import SchemaUser,MediaScham,RoleUpdate
 from sqlalchemy.orm import Session
 from app.core import database
 from app .services.ServiceUsers import UserReg
@@ -78,3 +78,6 @@ def DeleteAvatar(
     
     return UsersService.RemoveAvatar(avatar_id,db,current_user_id=current_user.id)
     
+@router.post('/promote')
+def promote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.promote_user(db, request.user_id, request.role_name)

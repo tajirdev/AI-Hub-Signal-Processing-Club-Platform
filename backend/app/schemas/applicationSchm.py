@@ -8,7 +8,7 @@ class Application(BaseModel):
     programme : str  
     year: int
     email : EmailStr
-    phone: int
+    phone: str
     motivation:str | None=None
 
 class ApplicationResponce(BaseModel):
@@ -19,7 +19,7 @@ class ApplicationResponce(BaseModel):
     programme : str  
     year: int
     email : EmailStr
-    phone: int
+    phone: str
     motivation:str  | None=None
     created_at:datetime
     status:str

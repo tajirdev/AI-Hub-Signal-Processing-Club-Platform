@@ -177,3 +177,28 @@ class UserReg:
       
 
     
+
+
+   def promote_user(self, db: Session, user_id: int, role_name: str):
+      user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == user_id).first()
+      if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+      
+      role = db.query(ModoleRoles.Role).filter(ModoleRoles.Role.name == role_name).first()
+      if not role:
+         role = ModoleRoles.Role(name=role_name)
+         db.add(role)
+         db.flush()
+         
+      existing_role = db.query(ModelUserRoles.UserRole).filter(
+         ModelUserRoles.UserRole.user_id == user_id, 
+         ModelUserRoles.UserRole.role_id == role.id
+      ).first()
+      
+      if existing_role:
+         raise HTTPException(status_code=400, detail="User already has this role")
+         
+      user_role = ModelUserRoles.UserRole(user_id=user_id, role_id=role.id)
+      db.add(user_role)
+      db.commit()
+      return {"message": f"User {user_id} promoted to {role_name}"}

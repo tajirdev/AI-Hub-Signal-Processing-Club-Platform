@@ -1,7 +1,9 @@
 from fastapi import APIRouter,Depends
 from app.core.database import get_db
 from app.schemas import applicationSchm
+from app.schemas.onboardingSchm import ApplicationOnboarding
 from app.services import applicationServices
+from app.services.onboarding_service import OnboardingService
 from sqlalchemy.orm import Session
 from app.models import ModoleUsers
 from app.core.RoleAuth import RoleChecker
@@ -22,6 +24,13 @@ def PostApplication(
 ):
     return service.CreateApplication(request,db)
 
+
+@router.post("/onboarding")
+def CompleteOnboarding(
+    request: ApplicationOnboarding,
+    db: Session = Depends(get_db)
+):
+    return OnboardingService.complete_onboarding(request, db)
 
 
 @router.get("/",response_model=List[applicationSchm.ApplicationResponce])
