@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import Modal from '../components/Modal';
 import { membersAPI } from '../api/members';
 import { subgroupsAPI } from '../api/subgroups';
-import { usersAPI } from '../api/users';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faExternalLinkAlt, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default function Members() {
   const [members, setMembers] = useState([]);
   const [subgroups, setSubgroups] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  // Pagination & Filtering
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedSubgroup, setSelectedSubgroup] = useState('');
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [toast, setToast] = useState(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    user_id: '',
     position: '',
     subgroup_id: '',
     github: '',
@@ -37,36 +36,22 @@ export default function Members() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [membersRes, subgroupsRes, usersRes] = await Promise.all([
+      const [membersData, subgroupsData] = await Promise.all([
         membersAPI.getAll({
           skip: (page - 1) * 10,
           limit: 10,
-          search: search || undefined,
+          search: search || undefined
         }),
-        subgroupsAPI.getAll().catch(() => []),
-        usersAPI.getAll().catch(() => []),
+        subgroupsAPI.getAll(),
       ]);
-
-      const subList = Array.isArray(subgroupsRes) ? subgroupsRes : [];
-      setSubgroups(subList);
-
-      const userList = Array.isArray(usersRes) ? usersRes : [];
-      setUsers(userList);
-
-      if (membersRes && Array.isArray(membersRes.results)) {
-        setMembers(membersRes.results);
-        setTotalPages(Math.ceil((membersRes.total || 0) / 10) || 1);
-        setTotalItems(membersRes.total || 0);
-      } else if (Array.isArray(membersRes)) {
-        setMembers(membersRes);
-        setTotalPages(1);
-        setTotalItems(membersRes.length);
-      } else {
-        setMembers([]);
-      }
+      const limit = 10;
+      setMembers(membersData.results || []);
+      setTotalPages(membersData.total ? Math.ceil(membersData.total / limit) : 1);
+      setTotalItems(membersData.total || 0);
+      setSubgroups(Array.isArray(subgroupsData) ? subgroupsData : []);
     } catch (err) {
       console.error(err);
-      setToast({ type: 'error', message: 'Failed to fetch members' });
+      setToast({ type: 'error', message: 'Failed to fetch members data' });
     } finally {
       setLoading(false);
     }
@@ -76,24 +61,10 @@ export default function Members() {
     fetchData();
   }, [page, search, selectedSubgroup]);
 
-  const handleOpenCreate = () => {
-    setEditingMember(null);
-    setFormData({
-      user_id: '',
-      position: 'Member',
-      subgroup_id: subgroups.length > 0 ? subgroups[0].id : '',
-      github: '',
-      linkedin: '',
-      portfolio: '',
-    });
-    setIsModalOpen(true);
-  };
-
   const handleOpenEdit = (member) => {
     setEditingMember(member);
     const sgObj = subgroups.find((s) => s.name === member.sub_group);
     setFormData({
-      user_id: member.user_id || '',
       position: member.position || '',
       subgroup_id: sgObj ? sgObj.id : (subgroups[0]?.id || ''),
       github: member.github || '',
@@ -116,35 +87,27 @@ export default function Members() {
         github: formData.github || null,
         linkedin: formData.linkedin || null,
         portfolio: formData.portfolio || null,
-        user_id: formData.user_id ? parseInt(formData.user_id, 10) : undefined,
       };
 
       if (editingMember) {
         await membersAPI.update(editingMember.id, formData.subgroup_id, payload);
         setToast({ type: 'success', message: 'Member updated successfully' });
-      } else {
-        await membersAPI.create(formData.subgroup_id, payload);
-        setToast({ type: 'success', message: 'Member created successfully' });
       }
       setIsModalOpen(false);
       fetchData();
     } catch (err) {
       console.error(err);
-      const detail = err.response?.data?.detail;
-      setToast({
-        type: 'error',
-        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save member'),
-      });
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Action failed' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (memberId) => {
-    if (!window.confirm('Are you sure you want to remove this member?')) return;
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this member? This action cannot be undone.')) return;
     try {
-      await membersAPI.delete(memberId);
-      setToast({ type: 'success', message: 'Member removed successfully' });
+      await membersAPI.delete(id);
+      setToast({ type: 'success', message: 'Member deleted successfully' });
       fetchData();
     } catch (err) {
       console.error(err);
@@ -157,16 +120,18 @@ export default function Members() {
       header: 'Member',
       render: (m) => (
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs overflow-hidden border border-amber-200">
-            {m.avatar_url ? (
-              <img src={getImageUrl(m.avatar_url)} alt="Profile" className="w-full h-full object-cover" />
+          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs overflow-hidden border border-blue-200">
+            {m.user?.avatar_url ? (
+              <img src={getImageUrl(m.user.avatar_url)} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <span>{m.name?.charAt(0) || 'M'}</span>
+              <span>{m.user?.first_name?.charAt(0) || 'M'}</span>
             )}
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-xs">{m.name}</p>
-            <p className="text-[11px] text-gray-500">Joined: {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : 'Active'}</p>
+            <p className="font-bold text-gray-900 text-xs">
+              {m.user?.first_name} {m.user?.last_name}
+            </p>
+            <p className="text-[11px] text-gray-500 font-mono">@{m.user?.user_name}</p>
           </div>
         </div>
       ),
@@ -236,8 +201,6 @@ export default function Members() {
         searchPlaceholder="Search members..."
         searchValue={search}
         onSearchChange={setSearch}
-        onCreateNew={handleOpenCreate}
-        createButtonText="Add Member"
         columns={columns}
         data={members}
         loading={loading}
@@ -279,34 +242,16 @@ export default function Members() {
         )}
       />
 
-      {/* Member Form Modal */}
+      {/* Edit Member Form Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingMember ? 'Edit Member Profile' : 'Add New Club Member'}
+        title="Edit Member Profile"
         subtitle="Assign member position, subgroup, and professional portfolio links."
         onSubmit={handleSubmit}
-        submitText={editingMember ? 'Save Changes' : 'Create Member'}
+        submitText="Save Changes"
         submitting={submitting}
       >
-        {!editingMember && users.length > 0 && (
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Select User (Optional - default is current admin)</label>
-            <select
-              value={formData.user_id}
-              onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">-- Current Logged-in User --</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.first_name} {u.last_name} ({u.email})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Position / Role *</label>

@@ -29,4 +29,19 @@ export const usersAPI = {
     const response = await client.delete(`/users/avatar/${avatarId}`);
     return response.data;
   },
+
+  promote: async (userId, roleName) => {
+    const response = await client.post('/users/promote', { user_id: userId, role_name: roleName });
+    return response.data;
+  },
+
+  demote: async (userId, roleName) => {
+    const response = await client.post('/users/demote', { user_id: userId, role_name: roleName });
+    return response.data;
+  },
+
+  delete: async (userId) => {
+    const response = await client.delete(`/users/${userId}`);
+    return response.data;
+  },
 };

@@ -1,6 +1,7 @@
 export const Routes = {
   Login: { path: "/login" },
   Overview: { path: "/overview" },
+  Applications: { path: "/applications" },
   Users: { path: "/users" },
   Members: { path: "/members" },
   Subgroups: { path: "/subgroups" },

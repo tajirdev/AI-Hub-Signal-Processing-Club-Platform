@@ -5,6 +5,7 @@ import {
   faChartPie,
   faUsers,
   faIdCard,
+  faClipboardList,
   faLayerGroup,
   faBlog,
   faTags,
@@ -28,6 +29,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const navItems = [
     { title: 'Overview', path: Routes.Overview.path, icon: faChartPie },
+    { title: 'Applications', path: Routes.Applications.path, icon: faClipboardList, badge: 'New' },
     { title: 'Users & Roles', path: Routes.Users.path, icon: faUsers, badge: 'Admin' },
     { title: 'Club Members', path: Routes.Members.path, icon: faIdCard },
     { title: 'Subgroups', path: Routes.Subgroups.path, icon: faLayerGroup },

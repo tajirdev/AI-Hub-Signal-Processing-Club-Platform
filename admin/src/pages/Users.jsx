@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import Modal from '../components/Modal';
 import { usersAPI } from '../api/users';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldAlt, faUserCheck, faUserTimes } from '@fortawesome/free-solid-svg-icons';
+import { faShieldAlt, faUserCheck, faUserTimes, faUserCog, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -13,19 +13,15 @@ export default function Users() {
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState(null);
 
-  // Registration Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    user_name: '',
-    email: '',
-    password_hash: '',
-    phone: '',
-    bio: '',
-    github_link: '',
-  });
+  // Manage Roles Modal State
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [updatingRole, setUpdatingRole] = useState(false);
+
+  // Delete User Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -44,34 +40,64 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
+  const handlePromote = async (roleName) => {
+    if (!selectedUser) return;
+    setUpdatingRole(true);
     try {
-      await usersAPI.register(formData);
-      setToast({ type: 'success', message: 'User registered successfully!' });
-      setIsModalOpen(false);
-      setFormData({
-        first_name: '',
-        last_name: '',
-        user_name: '',
-        email: '',
-        password_hash: '',
-        phone: '',
-        bio: '',
-        github_link: '',
-      });
+      await usersAPI.promote(selectedUser.id, roleName);
+      setToast({ type: 'success', message: `Role ${roleName} added successfully!` });
+      await fetchUsers();
+      // Update selectedUser local state to reflect change immediately in modal
+      setSelectedUser(prev => ({ ...prev, roles: [...(prev.roles || []), roleName] }));
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Failed to add role' });
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
+  const handleDemote = async (roleName) => {
+    if (!selectedUser) return;
+    setUpdatingRole(true);
+    try {
+      await usersAPI.demote(selectedUser.id, roleName);
+      setToast({ type: 'success', message: `Role ${roleName} removed successfully!` });
+      await fetchUsers();
+      setSelectedUser(prev => ({ ...prev, roles: prev.roles.filter(r => r !== roleName) }));
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Failed to remove role' });
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
+    try {
+      await usersAPI.delete(userToDelete.id);
+      setToast({ type: 'success', message: 'User deleted successfully!' });
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
       fetchUsers();
     } catch (err) {
       console.error(err);
-      const detail = err.response?.data?.detail;
-      setToast({
-        type: 'error',
-        message: typeof detail === 'string' ? detail : 'Registration failed',
-      });
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Failed to delete user' });
     } finally {
-      setSubmitting(false);
+      setDeleting(false);
     }
+  };
+
+  const openRoleModal = (user) => {
+    setSelectedUser(user);
+    setIsRoleModalOpen(true);
+  };
+
+  const openDeleteModal = (user) => {
+    setUserToDelete(user);
+    setIsDeleteModalOpen(true);
   };
 
   const filteredUsers = users.filter((u) => {
@@ -83,6 +109,8 @@ export default function Users() {
       (u.user_name || '').toLowerCase().includes(term)
     );
   });
+
+  const availableRoles = ['member', 'editor', 'super_admin'];
 
   const columns = [
     {
@@ -162,8 +190,27 @@ export default function Users() {
           {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
         </span>
       ),
-    },
+    }
   ];
+
+  const actions = (u) => (
+    <div className="flex items-center justify-end space-x-2">
+      <button
+        onClick={() => openRoleModal(u)}
+        title="Manage Roles"
+        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+      >
+        <FontAwesomeIcon icon={faUserCog} />
+      </button>
+      <button
+        onClick={() => openDeleteModal(u)}
+        title="Delete User"
+        className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+      >
+        <FontAwesomeIcon icon={faTrash} />
+      </button>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -173,112 +220,74 @@ export default function Users() {
         searchPlaceholder="Search by name, email, or username..."
         searchValue={search}
         onSearchChange={setSearch}
-        onCreateNew={() => setIsModalOpen(true)}
-        createButtonText="Register User"
         columns={columns}
         data={filteredUsers}
         loading={loading}
+        actions={actions}
       />
 
-      {/* Register User Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Register New User"
-        subtitle="Create a new account on the AI Hub platform."
-        onSubmit={handleRegister}
-        submitText="Create Account"
-        submitting={submitting}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">First Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.first_name}
-              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+      {/* Manage Roles Modal */}
+      {isRoleModalOpen && selectedUser && (
+        <Modal
+          isOpen={isRoleModalOpen}
+          onClose={() => setIsRoleModalOpen(false)}
+          title={`Manage Roles: ${selectedUser.first_name} ${selectedUser.last_name}`}
+          subtitle="Add or remove roles for this user."
+          hideFooter
+        >
+          <div className="space-y-4">
+            {availableRoles.map(role => {
+              const hasRole = selectedUser.roles?.includes(role);
+              return (
+                <div key={role} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                  <span className="font-semibold text-sm uppercase text-gray-700">{role}</span>
+                  <button
+                    onClick={() => hasRole ? handleDemote(role) : handlePromote(role)}
+                    disabled={updatingRole}
+                    className={`px-3 py-1.5 rounded text-xs font-bold transition-colors ${
+                      hasRole 
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    {hasRole ? 'Remove' : 'Add'}
+                  </button>
+                </div>
+              );
+            })}
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Last Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.last_name}
-              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() => setIsRoleModalOpen(false)}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200"
+            >
+              Close
+            </button>
           </div>
-        </div>
+        </Modal>
+      )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Username *</label>
-            <input
-              type="text"
-              required
-              value={formData.user_name}
-              onChange={(e) => setFormData({ ...formData, user_name: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+      {/* Delete User Modal */}
+      {isDeleteModalOpen && userToDelete && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Delete User"
+          subtitle="This action is permanent and cannot be undone."
+          onSubmit={handleDelete}
+          submitText="Delete User"
+          submitColor="bg-red-600 hover:bg-red-700 shadow-red-500/20"
+          submitting={deleting}
+        >
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-red-800 font-semibold mb-1">Warning!</p>
+            <p className="text-xs text-red-700">
+              You are about to permanently delete <strong>{userToDelete.first_name} {userToDelete.last_name}</strong> (@{userToDelete.user_name}).
+              This will remove all associated user data, including roles.
+            </p>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Email *</label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Password *</label>
-            <input
-              type="password"
-              required
-              value={formData.password_hash}
-              onChange={(e) => setFormData({ ...formData, password_hash: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number</label>
-            <input
-              type="text"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">GitHub Profile Link</label>
-          <input
-            type="url"
-            value={formData.github_link}
-            onChange={(e) => setFormData({ ...formData, github_link: e.target.value })}
-            placeholder="https://github.com/username"
-            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Bio / Role Description</label>
-          <textarea
-            rows="3"
-            value={formData.bio}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-      </Modal>
+        </Modal>
+      )}
 
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </div>

@@ -81,3 +81,11 @@ def DeleteAvatar(
 @router.post('/promote')
 def promote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
     return UsersService.promote_user(db, request.user_id, request.role_name)
+
+@router.post('/demote')
+def demote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.demote_user(db, request.user_id, request.role_name)
+
+@router.delete('/{user_id}')
+def delete_user(user_id: int, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.delete_user(db, user_id)

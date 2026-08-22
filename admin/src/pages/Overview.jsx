@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUsers,
   faIdCard,
   faLayerGroup,
   faBlog,
+  faTags,
   faBullhorn,
   faCalendarAlt,
   faLaptopCode,
   faFlask,
   faFolderOpen,
-  faPlus,
-  faArrowRight,
   faSpinner,
+  faPlus,
+  faClipboardList
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
-import { StatCard, QuickActionCard } from '../components/Widgets';
+import { useAuth } from '../context/AuthContext';
 import { Routes } from '../routes';
+
+// API Clients
 import { usersAPI } from '../api/users';
 import { membersAPI } from '../api/members';
 import { subgroupsAPI } from '../api/subgroups';
@@ -26,7 +29,41 @@ import { eventsAPI } from '../api/events';
 import { projectsAPI } from '../api/projects';
 import { researchAPI } from '../api/research';
 import { resourcesAPI } from '../api/resources';
-import { useAuth } from '../context/AuthContext';
+import { applicationsAPI } from '../api/applications';
+
+const StatCard = ({ title, value, icon, color, subtext, link }) => (
+  <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between">
+    <div className="flex items-start justify-between mb-4">
+      <div>
+        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">{title}</h3>
+        <p className={`text-3xl font-black text-${color}-600`}>{value}</p>
+      </div>
+      <div className={`w-10 h-10 rounded-xl bg-${color}-50 flex items-center justify-center text-${color}-600 group-hover:scale-110 transition-transform`}>
+        <FontAwesomeIcon icon={icon} className="text-lg" />
+      </div>
+    </div>
+    {link ? (
+      <Link to={link} className="text-xs font-semibold text-gray-600 hover:text-blue-600 inline-flex items-center space-x-1 mt-2">
+        <span>View Details</span>
+      </Link>
+    ) : (
+      <p className="text-[11px] text-gray-400 font-medium">{subtext}</p>
+    )}
+  </div>
+);
+
+const QuickActionCard = ({ title, description, icon, link }) => (
+  <Link
+    to={link}
+    className="block p-5 bg-white border border-gray-100 hover:border-blue-200 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+  >
+    <div className="w-10 h-10 rounded-xl bg-gray-50 group-hover:bg-blue-50 flex items-center justify-center text-gray-600 group-hover:text-blue-600 transition-colors mb-4">
+      <FontAwesomeIcon icon={icon} />
+    </div>
+    <h3 className="text-sm font-bold text-gray-900 mb-1">{title}</h3>
+    <p className="text-[11px] text-gray-500 leading-relaxed">{description}</p>
+  </Link>
+);
 
 export default function Overview() {
   const { user } = useAuth();
@@ -41,6 +78,7 @@ export default function Overview() {
     projects: 0,
     research: 0,
     resources: 0,
+    applications: 0
   });
 
   useEffect(() => {
@@ -57,6 +95,7 @@ export default function Overview() {
           projectsRes,
           researchRes,
           resourcesRes,
+          appsRes
         ] = await Promise.allSettled([
           usersAPI.getAll(),
           membersAPI.getAll(),
@@ -67,6 +106,7 @@ export default function Overview() {
           projectsAPI.getAll(),
           researchAPI.getAll(),
           resourcesAPI.getAll(),
+          applicationsAPI.getAll(),
         ]);
 
         setStats({
@@ -79,6 +119,7 @@ export default function Overview() {
           projects: projectsRes.status === 'fulfilled' ? (projectsRes.value?.total || (Array.isArray(projectsRes.value?.projects) ? projectsRes.value.projects.length : 0)) : 0,
           research: researchRes.status === 'fulfilled' ? (researchRes.value?.total || (Array.isArray(researchRes.value?.research) ? researchRes.value.research.length : 0)) : 0,
           resources: resourcesRes.status === 'fulfilled' ? (resourcesRes.value?.total || (Array.isArray(resourcesRes.value?.resources) ? resourcesRes.value.resources.length : 0)) : 0,
+          applications: appsRes.status === 'fulfilled' ? (Array.isArray(appsRes.value) ? appsRes.value.filter(a => a.status === 'pending').length : 0) : 0,
         });
       } catch (err) {
         console.error('Failed to load dashboard metrics', err);
@@ -108,18 +149,11 @@ export default function Overview() {
 
         <div className="flex flex-wrap gap-2.5">
           <Link
-            to={Routes.BlogPosts.path}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/30 transition-all"
+            to={Routes.Applications.path}
+            className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/30 transition-all"
           >
-            <FontAwesomeIcon icon={faPlus} className="text-xs" />
-            <span>New Blog Post</span>
-          </Link>
-          <Link
-            to={Routes.Members.path}
-            className="flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold backdrop-blur-sm transition-all border border-white/10"
-          >
-            <FontAwesomeIcon icon={faIdCard} className="text-xs" />
-            <span>Add Member</span>
+            <FontAwesomeIcon icon={faClipboardList} className="text-xs" />
+            <span>Applications ({stats.applications})</span>
           </Link>
         </div>
       </div>
@@ -137,6 +171,14 @@ export default function Overview() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            title="Pending Apps"
+            value={stats.applications}
+            icon={faClipboardList}
+            color="emerald"
+            subtext="Awaiting review"
+            link={Routes.Applications.path}
+          />
           <StatCard
             title="Registered Users"
             value={stats.users}
@@ -170,14 +212,6 @@ export default function Overview() {
             link={Routes.BlogPosts.path}
           />
           <StatCard
-            title="News & Updates"
-            value={stats.news}
-            icon={faBullhorn}
-            color="rose"
-            subtext="Official announcements"
-            link={Routes.News.path}
-          />
-          <StatCard
             title="Club Events"
             value={stats.events}
             icon={faCalendarAlt}
@@ -208,37 +242,6 @@ export default function Overview() {
             color="amber"
             subtext="Datasets, PDFs & code"
             link={Routes.Resources.path}
-          />
-        </div>
-      </div>
-
-      {/* Quick Action Navigation Grid */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-700">Quick Operations</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <QuickActionCard
-            title="User Directory"
-            description="Manage user account activation status and inspect role privileges."
-            icon={faUsers}
-            link={Routes.Users.path}
-          />
-          <QuickActionCard
-            title="AI Subgroups"
-            description="Create specialized club groups, assign leaders and upload branding."
-            icon={faLayerGroup}
-            link={Routes.Subgroups.path}
-          />
-          <QuickActionCard
-            title="Event Schedules"
-            description="Publish upcoming hackathons, AI workshops and registration links."
-            icon={faCalendarAlt}
-            link={Routes.Events.path}
-          />
-          <QuickActionCard
-            title="Research Papers"
-            description="Publish club scientific papers, associate member authors and PDF links."
-            icon={faFlask}
-            link={Routes.Research.path}
           />
         </div>
       </div>

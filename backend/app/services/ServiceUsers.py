@@ -202,3 +202,33 @@ class UserReg:
       db.add(user_role)
       db.commit()
       return {"message": f"User {user_id} promoted to {role_name}"}
+
+   def demote_user(self, db: Session, user_id: int, role_name: str):
+        user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == user_id).first()
+        if not user:
+           raise HTTPException(status_code=404, detail="User not found")
+        
+        role = db.query(ModoleRoles.Role).filter(ModoleRoles.Role.name == role_name).first()
+        if not role:
+           raise HTTPException(status_code=404, detail="Role not found")
+           
+        existing_role = db.query(ModelUserRoles.UserRole).filter(
+           ModelUserRoles.UserRole.user_id == user_id, 
+           ModelUserRoles.UserRole.role_id == role.id
+        ).first()
+        
+        if not existing_role:
+           raise HTTPException(status_code=400, detail="User does not have this role")
+           
+        db.delete(existing_role)
+        db.commit()
+        return {"message": f"Role {role_name} successfully removed from user"}
+
+   def delete_user(self, db: Session, user_id: int):
+        user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == user_id).first()
+        if not user:
+           raise HTTPException(status_code=404, detail="User not found")
+           
+        db.delete(user)
+        db.commit()
+        return {"message": "User successfully deleted"}
