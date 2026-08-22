@@ -72,7 +72,7 @@ class ResourceService:
         if not resource:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
         #ownership check
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         if resource.uploaded_by != current_user.id and "super_admin" not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to update this resource")
         if request.title:
@@ -98,7 +98,7 @@ class ResourceService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
         #ownership check
     
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         if (resource.uploaded_by != current_user.id and "super_admin" not in roles):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this resource")
         db.delete(resource)

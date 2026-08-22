@@ -52,6 +52,23 @@ class MembersServices:
             db.add(new_member)
             db.commit()
             db.refresh(new_member)
+            
+            # Explicit business rule: Assign 'member' role when user becomes a member
+            from app.models.ModoleRoles import Role
+            from app.models.ModelUserRoles import UserRole
+            
+            member_role = db.query(Role).filter(Role.name == "member").first()
+            if member_role:
+                # Check if user already has the member role
+                has_role = db.query(UserRole).filter(
+                    UserRole.user_id == target_user_id,
+                    UserRole.role_id == member_role.id
+                ).first()
+                if not has_role:
+                    new_role = UserRole(user_id=target_user_id, role_id=member_role.id)
+                    db.add(new_role)
+                    db.commit()
+            
         except IntegrityError:
             db.rollback()
             raise HTTPException(

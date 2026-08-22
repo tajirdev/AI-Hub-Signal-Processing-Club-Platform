@@ -45,7 +45,7 @@ class UserReg:
     if not member_role:
         raise HTTPException(
             status_code=500,
-            detail="Default role 'member' not found."
+            detail="Default role 'user' not found."
         )
 
     user_role = ModelUserRoles.UserRole(
@@ -63,7 +63,7 @@ class UserReg:
         active_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
         return active_user
    
-   def get_all(self,db:Session):
+   def get_all(self,db:Session,current_user_id:int=0):
       users = db.query(ModoleUsers.Users).all()
       return users
 
@@ -138,18 +138,7 @@ class UserReg:
          ModoleUsers.Users.id == current_user_id
       ).first()
 
-      user_roles = db.query(ModelUserRoles.UserRole).filter(
-         ModelUserRoles.UserRole.user_id == current_user_id
-      ).all()
-
-      is_super_admin = False
-      for user_role in user_roles:
-         admin = db.query(ModoleRoles.Role).filter(
-            ModoleRoles.Role.id == user_role.role_id
-         ).first()
-         if admin and admin.name == "super_admin":
-            is_super_admin = True
-            break
+      is_super_admin = "super_admin" in user.roles
 
       avatar = db.query(media.Media).filter(
          media.Media.id == avatar_id

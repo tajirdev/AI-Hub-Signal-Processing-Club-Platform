@@ -58,7 +58,7 @@ class ResearchServices():
                  limit:int=10,title:str=None,
                  sort:str="publication_date",
                  order:str="desc"):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         research=db.query(Research)
         if "super_admin" in roles:
             pass
@@ -96,7 +96,7 @@ class ResearchServices():
         research=db.query(Research).filter(Research.id==research_id).first()
         if not research:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"research not found")
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         if "super_admin" in roles:
             pass
         elif "editor" in roles:
@@ -111,7 +111,7 @@ class ResearchServices():
     @staticmethod
     def update(research_id:int,data:Researchupdate,db:Session,current_user):
         research =db.query(Research).filter(Research.id==research_id).first()
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         if not research:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
         if "super_admin" in roles:
@@ -154,7 +154,7 @@ class ResearchServices():
         research=db.query(Research).filter(Research.id==research_id).first()
         if not research:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
               
         if "super_admin" in roles:
            pass

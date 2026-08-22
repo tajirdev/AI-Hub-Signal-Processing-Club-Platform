@@ -58,7 +58,7 @@ class BlogPostService:
                         category_id:int=None,
                         status:str=None,
                         sort:str="published_at",order:str="desc"):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post =db.query(BlogPost)
         if "super_admin" in roles:
             pass
@@ -111,7 +111,7 @@ class BlogPostService:
 
 
     def get_blog_post_by_id(self,post_id:int,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
@@ -129,7 +129,7 @@ class BlogPostService:
         return post    
 
     def update_blog_post(self,post_id:int,data:BlogPostUpdate,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
@@ -163,7 +163,7 @@ class BlogPostService:
         return post
 
     def delete_blog_post(self,post_id:int,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
@@ -184,7 +184,7 @@ class BlogPostService:
                             mime_type:str,
                             filename:str
                             ):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"blog post with id {post_id} not found")
@@ -234,7 +234,7 @@ class BlogPostService:
     
     @staticmethod
     def removeblogCover(post_id:int,current_user,db:Session):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
         if  not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="post not found ")

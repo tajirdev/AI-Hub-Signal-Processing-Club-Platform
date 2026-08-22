@@ -45,7 +45,7 @@ class Event:
                     limit:int=10,
                     status:str=None,
                         sort:str="published_at",order:str="desc"):
-        roles=[ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         event =db.query(EventModel.Events)
         if "super_admin" in roles:
             pass
@@ -332,14 +332,6 @@ class Event:
             ModoleUsers.Users.id == current_user_id
         ).first()
 
-        role = db.query(ModelUserRoles.UserRole).filter(
-            ModelUserRoles.UserRole.user_id == user.id
-        ).first()
-
-        admin = db.query(ModoleRoles.Role).filter(
-            ModoleRoles.Role.id == role.role_id
-        ).first()
-
         cover = db.query(media.Media).filter(
             media.Media.id == event.cover_image_id
         ).first()
@@ -350,7 +342,7 @@ class Event:
                 detail="you don't have cover"
             )
 
-        if admin.name != "super_admin" and cover.uploaded_by !=user.id:
+        if "super_admin" not in user.roles and cover.uploaded_by != user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="your are not the owner"

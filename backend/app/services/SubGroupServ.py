@@ -33,18 +33,23 @@ class SubGroups:
             name = request.name,
             slug = slug,
             description = request.description,
-            lead_id = current_user_id  
+            lead_id = request.lead_id  
         )
 
         try:
             db.add(new_subgroup)
             db.commit()
             db.refresh(new_subgroup)
+            
+            if request.lead_id:
+                SubGroups._assign_editor_role(request.lead_id, db)
+                
         except IntegrityError:
             db.rollback()
             raise HTTPException(status_code=400, detail="Conflict: Data already exists.")
 
         return new_subgroup
+
     @staticmethod
     def get_all(db:Session):
         groups = db.query(SubGroupModel.SubGroup).all()
@@ -65,32 +70,48 @@ class SubGroups:
     def update_group(id,request:SubGroupSchm.SubGroup,db:Session):
         exist_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
 
-        slug =SubGroups.GenerateSlug(request.name,db)
-
         if not exist_group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail= f"the group with that id {id} not found"
             )
-
-        exist_group.name = request.name
-        exist_group.slug = slug
+            
+        if request.name != exist_group.name:
+            slug = SubGroups.GenerateSlug(request.name,db)
+            exist_group.name = request.name
+            exist_group.slug = slug
+            
         exist_group.description = request.description
-
-
+        
+        if request.lead_id is not None:
+            exist_group.lead_id = request.lead_id
+            SubGroups._assign_editor_role(request.lead_id, db)
 
         try:
-          
             db.commit()
             db.refresh(exist_group)
         except IntegrityError:
             db.rollback()
-
             raise HTTPException (
                 status_code=400,
                 detail="conflicts: data already exist"
             )
         return exist_group
+
+    @staticmethod
+    def _assign_editor_role(user_id: int, db: Session):
+        from app.models.ModoleRoles import Role
+        from app.models.ModelUserRoles import UserRole
+        editor_role = db.query(Role).filter(Role.name == "editor").first()
+        if editor_role:
+            has_role = db.query(UserRole).filter(
+                UserRole.user_id == user_id, 
+                UserRole.role_id == editor_role.id
+            ).first()
+            if not has_role:
+                new_role = UserRole(user_id=user_id, role_id=editor_role.id)
+                db.add(new_role)
+                db.commit()
 
     @staticmethod
     def delete_group(id,db:Session):

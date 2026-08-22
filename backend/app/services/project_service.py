@@ -69,18 +69,18 @@ class ProjectService():
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-        if project.created_by != current_user.id and current_user.role != "super_admin":
+        if project.created_by != current_user.id and "super_admin" not in current_user.roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
         
-        project.title=request.title,
-        project.description=request.description,
-        project.demo_url=request.demo_url,
-        project.status=request.status,
-        project.technology_stack=request.technology_stack
+        project.title = request.title
+        project.description = request.description
+        project.demo_url = request.demo_url
+        project.status = request.status
+        project.technology_stack = request.technology_stack
         
         db.commit()
         db.refresh(project)
-        return  project
+        return project
 
     @staticmethod
     def delete_project(db: Session, project_id: int, current_user):
@@ -88,7 +88,7 @@ class ProjectService():
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-        if project.created_by != current_user.id and current_user.role != "super_admin":
+        if project.created_by != current_user.id and "super_admin" not in current_user.roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this project")
         
         db.delete(project)
@@ -96,6 +96,7 @@ class ProjectService():
         return {
             "message":"project delete successful"
         }
+        
     @staticmethod
     def project_cover(project_id:int,
                             db:Session,
@@ -107,37 +108,34 @@ class ProjectService():
         project=db.query(Project).filter(Project.id==project_id).first()
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="project not found")
-        if (project.created_by != current_user.id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you  cannot perform these action")
+        if project.created_by != current_user.id and "super_admin" not in current_user.roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you cannot perform these action")
+            
         cover=db.query(Media).filter(Media.id==project.thumbnail_id).first()
         if cover:
             cover.filename=filename
             delete_upload_file(cover.path)
-            cover.path=path,
-            cover.mime_type=mime_type,
-            cover.original_filename
+            cover.path=path
+            cover.mime_type=mime_type
+            cover.original_filename=original_filename
             
             db.commit()
             db.refresh(cover)
-            
         else:
-            
             cover=Media(
                 filename=filename,
                 original_filename=original_filename,
                 mime_type=mime_type,
                 path=path,
                 uploaded_by=current_user.id
-        )
-        db.add(cover)
-        db.flush()
-        project.thumbnail_id=cover.id
-        
-        db.commit()
-        db.refresh(cover)
+            )
+            db.add(cover)
+            db.flush()
+            project.thumbnail_id=cover.id
+            db.commit()
+            db.refresh(cover)
         
         return cover
-        
         
     @staticmethod
     def get_cover(project_id: int, db: Session):
@@ -155,7 +153,7 @@ class ProjectService():
         if not project:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
         
-        if project.created_by != current_user.id and current_user.role != "super_admin":
+        if project.created_by != current_user.id and "super_admin" not in current_user.roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
         
         cover=db.query(Media).filter(Media.id==project.thumbnail_id).first()
