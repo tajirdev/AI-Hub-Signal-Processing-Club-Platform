@@ -65,9 +65,10 @@ class ResourceService:
 
     @staticmethod
     def update_resource(resource_id: int, request:ResourceUpdate, db: Session, current_user: Users):
-        subgroup= db.query(SubGroup).filter(SubGroup.id ==request.subgroup_id ).first()
-        if not subgroup:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subgroup not found")
+        if request.subgroup_id:
+            subgroup= db.query(SubGroup).filter(SubGroup.id ==request.subgroup_id ).first()
+            if not subgroup:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subgroup not found")
         resource=db.query(Resource).filter(Resource.id==resource_id).first()
         if not resource:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")

@@ -72,11 +72,16 @@ class ProjectService():
         if project.created_by != current_user.id and "super_admin" not in current_user.roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this project")
         
-        project.title = request.title
-        project.description = request.description
-        project.demo_url = request.demo_url
-        project.status = request.status
-        project.technology_stack = request.technology_stack
+        if request.title is not None:
+            project.title = request.title
+        if request.description is not None:
+            project.description = request.description
+        if request.demo_url is not None:
+            project.demo_url = request.demo_url
+        if request.status is not None:
+            project.status = request.status
+        if request.technology_stack is not None:
+            project.technology_stack = request.technology_stack
         
         db.commit()
         db.refresh(project)
