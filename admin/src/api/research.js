@@ -25,4 +25,18 @@ export const researchAPI = {
     const response = await client.delete(`/research/${id}`);
     return response.data;
   },
+
+  uploadFile: async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await client.post(`/research/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  deleteFile: async (id) => {
+    const response = await client.delete(`/research/${id}/file`);
+    return response.data;
+  },
 };

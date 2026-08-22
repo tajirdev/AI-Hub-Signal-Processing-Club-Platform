@@ -89,3 +89,7 @@ def demote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(databa
 @router.delete('/{user_id}')
 def delete_user(user_id: int, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
     return UsersService.delete_user(db, user_id)
+
+@router.put('/me', response_model=SchemaUser.UserResponse)
+def update_me(request: SchemaUser.UserUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(get_current_user)):
+    return UsersService.update_current_user(request, db, current_user.id)

@@ -29,6 +29,11 @@ export default function Modal({
 
   if (!isOpen) return null;
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (onSubmit) onSubmit(e);
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -56,7 +61,7 @@ export default function Modal({
         </div>
 
         {/* Body */}
-        <form onSubmit={onSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-6 overflow-y-auto space-y-4 flex-1">{children}</div>
 
           {/* Footer */}

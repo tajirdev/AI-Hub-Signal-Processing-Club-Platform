@@ -50,6 +50,18 @@ export default function Applications() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this rejected application?")) return;
+    try {
+      await applicationsAPI.delete(id);
+      setToast({ type: 'success', message: 'Application deleted successfully!' });
+      fetchApplications();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'Failed to delete application' });
+    }
+  };
+
   const openReviewModal = (app) => {
     setSelectedApp(app);
     setIsReviewModalOpen(true);
@@ -126,6 +138,15 @@ export default function Applications() {
         <FontAwesomeIcon icon={faEye} />
         <span className="text-xs font-semibold">Review</span>
       </button>
+      {a.status === 'rejected' && (
+        <button
+          onClick={() => handleDelete(a.id)}
+          title="Delete Rejected Application"
+          className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors flex items-center space-x-1"
+        >
+          <span className="text-xs font-semibold">Delete</span>
+        </button>
+      )}
     </div>
   );
 

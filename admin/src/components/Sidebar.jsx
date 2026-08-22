@@ -17,6 +17,7 @@ import {
   faSignOutAlt,
   faTimes,
   faShieldAlt,
+  faUserCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { Routes } from '../routes';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +41,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { title: 'Projects', path: Routes.Projects.path, icon: faLaptopCode },
     { title: 'Research Papers', path: Routes.Research.path, icon: faFlask },
     { title: 'Resources', path: Routes.Resources.path, icon: faFolderOpen },
+    { title: 'My Profile', path: Routes.Profile.path, icon: faUserCircle },
   ];
 
   return (

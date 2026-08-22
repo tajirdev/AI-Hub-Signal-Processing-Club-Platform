@@ -26,6 +26,7 @@ export default function Research() {
     abstract: '',
     content: '',
     pdf_url: '',
+    file: null,
     publication_date: '',
     featured: false,
     author_ids: [],
@@ -78,6 +79,7 @@ export default function Research() {
       abstract: '',
       content: '',
       pdf_url: '',
+      file: null,
       publication_date: new Date().toISOString().slice(0, 10),
       featured: false,
       author_ids: members.length > 0 ? [members[0].id] : [],
@@ -87,15 +89,13 @@ export default function Research() {
 
   const handleOpenEdit = (paper) => {
     setEditingResearch(paper);
-    const existingAuthorIds = Array.isArray(paper.authors) && paper.authors.length > 0
-      ? paper.authors.map((a) => a.member_id || a.id)
-      : (members.length > 0 ? [members[0].id] : []);
-
+    const existingAuthorIds = paper.authors ? paper.authors.sort((a, b) => a.author_order - b.author_order).map((a) => a.member_id) : [];
     setFormData({
       title: paper.title || '',
       abstract: paper.abstract || '',
       content: paper.content || '',
       pdf_url: paper.pdf_url || '',
+      file: null,
       publication_date: paper.publication_date ? new Date(paper.publication_date).toISOString().slice(0, 10) : '',
       featured: paper.featured ?? false,
       author_ids: existingAuthorIds,
@@ -150,9 +150,15 @@ export default function Research() {
 
       if (editingResearch) {
         await researchAPI.update(editingResearch.id, payload);
+        if (formData.file) {
+          await researchAPI.uploadFile(editingResearch.id, formData.file);
+        }
         setToast({ type: 'success', message: 'Research paper updated' });
       } else {
-        await researchAPI.create(payload);
+        const res = await researchAPI.create(payload);
+        if (formData.file && res && res.id) {
+          await researchAPI.uploadFile(res.id, formData.file);
+        }
         setToast({ type: 'success', message: 'Research paper published' });
       }
       setIsModalOpen(false);
@@ -268,6 +274,23 @@ export default function Research() {
         onPageChange={setPage}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-1">
+            {!row.publication_date && (
+              <button
+                onClick={async () => {
+                  try {
+                    await researchAPI.update(row.id, { publication_date: new Date().toISOString() });
+                    setToast({ type: 'success', message: 'Paper published instantly!' });
+                    fetchData();
+                  } catch (e) {
+                    setToast({ type: 'error', message: 'Failed to publish paper' });
+                  }
+                }}
+                className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors font-bold text-[10px] uppercase"
+                title="Quick Publish"
+              >
+                Publish
+              </button>
+            )}
             <button
               onClick={() => handleOpenEdit(row)}
               className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -320,7 +343,7 @@ export default function Research() {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">PDF File URL</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">PDF File URL (Optional)</label>
             <input
               type="url"
               value={formData.pdf_url}
@@ -329,6 +352,15 @@ export default function Research() {
               className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Upload PDF File (Optional)</label>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
+            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
         </div>
 
         <div>

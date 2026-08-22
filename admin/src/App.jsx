@@ -19,6 +19,7 @@ import Events from './pages/Events';
 import Projects from './pages/Projects';
 import Research from './pages/Research';
 import Resources from './pages/Resources';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
             <Route path={Routes.Projects.path} element={<Projects />} />
             <Route path={Routes.Research.path} element={<Research />} />
             <Route path={Routes.Resources.path} element={<Resources />} />
+            <Route path={Routes.Profile.path} element={<Profile />} />
           </Route>
 
           {/* 404 Route */}

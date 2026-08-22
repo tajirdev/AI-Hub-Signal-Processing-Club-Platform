@@ -232,3 +232,23 @@ class UserReg:
         db.delete(user)
         db.commit()
         return {"message": "User successfully deleted"}
+   
+   def update_current_user(self, request, db: Session, current_user_id: int):
+        user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
+        if not user:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="User not found")
+        if request.first_name:
+            user.first_name = request.first_name
+        if request.last_name:
+            user.last_name = request.last_name
+        if request.phone:
+            user.phone = request.phone
+        if request.bio:
+            user.bio = request.bio
+        if request.user_name:
+            user.user_name = request.user_name
+            
+        db.commit()
+        db.refresh(user)
+        return user

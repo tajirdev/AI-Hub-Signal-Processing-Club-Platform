@@ -94,6 +94,7 @@ export default function Resources() {
       type: 'PDF',
       subgroup_id: subgroups[0]?.id || '',
       url: '',
+      file: null,
     });
     setIsModalOpen(true);
   };
@@ -106,6 +107,7 @@ export default function Resources() {
       type: res.type || 'PDF',
       subgroup_id: res.subgroup_id || subgroups[0]?.id || '',
       url: res.external_url || res.file_url || '',
+      file: null,
     });
     setIsModalOpen(true);
   };
@@ -116,8 +118,8 @@ export default function Resources() {
       setToast({ type: 'error', message: 'Please select a subgroup' });
       return;
     }
-    if (!formData.url) {
-      setToast({ type: 'error', message: 'Please provide a resource URL' });
+    if (!formData.url && !formData.file) {
+      setToast({ type: 'error', message: 'Please provide an external URL or upload a file' });
       return;
     }
     setSubmitting(true);
@@ -127,15 +129,21 @@ export default function Resources() {
         description: formData.description || null,
         type: formData.type || 'PDF',
         subgroup_id: parseInt(formData.subgroup_id, 10),
-        external_url: formData.url,
+        external_url: formData.url || null,
         file_url: null,
       };
 
       if (editingResource) {
         await resourcesAPI.update(editingResource.id, payload);
+        if (formData.file) {
+          await resourcesAPI.uploadFile(editingResource.id, formData.file);
+        }
         setToast({ type: 'success', message: 'Resource updated successfully' });
       } else {
-        await resourcesAPI.create(payload);
+        const res = await resourcesAPI.create(payload);
+        if (formData.file && res && res.id) {
+          await resourcesAPI.uploadFile(res.id, formData.file);
+        }
         setToast({ type: 'success', message: 'Resource added to library' });
       }
       setIsModalOpen(false);
@@ -337,17 +345,27 @@ export default function Resources() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Resource / External URL *</label>
-          <input
-            type="url"
-            required
-            value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            placeholder="https://drive.google.com/... or https://github.com/..."
-            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Upload File (Optional)</label>
+              <input
+                type="file"
+                onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <p className="text-[10px] text-gray-500 mt-1">Leave empty if using External URL.</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">External URL (Optional)</label>
+              <input
+                type="url"
+                value={formData.url}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                placeholder="https://drive.google.com/..."
+                className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>

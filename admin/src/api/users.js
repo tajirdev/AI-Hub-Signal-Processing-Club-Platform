@@ -11,6 +11,11 @@ export const usersAPI = {
     return response.data;
   },
 
+  updateMe: async (userData) => {
+    const response = await client.put('/users/me', userData);
+    return response.data;
+  },
+
   getAvatar: async () => {
     const response = await client.get('/users/avatar');
     return response.data;
