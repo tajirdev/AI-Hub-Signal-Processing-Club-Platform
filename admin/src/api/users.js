@@ -45,6 +45,11 @@ export const usersAPI = {
     return response.data;
   },
 
+  toggleActive: async (userId) => {
+    const response = await client.post(`/users/${userId}/toggle-active`);
+    return response.data;
+  },
+
   delete: async (userId) => {
     const response = await client.delete(`/users/${userId}`);
     return response.data;

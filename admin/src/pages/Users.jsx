@@ -5,7 +5,7 @@ import Modal from '../components/Modal';
 import { usersAPI } from '../api/users';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldAlt, faUserCheck, faUserTimes, faUserCog, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faShieldAlt, faUserCheck, faUserTimes, faUserCog, faTrash, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -39,6 +39,23 @@ export default function Users() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const handleToggleActive = async (user) => {
+    try {
+      const res = await usersAPI.toggleActive(user.id);
+      setToast({
+        type: 'success',
+        message: `User ${user.first_name} is now ${res.is_active ? 'Active' : 'Inactive'}`,
+      });
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      setToast({
+        type: 'error',
+        message: err.response?.data?.detail || 'Failed to update user status',
+      });
+    }
+  };
 
   const handlePromote = async (roleName) => {
     if (!selectedUser) return;
@@ -171,16 +188,18 @@ export default function Users() {
     {
       header: 'Status',
       render: (u) => (
-        <span
-          className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+        <button
+          onClick={() => handleToggleActive(u)}
+          title={`Click to ${u.is_active ? 'deactivate' : 'activate'} user`}
+          className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold transition-all hover:scale-105 ${
             u.is_active
-              ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-gray-100 text-gray-600'
+              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           <FontAwesomeIcon icon={u.is_active ? faUserCheck : faUserTimes} className="text-[10px]" />
           <span>{u.is_active ? 'Active' : 'Inactive'}</span>
-        </span>
+        </button>
       ),
     },
     {
@@ -195,6 +214,15 @@ export default function Users() {
 
   const actions = (u) => (
     <div className="flex items-center justify-end space-x-2">
+      <button
+        onClick={() => handleToggleActive(u)}
+        title={u.is_active ? 'Deactivate User' : 'Activate User'}
+        className={`p-1.5 rounded transition-colors ${
+          u.is_active ? 'text-emerald-600 hover:bg-emerald-50' : 'text-gray-400 hover:bg-gray-100'
+        }`}
+      >
+        <FontAwesomeIcon icon={u.is_active ? faToggleOn : faToggleOff} className="text-base" />
+      </button>
       <button
         onClick={() => openRoleModal(u)}
         title="Manage Roles"

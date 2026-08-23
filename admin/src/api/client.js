@@ -20,7 +20,9 @@ client.interceptors.request.use(
     if (config.data instanceof FormData) {
       // Remove Content-Type so axios/browser sets multipart/form-data + boundary automatically
       delete config.headers['Content-Type'];
-    } else {
+    } else if (config.data instanceof URLSearchParams) {
+      config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    } else if (!config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json';
     }
 
