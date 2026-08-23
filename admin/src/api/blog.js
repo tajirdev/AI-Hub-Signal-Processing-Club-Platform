@@ -29,9 +29,7 @@ export const blogAPI = {
   uploadCover: async (postId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await client.post(`/blog-posts/${postId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await client.post(`/blog-posts/${postId}`, formData);
     return response.data;
   },
 };

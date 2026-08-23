@@ -53,8 +53,11 @@ export default function Navbar({ isDarkTheme, setIsDarkTheme }) {
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <div className="navbar-inner">
         <a href="/" className="navbar-brand">
-          <span className="brand-ai">AI &</span>
-          <span className="brand-sub">Signal Processing Hub</span>
+          <img src="/logo.png" alt="AI Hub Logo" className="navbar-logo-img" />
+          <div className="navbar-brand-text">
+            <span className="brand-ai">AI &</span>
+            <span className="brand-sub">Signal Processing Hub</span>
+          </div>
         </a>
 
         <div className={`navbar-links ${menuOpen ? 'open' : ''}`}>

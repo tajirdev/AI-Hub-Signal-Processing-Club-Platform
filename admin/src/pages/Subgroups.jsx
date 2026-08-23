@@ -3,12 +3,14 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { subgroupsAPI } from '../api/subgroups';
+import { usersAPI } from '../api/users';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faImage, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faImage, faUpload, faCrown, faUserTie } from '@fortawesome/free-solid-svg-icons';
 
 export default function Subgroups() {
   const [subgroups, setSubgroups] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState(null);
@@ -20,6 +22,7 @@ export default function Subgroups() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    lead_id: '',
   });
 
   // Media Upload Modal
@@ -42,13 +45,23 @@ export default function Subgroups() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const data = await usersAPI.getAll();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    }
+  };
+
   useEffect(() => {
     fetchSubgroups();
+    fetchUsers();
   }, []);
 
   const handleOpenCreate = () => {
     setEditingSubgroup(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', description: '', lead_id: '' });
     setIsModalOpen(true);
   };
 
@@ -57,6 +70,7 @@ export default function Subgroups() {
     setFormData({
       name: sg.name || '',
       description: sg.description || '',
+      lead_id: sg.lead_id ? String(sg.lead_id) : '',
     });
     setIsModalOpen(true);
   };
@@ -72,6 +86,7 @@ export default function Subgroups() {
       const payload = {
         name: formData.name,
         description: formData.description,
+        lead_id: formData.lead_id ? parseInt(formData.lead_id, 10) : null,
       };
 
       if (editingSubgroup) {
@@ -138,9 +153,11 @@ export default function Subgroups() {
 
   const filteredSubgroups = subgroups.filter((sg) => {
     const term = search.toLowerCase();
+    const leaderName = sg.leader ? `${sg.leader.first_name || ''} ${sg.leader.last_name || ''} ${sg.leader.user_name || ''}`.toLowerCase() : '';
     return (
       (sg.name || '').toLowerCase().includes(term) ||
-      (sg.description || '').toLowerCase().includes(term)
+      (sg.description || '').toLowerCase().includes(term) ||
+      leaderName.includes(term)
     );
   });
 
@@ -149,7 +166,7 @@ export default function Subgroups() {
       header: 'Subgroup',
       render: (sg) => (
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-sm overflow-hidden border border-purple-200">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-sm overflow-hidden border border-purple-200 shrink-0">
             {sg.icon_url ? (
               <img src={getImageUrl(sg.icon_url)} alt="Icon" className="w-full h-full object-cover" />
             ) : (
@@ -162,6 +179,41 @@ export default function Subgroups() {
           </div>
         </div>
       ),
+    },
+    {
+      header: 'Leader',
+      render: (sg) => {
+        const leader = sg.leader;
+        if (!leader) {
+          return (
+            <button
+              onClick={() => handleOpenEdit(sg)}
+              className="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline flex items-center space-x-1"
+            >
+              <FontAwesomeIcon icon={faUserTie} className="text-gray-400 text-xs" />
+              <span>+ Assign Leader</span>
+            </button>
+          );
+        }
+        return (
+          <div className="flex items-center space-x-2.5">
+            <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs overflow-hidden border border-amber-300 shrink-0">
+              {leader.avatar_url ? (
+                <img src={getImageUrl(leader.avatar_url)} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <FontAwesomeIcon icon={faCrown} className="text-[10px] text-amber-600" />
+              )}
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 text-xs flex items-center space-x-1">
+                <span>{leader.first_name ? `${leader.first_name} ${leader.last_name || ''}` : leader.user_name}</span>
+                <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">Lead</span>
+              </p>
+              <p className="text-[10px] text-gray-500">{leader.email}</p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       header: 'Description',
@@ -206,8 +258,8 @@ export default function Subgroups() {
     <div className="space-y-6">
       <DataTable
         title="Specialized AI Subgroups"
-        subtitle="Manage focus areas (Computer Vision, NLP, Robotics, Bio-signals, etc.)."
-        searchPlaceholder="Search subgroups..."
+        subtitle="Manage focus areas (Computer Vision, NLP, Robotics, Bio-signals, etc.) and assign leaders."
+        searchPlaceholder="Search subgroups or leaders..."
         searchValue={search}
         onSearchChange={setSearch}
         onCreateNew={handleOpenCreate}
@@ -240,7 +292,7 @@ export default function Subgroups() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingSubgroup ? 'Edit Subgroup' : 'Create Specialized Subgroup'}
-        subtitle="Specify subgroup name and domain description."
+        subtitle="Specify subgroup details and designate a team leader."
         onSubmit={handleSubmit}
         submitText={editingSubgroup ? 'Save Changes' : 'Create Group'}
         submitting={submitting}
@@ -255,6 +307,27 @@ export default function Subgroups() {
             placeholder="e.g. Signal & Audio Processing"
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Subgroup Leader (Optional)</label>
+          <select
+            value={formData.lead_id}
+            onChange={(e) => setFormData({ ...formData, lead_id: e.target.value })}
+            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+          >
+            <option value="">-- No Leader Assigned (Unassigned) --</option>
+            {users
+              .filter((u) => u.is_active !== false)
+              .map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.first_name} {u.last_name} (@{u.user_name}) &mdash; {u.email}
+                </option>
+              ))}
+          </select>
+          <p className="text-[11px] text-gray-500 mt-1">
+            Designating a leader grants them editor access to manage this subgroup&apos;s assets.
+          </p>
         </div>
 
         <div>

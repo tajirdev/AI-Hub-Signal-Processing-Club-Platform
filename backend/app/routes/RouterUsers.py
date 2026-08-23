@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Depends,UploadFile,File
 from app.models import ModoleUsers
-from app.schemas import SchemaUser,MediaScham
+from app.schemas import SchemaUser,MediaScham,RoleUpdate
 from sqlalchemy.orm import Session
 from app.core import database
 from app .services.ServiceUsers import UserReg
@@ -24,7 +24,7 @@ def post_users(request:SchemaUser.Users,db:Session=Depends(database.get_db)):
     return UsersService.registerUser(request,db)
 
 @router.get('/me', response_model=SchemaUser.UserResponse)
-def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(member_required)):
+def get_me(db:Session=Depends(database.get_db),current_user:ModoleUsers.Users=Depends(get_current_user)):
     return UsersService.return_current_user(db,current_user_id=current_user.id)
 
 @router.get('/all', response_model=list[SchemaUser.UserResponse])
@@ -78,3 +78,22 @@ def DeleteAvatar(
     
     return UsersService.RemoveAvatar(avatar_id,db,current_user_id=current_user.id)
     
+@router.post('/promote')
+def promote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.promote_user(db, request.user_id, request.role_name)
+
+@router.post('/demote')
+def demote_user(request: RoleUpdate.UserRoleUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.demote_user(db, request.user_id, request.role_name)
+
+@router.delete('/{user_id}')
+def delete_user(user_id: int, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(admin_required)):
+    return UsersService.delete_user(db, user_id)
+
+@router.put('/me', response_model=SchemaUser.UserResponse)
+def update_me(request: SchemaUser.UserUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(get_current_user)):
+    return UsersService.update_current_user(request, db, current_user.id)
+
+@router.post("/{user_id}/toggle-active")
+def toggle_user_active(user_id: int, db: Session = Depends(database.get_db), current_user: SchemaUser.Users = Depends(admin_required)):
+    return UsersService.toggle_active(db, user_id,current_user_id=current_user.id)

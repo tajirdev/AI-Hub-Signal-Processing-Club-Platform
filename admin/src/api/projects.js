@@ -25,4 +25,12 @@ export const projectsAPI = {
     const response = await client.delete(`/projects/${id}`);
     return response.data;
   },
+
+  uploadCover: async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await client.post(`/projects/${id}/cover`, formData);
+    return response.data;
+  },
 };
+

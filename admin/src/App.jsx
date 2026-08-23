@@ -8,6 +8,7 @@ import Layout from './components/Layout';
 // Pages
 import Login from './pages/Login';
 import Overview from './pages/Overview';
+import Applications from './pages/Applications';
 import Users from './pages/Users';
 import Members from './pages/Members';
 import Subgroups from './pages/Subgroups';
@@ -18,6 +19,7 @@ import Events from './pages/Events';
 import Projects from './pages/Projects';
 import Research from './pages/Research';
 import Resources from './pages/Resources';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -39,6 +41,7 @@ export default function App() {
           >
             <Route index element={<Navigate to={Routes.Overview.path} replace />} />
             <Route path={Routes.Overview.path} element={<Overview />} />
+            <Route path={Routes.Applications.path} element={<Applications />} />
             <Route path={Routes.Users.path} element={<Users />} />
             <Route path={Routes.Members.path} element={<Members />} />
             <Route path={Routes.Subgroups.path} element={<Subgroups />} />
@@ -49,6 +52,7 @@ export default function App() {
             <Route path={Routes.Projects.path} element={<Projects />} />
             <Route path={Routes.Research.path} element={<Research />} />
             <Route path={Routes.Resources.path} element={<Resources />} />
+            <Route path={Routes.Profile.path} element={<Profile />} />
           </Route>
 
           {/* 404 Route */}

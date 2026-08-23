@@ -25,4 +25,16 @@ export const resourcesAPI = {
     const response = await client.delete(`/resources/${id}`);
     return response.data;
   },
+
+  uploadFile: async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await client.post(`/resources/${id}/file`, formData);
+    return response.data;
+  },
+
+  deleteFile: async (id) => {
+    const response = await client.delete(`/resources/${id}/file`);
+    return response.data;
+  },
 };

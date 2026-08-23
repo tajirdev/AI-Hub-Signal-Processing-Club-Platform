@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../api/auth';
+import { usersAPI } from '../api/users';
 
 const AuthContext = createContext(null);
 
@@ -17,6 +18,10 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           const profile = await authAPI.getMe();
+          try {
+            const av = await usersAPI.getAvatar();
+            if (av && av.path) profile.avatar_url = av.path;
+          } catch (e) {}
           setUser(profile);
           localStorage.setItem('user', JSON.stringify(profile));
         } catch (err) {
@@ -40,6 +45,10 @@ export const AuthProvider = ({ children }) => {
     setToken(accessToken);
 
     const profile = await authAPI.getMe();
+    try {
+      const av = await usersAPI.getAvatar();
+      if (av && av.path) profile.avatar_url = av.path;
+    } catch (e) {}
     setUser(profile);
     localStorage.setItem('user', JSON.stringify(profile));
     return profile;
@@ -64,6 +73,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
+        setUser,
         isSuperAdmin,
         isEditor,
         isAuthenticated: !!token && !!user,

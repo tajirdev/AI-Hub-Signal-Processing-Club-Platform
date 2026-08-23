@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from '../components/DataTable';
-import Modal from '../components/Modal';
 import Toast from '../components/Toast';
+import Modal from '../components/Modal';
 import { membersAPI } from '../api/members';
 import { subgroupsAPI } from '../api/subgroups';
-import { usersAPI } from '../api/users';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faExternalLinkAlt, faUserGraduate } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faExternalLinkAlt, faTimes, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 
 export default function Members() {
   const [members, setMembers] = useState([]);
   const [subgroups, setSubgroups] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  // Pagination & Filtering
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedSubgroup, setSelectedSubgroup] = useState('');
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [toast, setToast] = useState(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    user_id: '',
     position: '',
     subgroup_id: '',
     github: '',
@@ -37,36 +36,32 @@ export default function Members() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [membersRes, subgroupsRes, usersRes] = await Promise.all([
-        membersAPI.getAll({
-          skip: (page - 1) * 10,
-          limit: 10,
-          search: search || undefined,
-        }),
-        subgroupsAPI.getAll().catch(() => []),
-        usersAPI.getAll().catch(() => []),
+      const params = {
+        skip: (page - 1) * 10,
+        limit: 10,
+      };
+
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+
+      if (selectedSubgroup) {
+        params.sub_group_id = parseInt(selectedSubgroup, 10);
+      }
+
+      const [membersData, subgroupsData] = await Promise.all([
+        membersAPI.getAll(params),
+        subgroupsAPI.getAll(),
       ]);
 
-      const subList = Array.isArray(subgroupsRes) ? subgroupsRes : [];
-      setSubgroups(subList);
-
-      const userList = Array.isArray(usersRes) ? usersRes : [];
-      setUsers(userList);
-
-      if (membersRes && Array.isArray(membersRes.results)) {
-        setMembers(membersRes.results);
-        setTotalPages(Math.ceil((membersRes.total || 0) / 10) || 1);
-        setTotalItems(membersRes.total || 0);
-      } else if (Array.isArray(membersRes)) {
-        setMembers(membersRes);
-        setTotalPages(1);
-        setTotalItems(membersRes.length);
-      } else {
-        setMembers([]);
-      }
+      const limit = 10;
+      setMembers(membersData.results || []);
+      setTotalPages(membersData.total ? Math.ceil(membersData.total / limit) : 1);
+      setTotalItems(membersData.total || 0);
+      setSubgroups(Array.isArray(subgroupsData) ? subgroupsData : []);
     } catch (err) {
       console.error(err);
-      setToast({ type: 'error', message: 'Failed to fetch members' });
+      setToast({ type: 'error', message: 'Failed to fetch members data' });
     } finally {
       setLoading(false);
     }
@@ -76,26 +71,27 @@ export default function Members() {
     fetchData();
   }, [page, search, selectedSubgroup]);
 
-  const handleOpenCreate = () => {
-    setEditingMember(null);
-    setFormData({
-      user_id: '',
-      position: 'Member',
-      subgroup_id: subgroups.length > 0 ? subgroups[0].id : '',
-      github: '',
-      linkedin: '',
-      portfolio: '',
-    });
-    setIsModalOpen(true);
+  const handleSubgroupFilterChange = (e) => {
+    setSelectedSubgroup(e.target.value);
+    setPage(1);
+  };
+
+  const handleSearchChange = (val) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const handleClearSubgroupFilter = () => {
+    setSelectedSubgroup('');
+    setPage(1);
   };
 
   const handleOpenEdit = (member) => {
     setEditingMember(member);
-    const sgObj = subgroups.find((s) => s.name === member.sub_group);
+    const sgId = member.subgroup_id || member.sub_group_id || subgroups.find((s) => s.name === member.sub_group)?.id || (subgroups[0]?.id || '');
     setFormData({
-      user_id: member.user_id || '',
       position: member.position || '',
-      subgroup_id: sgObj ? sgObj.id : (subgroups[0]?.id || ''),
+      subgroup_id: sgId,
       github: member.github || '',
       linkedin: member.linkedin || '',
       portfolio: member.portfolio || '',
@@ -116,35 +112,27 @@ export default function Members() {
         github: formData.github || null,
         linkedin: formData.linkedin || null,
         portfolio: formData.portfolio || null,
-        user_id: formData.user_id ? parseInt(formData.user_id, 10) : undefined,
       };
 
       if (editingMember) {
         await membersAPI.update(editingMember.id, formData.subgroup_id, payload);
         setToast({ type: 'success', message: 'Member updated successfully' });
-      } else {
-        await membersAPI.create(formData.subgroup_id, payload);
-        setToast({ type: 'success', message: 'Member created successfully' });
       }
       setIsModalOpen(false);
       fetchData();
     } catch (err) {
       console.error(err);
-      const detail = err.response?.data?.detail;
-      setToast({
-        type: 'error',
-        message: typeof detail === 'string' ? detail : (Array.isArray(detail) ? detail.map(d => d.msg).join(', ') : 'Failed to save member'),
-      });
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Action failed' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (memberId) => {
-    if (!window.confirm('Are you sure you want to remove this member?')) return;
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this member? This action cannot be undone.')) return;
     try {
-      await membersAPI.delete(memberId);
-      setToast({ type: 'success', message: 'Member removed successfully' });
+      await membersAPI.delete(id);
+      setToast({ type: 'success', message: 'Member deleted successfully' });
       fetchData();
     } catch (err) {
       console.error(err);
@@ -152,24 +140,36 @@ export default function Members() {
     }
   };
 
+  const selectedSubgroupObj = subgroups.find((s) => String(s.id) === String(selectedSubgroup));
+
   const columns = [
     {
       header: 'Member',
-      render: (m) => (
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs overflow-hidden border border-amber-200">
-            {m.avatar_url ? (
-              <img src={getImageUrl(m.avatar_url)} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <span>{m.name?.charAt(0) || 'M'}</span>
-            )}
+      render: (m) => {
+        const user = m.user || {};
+        const displayName = (user.first_name || user.last_name)
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+          : (m.name || user.user_name || 'Member');
+        const initial = (user.first_name?.charAt(0) || user.user_name?.charAt(0) || m.name?.charAt(0) || 'M').toUpperCase();
+
+        return (
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs overflow-hidden border border-blue-200 shrink-0">
+              {user.avatar_url ? (
+                <img src={getImageUrl(user.avatar_url)} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>{initial}</span>
+              )}
+            </div>
+            <div>
+              <p className="font-bold text-gray-900 text-xs">{displayName}</p>
+              <p className="text-[11px] text-gray-500 font-mono">
+                {user.email || `@${user.user_name || 'user'}`}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-gray-900 text-xs">{m.name}</p>
-            <p className="text-[11px] text-gray-500">Joined: {m.joined_at ? new Date(m.joined_at).toLocaleDateString() : 'Active'}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       header: 'Position',
@@ -181,8 +181,9 @@ export default function Members() {
     {
       header: 'Subgroup',
       render: (m) => (
-        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-          {m.sub_group || 'General'}
+        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+          <FontAwesomeIcon icon={faLayerGroup} className="text-[9px] text-purple-500 mr-1" />
+          <span>{m.sub_group || m.subgroup?.name || 'General'}</span>
         </span>
       ),
     },
@@ -223,6 +224,9 @@ export default function Members() {
               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[9px]" />
             </a>
           )}
+          {!m.github && !m.linkedin && !m.portfolio && (
+            <span className="text-gray-400 text-[11px] italic">None provided</span>
+          )}
         </div>
       ),
     },
@@ -232,12 +236,10 @@ export default function Members() {
     <div className="space-y-6">
       <DataTable
         title="Club Members Directory"
-        subtitle="Manage active club members and assign them to specialized AI subgroups."
-        searchPlaceholder="Search members..."
+        subtitle="Manage active club members and filter them by specialized AI subgroups."
+        searchPlaceholder="Search members by name, email, or position..."
         searchValue={search}
-        onSearchChange={setSearch}
-        onCreateNew={handleOpenCreate}
-        createButtonText="Add Member"
+        onSearchChange={handleSearchChange}
         columns={columns}
         data={members}
         loading={loading}
@@ -246,18 +248,30 @@ export default function Members() {
         totalItems={totalItems}
         onPageChange={setPage}
         filterComponent={
-          <select
-            value={selectedSubgroup}
-            onChange={(e) => setSelectedSubgroup(e.target.value)}
-            className="px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Subgroups</option>
-            {subgroups.map((sg) => (
-              <option key={sg.id} value={sg.id}>
-                {sg.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center space-x-2">
+            <select
+              value={selectedSubgroup}
+              onChange={handleSubgroupFilterChange}
+              className="px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            >
+              <option value="">All Subgroups</option>
+              {subgroups.map((sg) => (
+                <option key={sg.id} value={sg.id}>
+                  {sg.name}
+                </option>
+              ))}
+            </select>
+            {selectedSubgroup && (
+              <button
+                onClick={handleClearSubgroupFilter}
+                className="px-2 py-1 text-xs bg-red-50 text-red-600 hover:bg-red-100 rounded-md border border-red-200 flex items-center space-x-1 transition-colors"
+                title="Clear Subgroup Filter"
+              >
+                <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                <span>{selectedSubgroupObj ? selectedSubgroupObj.name : 'Clear'}</span>
+              </button>
+            )}
+          </div>
         }
         actions={(row) => (
           <div className="flex items-center justify-end space-x-1">
@@ -279,34 +293,16 @@ export default function Members() {
         )}
       />
 
-      {/* Member Form Modal */}
+      {/* Edit Member Form Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingMember ? 'Edit Member Profile' : 'Add New Club Member'}
+        title="Edit Member Profile"
         subtitle="Assign member position, subgroup, and professional portfolio links."
         onSubmit={handleSubmit}
-        submitText={editingMember ? 'Save Changes' : 'Create Member'}
+        submitText="Save Changes"
         submitting={submitting}
       >
-        {!editingMember && users.length > 0 && (
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Select User (Optional - default is current admin)</label>
-            <select
-              value={formData.user_id}
-              onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              <option value="">-- Current Logged-in User --</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.first_name} {u.last_name} ({u.email})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">Position / Role *</label>
@@ -325,7 +321,7 @@ export default function Members() {
               required
               value={formData.subgroup_id}
               onChange={(e) => setFormData({ ...formData, subgroup_id: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
             >
               <option value="">-- Select Subgroup --</option>
               {subgroups.map((sg) => (

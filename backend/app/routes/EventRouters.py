@@ -28,18 +28,19 @@ router = APIRouter(
 
 
 @router.post("", tags=["EVENTS"])
+@router.post("/", tags=["EVENTS"])
 def PostNew(
-    request:EventSchm.EventCreate,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(editor_required),
+    request: EventSchm.EventCreate,
+    db: Session = Depends(get_db),
+    current_user: ModoleUsers.Users = Depends(editor_required),
 ):
-    return services.CreateEvent(request,db,current_user_id=current_user.id)
+    return services.CreateEvent(request, db, current_user_id=current_user.id)
 
 
-
-@router.get("",response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
+@router.get("", response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
+@router.get("/", response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
 def get_blog(
-    db:Session=Depends(get_db),
+    db: Session = Depends(get_db),
     page:int=1,search:str=None,
     limit:int=10,
     status:str=None,sort:str="published_at",

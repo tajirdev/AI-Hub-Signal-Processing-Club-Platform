@@ -1,6 +1,7 @@
 export const Routes = {
   Login: { path: "/login" },
   Overview: { path: "/overview" },
+  Applications: { path: "/applications" },
   Users: { path: "/users" },
   Members: { path: "/members" },
   Subgroups: { path: "/subgroups" },
@@ -11,5 +12,6 @@ export const Routes = {
   Projects: { path: "/projects" },
   Research: { path: "/research" },
   Resources: { path: "/resources" },
+  Profile: { path: "/profile" },
   NotFound: { path: "/404" },
 };

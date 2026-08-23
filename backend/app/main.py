@@ -15,8 +15,10 @@ from app.routes import (
     resource,
     research,
     news,
+    applicationRoutes
 )
 from app.core import seed_role
+from app.admin import route
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -51,7 +53,8 @@ app.include_router(MemberRouter.router)
 app.include_router(EventRouters.router)
 app.include_router(news.router)
 app.include_router(project.router)
-app.include_router(project.cover_router)
+app.include_router(route.router)
+app.include_router(applicationRoutes.router)
 
 
 

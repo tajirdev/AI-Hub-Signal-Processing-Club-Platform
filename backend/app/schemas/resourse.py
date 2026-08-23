@@ -1,8 +1,8 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field, HttpUrl, model_validator
-
+from pydantic import BaseModel, Field, ConfigDict
+from app.schemas.MediaScham import MediaResponse
 
 class ResourceType(str, Enum):
     PDF = "PDF"
@@ -12,59 +12,42 @@ class ResourceType(str, Enum):
     EXTERNAL_LINK = "EXTERNAL_LINK"
 
 class ResourceBase(BaseModel):
-    title: str = Field(..., min_length=5, max_length=100, description="Resource title")
-    description: Optional[str] = Field(None, max_length=500, description="Resource description")
-    type: ResourceType
-    file_url: Optional[HttpUrl] = None
-    external_url: Optional[HttpUrl] = None
+    title: str = Field(..., min_length=3, max_length=150, description="Resource title")
+    description: Optional[str] = Field(None, max_length=1000, description="Resource description")
+    type: ResourceType = ResourceType.PDF
+    external_url: Optional[str] = None
+    file_id: Optional[int] = None
     subgroup_id: int
 
-    @model_validator(mode="after")
-    def validate_urls(self):
-        if not self.file_url and not self.external_url:
-            raise ValueError("Either file_url or external_url must be provided.")
-
-        return self
+    model_config = ConfigDict(from_attributes=True)
 
 class ResourceCreate(ResourceBase):
     pass
 
-class ResourceUpdate(ResourceBase):
-    title: Optional[str] = Field(None, min_length=5, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
+class ResourceUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=3, max_length=150)
+    description: Optional[str] = Field(None, max_length=1000)
     type: Optional[ResourceType] = None
-    file_url: Optional[HttpUrl] = None
-    external_url: Optional[HttpUrl] = None
+    file_id: Optional[int] = None
+    external_url: Optional[str] = None
     subgroup_id: Optional[int] = None
 
+    model_config = ConfigDict(from_attributes=True)
 
-
-
-    @model_validator(mode="after")
-    def validate_urls(self):
-        if(self.file_url is None and self.external_url is None):
-            return self
-        if not self.file_url and not self.external_url:
-            raise ValueError("Either file_url or external_url must be provided.")
-        return self
-
-
-
-
-
-class ResourceResponse(ResourceBase):
+class ResourceResponse(BaseModel):
     id: int
-    description: Optional[str]
-    type: Optional[ResourceType]=None
-    file_url: Optional[HttpUrl]=None
-    external_url: Optional[HttpUrl]=None
+    title: str
+    description: Optional[str] = None
+    type: Optional[ResourceType] = None
+    file_id: Optional[int] = None
+    external_url: Optional[str] = None
+    file: Optional[MediaResponse] = None
     subgroup_id: int
     uploaded_by: int
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-       from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
         

@@ -13,20 +13,31 @@ def login(request: Annotated[OAuth2PasswordRequestForm, Depends()],db:Session= D
     user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.email == request.username).first()
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Incorect password or username')
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail='Incorrect password or username',
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
-    if not Hash.verify_password(request.password,user.password_hash):
-        raise  HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Incorect password or username')
+    if not Hash.verify_password(request.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail='Incorrect password or username',
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='User account is inactive. Please contact administrator.'
+        )
     
-     #  create token
+    #  create token
     access_token = jwt_token.create_access_token(data = {
        "sub": str(user.id)
-  
-        
-        
     })
+    
     return {
         "access_token": access_token,
         "token_type": "bearer",
-       
     }
