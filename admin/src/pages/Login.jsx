@@ -52,9 +52,11 @@ export default function Login() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex justify-center">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-600/30 text-2xl font-black">
-            AI
-          </div>
+          <img
+            src="/logo.png"
+            alt="AI Hub Logo"
+            className="w-16 h-16 object-contain rounded-2xl shadow-xl shadow-blue-600/30"
+          />
         </div>
         <h2 className="mt-4 text-center text-2xl font-black tracking-tight text-white">
           AI Hub Admin Portal

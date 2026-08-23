@@ -62,13 +62,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       >
         {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-5 bg-gray-950 border-b border-gray-800">
-          <Link to={Routes.Overview.path} className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 font-extrabold text-lg">
-              AI
-            </div>
+          <Link to={Routes.Overview.path} className="flex items-center space-x-3 group">
+            <img
+              src="/logo.png"
+              alt="AI Hub Logo"
+              className="w-9 h-9 object-contain rounded-xl shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/20"
+            />
             <div className="flex flex-col">
-              <span className="text-white font-bold text-sm tracking-wide">AI Hub Admin</span>
-              <span className="text-xs text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
+              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">AI Hub Admin</span>
+              <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
             </div>
           </Link>
           <button
