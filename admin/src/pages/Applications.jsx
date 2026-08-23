@@ -4,7 +4,15 @@ import Toast from '../components/Toast';
 import Modal from '../components/Modal';
 import { applicationsAPI } from '../api/applications';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faClock, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faCheckCircle, 
+  faTimesCircle, 
+  faClock, 
+  faEye, 
+  faTrash, 
+  faSpinner, 
+  faPaperPlane 
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function Applications() {
   const [applications, setApplications] = useState([]);
@@ -15,7 +23,7 @@ export default function Applications() {
   // Review Modal State
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [reviewing, setReviewing] = useState(false);
+  const [reviewingAction, setReviewingAction] = useState(null); // 'approved' or 'rejected'
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -35,18 +43,21 @@ export default function Applications() {
   }, []);
 
   const handleReview = async (status) => {
-    if (!selectedApp) return;
-    setReviewing(true);
+    if (!selectedApp || reviewingAction) return;
+    setReviewingAction(status);
     try {
       await applicationsAPI.review(selectedApp.id, status);
-      setToast({ type: 'success', message: `Application ${status} successfully!` });
+      const actionMsg = status === 'approved' 
+        ? 'Application approved and registration OTP email sent successfully!' 
+        : 'Application rejected and notification email sent successfully.';
+      setToast({ type: 'success', message: actionMsg });
       setIsReviewModalOpen(false);
       fetchApplications();
     } catch (err) {
       console.error(err);
       setToast({ type: 'error', message: err.response?.data?.detail || `Failed to ${status} application` });
     } finally {
-      setReviewing(false);
+      setReviewingAction(null);
     }
   };
 
@@ -155,7 +166,7 @@ export default function Applications() {
     <div className="space-y-6">
       <DataTable
         title="Membership Applications"
-        subtitle="Review and manage student membership applications. Approved and rejected applications can be archived or deleted."
+        subtitle="Review and manage student membership applications. Decisions automatically dispatch email notifications with OTPs."
         searchPlaceholder="Search by name or email..."
         searchValue={search}
         onSearchChange={setSearch}
@@ -169,8 +180,8 @@ export default function Applications() {
       {isReviewModalOpen && selectedApp && (
         <Modal
           isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
-          title="Review Application"
+          onClose={() => !reviewingAction && setIsReviewModalOpen(false)}
+          title="Review Membership Application"
           subtitle={`Applicant: ${selectedApp.first_name} ${selectedApp.last_name}`}
           hideFooter
         >
@@ -178,47 +189,84 @@ export default function Applications() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="font-semibold text-xs text-gray-500">Email</p>
-                <p>{selectedApp.email}</p>
+                <p className="font-medium text-gray-900">{selectedApp.email}</p>
               </div>
               <div>
                 <p className="font-semibold text-xs text-gray-500">Phone</p>
-                <p>{selectedApp.phone || 'N/A'}</p>
+                <p className="font-medium text-gray-900">{selectedApp.phone || 'N/A'}</p>
               </div>
               <div>
                 <p className="font-semibold text-xs text-gray-500">Registration Number</p>
-                <p>{selectedApp.registration_number || 'N/A'}</p>
+                <p className="font-medium text-gray-900">{selectedApp.registration_number || 'N/A'}</p>
               </div>
               <div>
                 <p className="font-semibold text-xs text-gray-500">Current Status</p>
-                <p className="capitalize font-bold">{selectedApp.status}</p>
+                <p className="capitalize font-bold text-gray-900">{selectedApp.status}</p>
               </div>
             </div>
             
             <div>
               <p className="font-semibold text-xs text-gray-500 mb-1">Motivation / Bio</p>
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg whitespace-pre-wrap">
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg whitespace-pre-wrap text-xs text-gray-700">
                 {selectedApp.motivation || 'No motivation provided.'}
               </div>
             </div>
 
             {selectedApp.status === 'pending' && (
-              <div className="mt-6 flex justify-end space-x-3 pt-4 border-t border-gray-100">
-                <button
-                  onClick={() => handleReview('rejected')}
-                  disabled={reviewing}
-                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => handleReview('approved')}
-                  disabled={reviewing}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-500/30"
-                >
-                  Approve Application
-                </button>
+              <div className="pt-4 border-t border-gray-100 space-y-3">
+                {reviewingAction && (
+                  <div className="flex items-center space-x-2 text-xs bg-blue-50 text-blue-700 p-2.5 rounded-lg border border-blue-200 animate-pulse">
+                    <FontAwesomeIcon icon={faPaperPlane} className="text-blue-600 animate-bounce" />
+                    <span>
+                      {reviewingAction === 'approved'
+                        ? 'Approving application and delivering OTP verification email...'
+                        : 'Rejecting application and sending update email...'}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => handleReview('rejected')}
+                    disabled={Boolean(reviewingAction)}
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {reviewingAction === 'rejected' ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} spin />
+                        <span>Rejecting & Sending Email...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faTimesCircle} />
+                        <span>Reject Application</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleReview('approved')}
+                    disabled={Boolean(reviewingAction)}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-500/30 flex items-center space-x-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {reviewingAction === 'approved' ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} spin />
+                        <span>Approving & Sending OTP...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                        <span>Approve Application</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
+
             {selectedApp.status !== 'pending' && (
               <div className="mt-6 flex justify-between items-center pt-4 border-t border-gray-100">
                 <button
@@ -235,6 +283,7 @@ export default function Applications() {
                   <span>Delete Application Record</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setIsReviewModalOpen(false)}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
                 >
