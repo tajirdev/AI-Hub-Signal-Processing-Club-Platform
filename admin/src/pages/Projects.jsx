@@ -3,8 +3,9 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
 import { projectsAPI } from '../api/projects';
+import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faLaptopCode, faExternalLinkAlt, faCodeBranch } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faLaptopCode, faExternalLinkAlt, faCodeBranch, faImage } from '@fortawesome/free-solid-svg-icons';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -18,6 +19,10 @@ export default function Projects() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadProject, setUploadProject] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -59,6 +64,29 @@ export default function Projects() {
   useEffect(() => {
     fetchProjects();
   }, [page, search]);
+
+  const handleOpenUpload = (proj) => {
+    setUploadProject(proj);
+    setCoverFile(null);
+    setIsUploadOpen(true);
+  };
+  
+  const handleUploadSubmit = async (e) => {
+    e.preventDefault();
+    if (!coverFile) return;
+    setUploading(true);
+    try {
+      await projectsAPI.uploadCover(uploadProject.id, coverFile);
+      setToast({ type: 'success', message: 'Project cover image uploaded' });
+      setIsUploadOpen(false);
+      fetchProjects();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'Failed to upload cover image' });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleOpenCreate = () => {
     setEditingProject(null);
@@ -141,12 +169,16 @@ export default function Projects() {
       header: 'Project',
       render: (p) => (
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs flex-shrink-0">
-            <FontAwesomeIcon icon={faLaptopCode} />
+          <div className="w-12 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center text-gray-400">
+            {p.thumbnail ? (
+              <img src={getImageUrl(p.thumbnail.path)} alt="Cover" className="w-full h-full object-cover" />
+            ) : (
+              <FontAwesomeIcon icon={faImage} />
+            )}
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-xs line-clamp-1">{p.title}</p>
-            <p className="text-[11px] text-gray-500 line-clamp-1">{p.technology_stack || p.description}</p>
+            <div className="font-bold text-gray-900 text-xs line-clamp-1">{p.title}</div>
+            <div className="text-[11px] text-gray-500 line-clamp-1">{p.technology_stack || p.description}</div>
           </div>
         </div>
       ),
@@ -187,15 +219,12 @@ export default function Projects() {
       header: 'Status',
       render: (p) => (
         <span
-          className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-            p.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'
-          }`}
+          className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${p.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}
         >
           {p.status || 'Active'}
         </span>
       ),
-    },
-  ];
+    }];
 
   return (
     <div className="space-y-6">
@@ -216,6 +245,13 @@ export default function Projects() {
         onPageChange={setPage}
         actions={(row) => (
           <div className="flex items-center justify-end space-x-1">
+            <button
+              onClick={() => handleOpenUpload(row)}
+              className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+              title="Upload Cover Image"
+            >
+              <FontAwesomeIcon icon={faImage} />
+            </button>
             <button
               onClick={() => handleOpenEdit(row)}
               className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -316,7 +352,31 @@ export default function Projects() {
         </div>
       </Modal>
 
+
+      {/* Upload Cover Modal */}
+      <Modal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        title="Upload Project Cover Image"
+        subtitle={uploadProject ? `Select a cover image for "${uploadProject.title}".` : "Select a cover image."}
+        onSubmit={handleUploadSubmit}
+        submitText="Upload Cover"
+        submitting={uploading}
+      >
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-2">Select Image File</label>
+          <input
+            type="file"
+            required
+            accept="image/*"
+            onChange={(e) => setCoverFile(e.target.files[0])}
+            className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+          />
+        </div>
+      </Modal>
+
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+
     </div>
   );
 }

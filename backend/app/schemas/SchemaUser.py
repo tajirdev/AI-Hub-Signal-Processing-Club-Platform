@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+﻿from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List
 
@@ -10,7 +10,7 @@ class Users(BaseModel):
     password_hash: str
     phone : str
     bio : str
-   
+    otp : str
 
 class UserResponse(BaseModel):
     id: int
@@ -26,10 +26,10 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
     bio: Optional[str] = None
     user_name: Optional[str] = None
-

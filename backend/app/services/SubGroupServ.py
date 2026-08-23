@@ -26,8 +26,24 @@ class SubGroups:
 
         return slug
     @staticmethod
+    def _validate_lead(lead_id: int, db: Session):
+        from app.models.ModoleUsers import Users
+        from app.models.ModoleMembers import Members
+        user = db.query(Users).filter(Users.id == lead_id).first()
+        if not user:
+            raise HTTPException(status_code=400, detail="The selected leader user does not exist.")
+        if not user.is_active:
+            raise HTTPException(status_code=400, detail="The selected leader user is not active.")
+        member = db.query(Members).filter(Members.user_id == lead_id).first()
+        if not member:
+            raise HTTPException(status_code=400, detail="The selected leader must be an active Hub member.")
+
+    @staticmethod
     def create_subgrp(request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
 
+        if request.lead_id:
+            SubGroups._validate_lead(request.lead_id, db)
+            
         slug =SubGroups.GenerateSlug(request.name,db)
         new_subgroup = SubGroupModel.SubGroup(
             name = request.name,

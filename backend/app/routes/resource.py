@@ -22,7 +22,7 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db), cur
     return ResourceService.create_resource(db=db, resource=resource, uploaded_by=current_user.id)
 
 #get all resources
-@router.get("/", response_model=list[ResourceResponse])
+@router.get("/")
 def get_all_resources(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),

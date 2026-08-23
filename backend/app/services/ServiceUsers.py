@@ -13,51 +13,49 @@ class UserReg:
       pass
   
    def registerUser(self,request:SchemaUser.Users,db:Session):
-    new_user =ModoleUsers.Users(
-        first_name = request.first_name,
-        last_name = request.last_name,
-        email = request.email,
-        password_hash = security.Hash.hash(request.password_hash),
-        phone = request.phone,
-        bio = request.bio,
-       
-        user_name = request.user_name
-        
+        from app.services.otp_service import OTPService
+        from app.models.applicationModel import Application, ApplicationStatus
 
+        # 1. Check if application is approved
+        application = db.query(Application).filter(Application.email == request.email).first()
+        if not application or application.status != ApplicationStatus.approved:
+            raise HTTPException(status_code=400, detail="No approved application found for this email.")
 
-    )
-    try:
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-    except IntegrityError:
-        db.rollback() 
-        raise HTTPException(status_code=400, detail="Conflict: Data already exists.")  
-    
-   
+        # 2. Verify OTP
+        is_valid = OTPService.verify_otp(db, request.email, request.otp, "registration")
+        if not is_valid:
+            raise HTTPException(status_code=400, detail="Invalid or expired OTP.")
 
-    member_role = (
-        db.query(ModoleRoles.Role)
-        .filter(ModoleRoles.Role.name == "user")
-        .first()
-    )
-
-    if not member_role:
-        raise HTTPException(
-            status_code=500,
-            detail="Default role 'user' not found."
+        # 3. Create user
+        new_user = ModoleUsers.Users(
+            first_name = request.first_name,
+            last_name = request.last_name,
+            email = request.email,
+            password_hash = security.Hash.hash(request.password_hash),
+            phone = request.phone,
+            bio = request.bio,
+            user_name = request.user_name,
+            is_active = True
         )
+        try:
+            db.add(new_user)
+            db.commit()
+            db.refresh(new_user)
+        except IntegrityError:
+            db.rollback() 
+            raise HTTPException(status_code=400, detail="Conflict: Data already exists.")  
 
-    user_role = ModelUserRoles.UserRole(
-        user_id=new_user.id,
-        role_id=member_role.id
-    )
+        # 4. Assign roles
+        roles_to_assign = ["user", "member"]
+        for role_name in roles_to_assign:
+            role = db.query(ModoleRoles.Role).filter(ModoleRoles.Role.name == role_name).first()
+            if role:
+                user_role = ModelUserRoles.UserRole(user_id=new_user.id, role_id=role.id)
+                db.add(user_role)
+        
+        db.commit()
+        return {"message":"user has been created"}
 
-    db.add(user_role)
-    db.commit()
-    db.refresh(user_role)
-    
-    return {"message":"user has been created"}
    
    def return_current_user(self,db:Session,current_user_id:int):
         active_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
@@ -212,6 +210,11 @@ class UserReg:
         if not role:
            raise HTTPException(status_code=404, detail="Role not found")
            
+        if role_name == "super_admin":
+           super_admin_count = db.query(ModelUserRoles.UserRole).filter(ModelUserRoles.UserRole.role_id == role.id).count()
+           if super_admin_count <= 1:
+               raise HTTPException(status_code=400, detail="Cannot remove the last super_admin.")
+               
         existing_role = db.query(ModelUserRoles.UserRole).filter(
            ModelUserRoles.UserRole.user_id == user_id, 
            ModelUserRoles.UserRole.role_id == role.id
@@ -229,9 +232,27 @@ class UserReg:
         if not user:
            raise HTTPException(status_code=404, detail="User not found")
            
-        db.delete(user)
-        db.commit()
-        return {"message": "User successfully deleted"}
+        super_admin_role = db.query(ModoleRoles.Role).filter(ModoleRoles.Role.name == "super_admin").first()
+        if super_admin_role:
+            is_super_admin = db.query(ModelUserRoles.UserRole).filter(
+                ModelUserRoles.UserRole.user_id == user_id,
+                ModelUserRoles.UserRole.role_id == super_admin_role.id
+            ).first()
+            if is_super_admin:
+                super_admin_count = db.query(ModelUserRoles.UserRole).filter(ModelUserRoles.UserRole.role_id == super_admin_role.id).count()
+                if super_admin_count <= 1:
+                    raise HTTPException(status_code=400, detail="Cannot delete the last super_admin.")
+                    
+        try:
+            db.delete(user)
+            db.commit()
+            return {"message": "User successfully deleted"}
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail="User cannot be deleted because they are associated with existing projects, research, resources, or subgroups. Please reassign or delete those assets first."
+            )
    
    def update_current_user(self, request, db: Session, current_user_id: int):
         user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
@@ -247,8 +268,19 @@ class UserReg:
         if request.bio:
             user.bio = request.bio
         if request.user_name:
-            user.user_name = request.user_name
+            user.user_name = request.user_name,
+            is_active = True
             
         db.commit()
         db.refresh(user)
         return user
+
+   def toggle_active(self, db: Session, user_id: int):
+        user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == user_id).first()
+        if not user:
+           from fastapi import HTTPException
+           raise HTTPException(status_code=404, detail="User not found")
+           
+        user.is_active = not user.is_active
+        db.commit()
+        return {"message": "User active status toggled", "is_active": user.is_active}

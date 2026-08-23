@@ -48,8 +48,16 @@ class ResourceService:
             else:
                 query = query.order_by(desc(sort_column))
     
+            total = query.count()
             offset = (page - 1) * limit
-            return (query.offset(offset).limit(limit).all())
+            results = query.offset(offset).limit(limit).all()
+            return {
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "returned": len(results),
+                "results": results
+            }
   
 
     @staticmethod

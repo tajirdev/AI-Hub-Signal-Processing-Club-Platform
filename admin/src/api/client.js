@@ -4,18 +4,26 @@ const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const client = axios.create({
   baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
-// Attach Authorization Bearer token to all requests
+// Attach Authorization Bearer token to all requests.
+// When sending FormData, delete Content-Type so axios auto-generates
+// the correct multipart/form-data header with the boundary string.
+// For all other requests, default to application/json.
 client.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    if (config.data instanceof FormData) {
+      // Remove Content-Type so axios/browser sets multipart/form-data + boundary automatically
+      delete config.headers['Content-Type'];
+    } else {
+      config.headers['Content-Type'] = 'application/json';
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

@@ -93,3 +93,7 @@ def delete_user(user_id: int, db: Session = Depends(database.get_db), current_us
 @router.put('/me', response_model=SchemaUser.UserResponse)
 def update_me(request: SchemaUser.UserUpdate, db: Session = Depends(database.get_db), current_user: ModoleUsers.Users = Depends(get_current_user)):
     return UsersService.update_current_user(request, db, current_user.id)
+
+@router.post("/{user_id}/toggle-active")
+def toggle_user_active(user_id: int, db: Session = Depends(database.get_db), current_user: SchemaUser.Users = Depends(admin_required)):
+    return UsersService.toggle_active(db, user_id)
