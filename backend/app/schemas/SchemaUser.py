@@ -1,16 +1,16 @@
-﻿from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 
 class Users(BaseModel):
-    first_name : str
-    last_name : str
-    user_name : str
-    email : EmailStr
+    first_name: str
+    last_name: str
+    user_name: str
+    email: EmailStr
     password_hash: str
-    phone : str
-    bio : str
-    otp : str
+    phone: str
+    bio: str
+    otp: str
 
 class UserResponse(BaseModel):
     id: int
@@ -22,10 +22,11 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     is_active: bool
     roles: List[str] = []
+    avatar_id: Optional[int] = None
+    avatar_url: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None

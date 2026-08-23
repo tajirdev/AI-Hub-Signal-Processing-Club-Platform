@@ -60,11 +60,19 @@ class UserReg:
         return {"message": "user has been created"}
 
     def return_current_user(self, db: Session, current_user_id: int):
-        active_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
+        from sqlalchemy.orm import joinedload
+        active_user = db.query(ModoleUsers.Users).options(
+            joinedload(ModoleUsers.Users.avatar_media),
+            joinedload(ModoleUsers.Users.userRole)
+        ).filter(ModoleUsers.Users.id == current_user_id).first()
         return active_user
 
     def get_all(self, db: Session, current_user_id: int = 0):
-        users = db.query(ModoleUsers.Users).all()
+        from sqlalchemy.orm import joinedload
+        users = db.query(ModoleUsers.Users).options(
+            joinedload(ModoleUsers.Users.avatar_media),
+            joinedload(ModoleUsers.Users.userRole)
+        ).all()
         return users
 
     def UpdateAvatar(
