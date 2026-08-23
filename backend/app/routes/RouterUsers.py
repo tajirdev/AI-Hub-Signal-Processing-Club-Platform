@@ -96,4 +96,4 @@ def update_me(request: SchemaUser.UserUpdate, db: Session = Depends(database.get
 
 @router.post("/{user_id}/toggle-active")
 def toggle_user_active(user_id: int, db: Session = Depends(database.get_db), current_user: SchemaUser.Users = Depends(admin_required)):
-    return UsersService.toggle_active(db, user_id)
+    return UsersService.toggle_active(db, user_id,current_user_id=current_user.id)

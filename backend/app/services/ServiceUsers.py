@@ -257,7 +257,7 @@ class UserReg:
    def update_current_user(self, request, db: Session, current_user_id: int):
         user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
         if not user:
-            from fastapi import HTTPException
+           
             raise HTTPException(status_code=404, detail="User not found")
         if request.first_name:
             user.first_name = request.first_name
@@ -275,11 +275,14 @@ class UserReg:
         db.refresh(user)
         return user
 
-   def toggle_active(self, db: Session, user_id: int):
+   def toggle_active(self, db: Session, user_id: int,current_user_id:int):
         user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == user_id).first()
         if not user:
-           from fastapi import HTTPException
+       
            raise HTTPException(status_code=404, detail="User not found")
+
+        if user.id == current_user_id:
+            raise HTTPException(status_code=404,detail="can't deactivate current user")
            
         user.is_active = not user.is_active
         db.commit()
