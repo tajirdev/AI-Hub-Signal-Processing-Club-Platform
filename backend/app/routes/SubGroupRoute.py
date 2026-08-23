@@ -19,8 +19,8 @@ router = APIRouter(
    
 )
 
-@router.post("", tags=["SUB GROUPS"])
-@router.post("/", tags=["SUB GROUPS"])
+@router.post("", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
+@router.post("/", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def new_group(
     request: SubGroupSchm.SubGroup,
     db: Session = Depends(get_db),
@@ -29,31 +29,31 @@ def new_group(
     return services.create_subgrp(request, db, current_user_id=current_user.id)
 
 
-@router.get("", tags=["SUB GROUPS"])
-@router.get("/", tags=["SUB GROUPS"])
+@router.get("", response_model=list[SubGroupSchm.SubGroupResponse], tags=["SUB GROUPS"])
+@router.get("/", response_model=list[SubGroupSchm.SubGroupResponse], tags=["SUB GROUPS"])
 def return_all(
     db: Session = Depends(get_db),
     current_user: ModoleUsers.Users = Depends(get_current_user)
 ):
     return services.get_all(db)
 
-@router.get("/{id}", tags= ["SUB GROUPS"])
+@router.get("/{id}", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def return_single(
     id: int,
-    db:Session = Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(admin_required)
-    ):
-    return services.get_single(id,db)
+    db: Session = Depends(get_db),
+    current_user: ModoleUsers.Users = Depends(admin_required)
+):
+    return services.get_single(id, db)
 
 
-@router.put("/{id}", tags= ["SUB GROUPS"])
+@router.put("/{id}", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def edite_group(
-    id:int,
-    request:SubGroupSchm.SubGroup,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users = Depends(admin_required)
-    ):
-    return services.update_group(id,request,db)
+    id: int,
+    request: SubGroupSchm.SubGroup,
+    db: Session = Depends(get_db),
+    current_user: ModoleUsers.Users = Depends(admin_required)
+):
+    return services.update_group(id, request, db)
 
 
 @router.delete("/{id}", tags= ["SUB GROUPS"])

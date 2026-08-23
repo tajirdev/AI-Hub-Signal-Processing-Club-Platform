@@ -28,28 +28,24 @@ class SubGroups:
     @staticmethod
     def _validate_lead(lead_id: int, db: Session):
         from app.models.ModoleUsers import Users
-        from app.models.ModoleMembers import Members
         user = db.query(Users).filter(Users.id == lead_id).first()
         if not user:
             raise HTTPException(status_code=400, detail="The selected leader user does not exist.")
         if not user.is_active:
             raise HTTPException(status_code=400, detail="The selected leader user is not active.")
-        member = db.query(Members).filter(Members.user_id == lead_id).first()
-        if not member:
-            raise HTTPException(status_code=400, detail="The selected leader must be an active Hub member.")
 
     @staticmethod
-    def create_subgrp(request:SubGroupSchm.SubGroup,db:Session,current_user_id:int):
-
-        if request.lead_id:
-            SubGroups._validate_lead(request.lead_id, db)
+    def create_subgrp(request: SubGroupSchm.SubGroup, db: Session, current_user_id: int):
+        lead_id = request.lead_id if (request.lead_id and request.lead_id > 0) else None
+        if lead_id:
+            SubGroups._validate_lead(lead_id, db)
             
-        slug =SubGroups.GenerateSlug(request.name,db)
+        slug = SubGroups.GenerateSlug(request.name, db)
         new_subgroup = SubGroupModel.SubGroup(
-            name = request.name,
-            slug = slug,
-            description = request.description,
-            lead_id = request.lead_id  
+            name=request.name,
+            slug=slug,
+            description=request.description,
+            lead_id=lead_id
         )
 
         try:
@@ -57,62 +53,75 @@ class SubGroups:
             db.commit()
             db.refresh(new_subgroup)
             
-            if request.lead_id:
-                SubGroups._assign_editor_role(request.lead_id, db)
+            if lead_id:
+                SubGroups._assign_editor_role(lead_id, db)
+                
+            return SubGroups.get_single(new_subgroup.id, db)
                 
         except IntegrityError:
             db.rollback()
-            raise HTTPException(status_code=400, detail="Conflict: Data already exists.")
-
-        return new_subgroup
+            raise HTTPException(status_code=400, detail="Conflict: Subgroup name already exists.")
 
     @staticmethod
-    def get_all(db:Session):
-        groups = db.query(SubGroupModel.SubGroup).all()
+    def get_all(db: Session):
+        from sqlalchemy.orm import joinedload
+        groups = db.query(SubGroupModel.SubGroup).options(
+            joinedload(SubGroupModel.SubGroup.leader),
+            joinedload(SubGroupModel.SubGroup.Sub_icon),
+            joinedload(SubGroupModel.SubGroup.sub_cover)
+        ).all()
         return groups or []
 
     @staticmethod
-    def get_single(id,db:Session):
-        group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
+    def get_single(id, db: Session):
+        from sqlalchemy.orm import joinedload
+        group = db.query(SubGroupModel.SubGroup).options(
+            joinedload(SubGroupModel.SubGroup.leader),
+            joinedload(SubGroupModel.SubGroup.Sub_icon),
+            joinedload(SubGroupModel.SubGroup.sub_cover)
+        ).filter(SubGroupModel.SubGroup.id == id).first()
 
         if not group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail= f"sub-group with id of {id} not found"
+                detail=f"sub-group with id of {id} not found"
             )
         return group
 
     @staticmethod
-    def update_group(id,request:SubGroupSchm.SubGroup,db:Session):
+    def update_group(id, request: SubGroupSchm.SubGroup, db: Session):
         exist_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
 
         if not exist_group:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail= f"the group with that id {id} not found"
+                detail=f"the group with that id {id} not found"
             )
             
         if request.name != exist_group.name:
-            slug = SubGroups.GenerateSlug(request.name,db)
+            slug = SubGroups.GenerateSlug(request.name, db)
             exist_group.name = request.name
             exist_group.slug = slug
             
         exist_group.description = request.description
         
-        if request.lead_id is not None:
-            exist_group.lead_id = request.lead_id
-            SubGroups._assign_editor_role(request.lead_id, db)
+        lead_id = request.lead_id if (request.lead_id and request.lead_id > 0) else None
+        if lead_id:
+            SubGroups._validate_lead(lead_id, db)
+            exist_group.lead_id = lead_id
+            SubGroups._assign_editor_role(lead_id, db)
+        else:
+            exist_group.lead_id = None
 
         try:
             db.commit()
-            db.refresh(exist_group)
+            return SubGroups.get_single(exist_group.id, db)
         except IntegrityError:
             db.rollback()
-            raise HTTPException (
+            raise HTTPException(
                 status_code=400,
                 detail="conflicts: data already exist"
             )
-        return exist_group
 
     @staticmethod
     def _assign_editor_role(user_id: int, db: Session):
