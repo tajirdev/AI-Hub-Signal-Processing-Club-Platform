@@ -59,6 +59,7 @@ def PutApplicant(
     return service.ReviewApplication(applicant_id,request,db,current_user_id=current_user.id)
 
 @router.delete("/{applicant_id}")
+@router.delete("/{applicant_id}/")
 def DeleteApplicant(
     applicant_id:int,
     db:Session=Depends(get_db),

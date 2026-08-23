@@ -217,7 +217,7 @@ class ApplicationService:
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Reviewed applications cannot be deleted."
+                detail="Pending applications cannot be deleted. Please review (approve or reject) the application first."
             )
 
         db.delete(application)

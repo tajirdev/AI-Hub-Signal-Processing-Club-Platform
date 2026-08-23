@@ -4,7 +4,7 @@ import Toast from '../components/Toast';
 import Modal from '../components/Modal';
 import { applicationsAPI } from '../api/applications';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faClock, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle, faClock, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 export default function Applications() {
   const [applications, setApplications] = useState([]);
@@ -50,15 +50,15 @@ export default function Applications() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this rejected application?")) return;
+  const handleDelete = async (id, name = 'this applicant') => {
+    if (!window.confirm(`Are you sure you want to permanently delete the application record for ${name}?`)) return;
     try {
       await applicationsAPI.delete(id);
       setToast({ type: 'success', message: 'Application deleted successfully!' });
       fetchApplications();
     } catch (err) {
       console.error(err);
-      setToast({ type: 'error', message: 'Failed to delete application' });
+      setToast({ type: 'error', message: err.response?.data?.detail || 'Failed to delete application' });
     }
   };
 
@@ -94,7 +94,7 @@ export default function Applications() {
       render: (a) => (
         <div>
           <p className="text-xs text-gray-800">{a.programme || 'N/A'}</p>
-          <p className="text-[11px] text-gray-500">Year {a.year_of_study || 'N/A'}</p>
+          <p className="text-[11px] text-gray-500">Year {a.year_of_study || a.year || 'N/A'}</p>
         </div>
       ),
     },
@@ -133,17 +133,18 @@ export default function Applications() {
       <button
         onClick={() => openReviewModal(a)}
         title="Review Application"
-        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors flex items-center space-x-1"
+        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center space-x-1"
       >
         <FontAwesomeIcon icon={faEye} />
         <span className="text-xs font-semibold">Review</span>
       </button>
-      {a.status === 'rejected' && (
+      {a.status !== 'pending' && (
         <button
-          onClick={() => handleDelete(a.id)}
-          title="Delete Rejected Application"
-          className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors flex items-center space-x-1"
+          onClick={() => handleDelete(a.id, `${a.first_name} ${a.last_name}`)}
+          title={`Delete ${a.status} Application`}
+          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center space-x-1"
         >
+          <FontAwesomeIcon icon={faTrash} />
           <span className="text-xs font-semibold">Delete</span>
         </button>
       )}
@@ -154,7 +155,7 @@ export default function Applications() {
     <div className="space-y-6">
       <DataTable
         title="Membership Applications"
-        subtitle="Review and approve or reject new membership requests."
+        subtitle="Review and manage student membership applications. Approved and rejected applications can be archived or deleted."
         searchPlaceholder="Search by name or email..."
         searchValue={search}
         onSearchChange={setSearch}
@@ -219,7 +220,20 @@ export default function Applications() {
               </div>
             )}
             {selectedApp.status !== 'pending' && (
-              <div className="mt-6 flex justify-end pt-4 border-t border-gray-100">
+              <div className="mt-6 flex justify-between items-center pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = selectedApp.id;
+                    const name = `${selectedApp.first_name} ${selectedApp.last_name}`;
+                    setIsReviewModalOpen(false);
+                    handleDelete(id, name);
+                  }}
+                  className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors flex items-center space-x-1.5"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  <span>Delete Application Record</span>
+                </button>
                 <button
                   onClick={() => setIsReviewModalOpen(false)}
                   className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
