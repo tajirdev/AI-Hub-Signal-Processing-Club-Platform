@@ -6,7 +6,7 @@ import { membersAPI } from '../api/members';
 import { subgroupsAPI } from '../api/subgroups';
 import { getImageUrl } from '../api/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faExternalLinkAlt, faTimes, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 
 export default function Members() {
   const [members, setMembers] = useState([]);
@@ -36,14 +36,24 @@ export default function Members() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const params = {
+        skip: (page - 1) * 10,
+        limit: 10,
+      };
+
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+
+      if (selectedSubgroup) {
+        params.sub_group_id = parseInt(selectedSubgroup, 10);
+      }
+
       const [membersData, subgroupsData] = await Promise.all([
-        membersAPI.getAll({
-          skip: (page - 1) * 10,
-          limit: 10,
-          search: search || undefined
-        }),
+        membersAPI.getAll(params),
         subgroupsAPI.getAll(),
       ]);
+
       const limit = 10;
       setMembers(membersData.results || []);
       setTotalPages(membersData.total ? Math.ceil(membersData.total / limit) : 1);
@@ -61,12 +71,27 @@ export default function Members() {
     fetchData();
   }, [page, search, selectedSubgroup]);
 
+  const handleSubgroupFilterChange = (e) => {
+    setSelectedSubgroup(e.target.value);
+    setPage(1);
+  };
+
+  const handleSearchChange = (val) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const handleClearSubgroupFilter = () => {
+    setSelectedSubgroup('');
+    setPage(1);
+  };
+
   const handleOpenEdit = (member) => {
     setEditingMember(member);
-    const sgObj = subgroups.find((s) => s.name === member.sub_group);
+    const sgId = member.subgroup_id || member.sub_group_id || subgroups.find((s) => s.name === member.sub_group)?.id || (subgroups[0]?.id || '');
     setFormData({
       position: member.position || '',
-      subgroup_id: sgObj ? sgObj.id : (subgroups[0]?.id || ''),
+      subgroup_id: sgId,
       github: member.github || '',
       linkedin: member.linkedin || '',
       portfolio: member.portfolio || '',
@@ -115,26 +140,36 @@ export default function Members() {
     }
   };
 
+  const selectedSubgroupObj = subgroups.find((s) => String(s.id) === String(selectedSubgroup));
+
   const columns = [
     {
       header: 'Member',
-      render: (m) => (
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs overflow-hidden border border-blue-200">
-            {m.user?.avatar_url ? (
-              <img src={getImageUrl(m.user.avatar_url)} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <span>{m.user?.first_name?.charAt(0) || 'M'}</span>
-            )}
+      render: (m) => {
+        const user = m.user || {};
+        const displayName = (user.first_name || user.last_name)
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+          : (m.name || user.user_name || 'Member');
+        const initial = (user.first_name?.charAt(0) || user.user_name?.charAt(0) || m.name?.charAt(0) || 'M').toUpperCase();
+
+        return (
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs overflow-hidden border border-blue-200 shrink-0">
+              {user.avatar_url ? (
+                <img src={getImageUrl(user.avatar_url)} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>{initial}</span>
+              )}
+            </div>
+            <div>
+              <p className="font-bold text-gray-900 text-xs">{displayName}</p>
+              <p className="text-[11px] text-gray-500 font-mono">
+                {user.email || `@${user.user_name || 'user'}`}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-gray-900 text-xs">
-              {m.user?.first_name} {m.user?.last_name}
-            </p>
-            <p className="text-[11px] text-gray-500 font-mono">@{m.user?.user_name}</p>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       header: 'Position',
@@ -146,8 +181,9 @@ export default function Members() {
     {
       header: 'Subgroup',
       render: (m) => (
-        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-          {m.sub_group || 'General'}
+        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+          <FontAwesomeIcon icon={faLayerGroup} className="text-[9px] text-purple-500 mr-1" />
+          <span>{m.sub_group || m.subgroup?.name || 'General'}</span>
         </span>
       ),
     },
@@ -188,6 +224,9 @@ export default function Members() {
               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[9px]" />
             </a>
           )}
+          {!m.github && !m.linkedin && !m.portfolio && (
+            <span className="text-gray-400 text-[11px] italic">None provided</span>
+          )}
         </div>
       ),
     },
@@ -197,10 +236,10 @@ export default function Members() {
     <div className="space-y-6">
       <DataTable
         title="Club Members Directory"
-        subtitle="Manage active club members and assign them to specialized AI subgroups."
-        searchPlaceholder="Search members..."
+        subtitle="Manage active club members and filter them by specialized AI subgroups."
+        searchPlaceholder="Search members by name, email, or position..."
         searchValue={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         columns={columns}
         data={members}
         loading={loading}
@@ -209,18 +248,30 @@ export default function Members() {
         totalItems={totalItems}
         onPageChange={setPage}
         filterComponent={
-          <select
-            value={selectedSubgroup}
-            onChange={(e) => setSelectedSubgroup(e.target.value)}
-            className="px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Subgroups</option>
-            {subgroups.map((sg) => (
-              <option key={sg.id} value={sg.id}>
-                {sg.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center space-x-2">
+            <select
+              value={selectedSubgroup}
+              onChange={handleSubgroupFilterChange}
+              className="px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            >
+              <option value="">All Subgroups</option>
+              {subgroups.map((sg) => (
+                <option key={sg.id} value={sg.id}>
+                  {sg.name}
+                </option>
+              ))}
+            </select>
+            {selectedSubgroup && (
+              <button
+                onClick={handleClearSubgroupFilter}
+                className="px-2 py-1 text-xs bg-red-50 text-red-600 hover:bg-red-100 rounded-md border border-red-200 flex items-center space-x-1 transition-colors"
+                title="Clear Subgroup Filter"
+              >
+                <FontAwesomeIcon icon={faTimes} className="text-[10px]" />
+                <span>{selectedSubgroupObj ? selectedSubgroupObj.name : 'Clear'}</span>
+              </button>
+            )}
+          </div>
         }
         actions={(row) => (
           <div className="flex items-center justify-end space-x-1">
@@ -270,7 +321,7 @@ export default function Members() {
               required
               value={formData.subgroup_id}
               onChange={(e) => setFormData({ ...formData, subgroup_id: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
             >
               <option value="">-- Select Subgroup --</option>
               {subgroups.map((sg) => (
