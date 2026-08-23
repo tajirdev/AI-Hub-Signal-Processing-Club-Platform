@@ -6,7 +6,7 @@ class OTP(Base):
     __tablename__ = "otps"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), index=True, nullable=False)
-    otp_code = Column(String(10), nullable=False)
+    otp_code = Column(String(255), nullable=False)
     purpose = Column(String(50), nullable=False)
     is_used = Column(Boolean, default=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)

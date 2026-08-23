@@ -13,13 +13,16 @@ from app.core import security
 class OnboardingService:
     @staticmethod
     def complete_onboarding(request: ApplicationOnboarding, db: Session):
+        from sqlalchemy import func
+        clean_email = (request.email or "").strip().lower()
+
         # 1. Verify OTP
-        is_valid = OTPService.verify_otp(db, request.email, request.otp_code, "registration")
+        is_valid = OTPService.verify_otp(db, clean_email, request.otp_code, "registration")
         if not is_valid:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OTP.")
             
         # 2. Verify Application is Approved
-        app = db.query(Application).filter(Application.email == request.email).first()
+        app = db.query(Application).filter(func.lower(Application.email) == clean_email).first()
         if not app or app.status != ApplicationStatus.approved:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Application not approved or found.")
             
@@ -29,7 +32,7 @@ class OnboardingService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subgroup not found.")
 
         # 4. Check if user already exists
-        existing_user = db.query(Users).filter(Users.email == request.email).first()
+        existing_user = db.query(Users).filter(func.lower(Users.email) == clean_email).first()
         if existing_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already registered.")
 
@@ -37,7 +40,7 @@ class OnboardingService:
         new_user = Users(
             first_name=app.first_name,
             last_name=app.last_name,
-            email=app.email,
+            email=clean_email,
             password_hash=security.Hash.hash(request.password),
             phone=app.phone,
             bio=request.bio or "",
