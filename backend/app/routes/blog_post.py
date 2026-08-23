@@ -20,20 +20,22 @@ router= APIRouter(
     
 )
 
-@router.post("",tags=["Blog Post"],response_model=BlogPostResponse)
-def create_blog_post(data:BlogPostCreate,current_user:Users=Depends(editor_required),db:Session=Depends(get_db)):
-    return services.blog_post_create(data,current_user,db)
+@router.post("", tags=["Blog Post"], response_model=BlogPostResponse)
+@router.post("/", tags=["Blog Post"], response_model=BlogPostResponse)
+def create_blog_post(data: BlogPostCreate, current_user: Users = Depends(editor_required), db: Session = Depends(get_db)):
+    return services.blog_post_create(data, current_user, db)
 
 
-@router.get("",tags=["Blog Post"],response_model=PaginationResponse)
+@router.get("", tags=["Blog Post"], response_model=PaginationResponse)
+@router.get("/", tags=["Blog Post"], response_model=PaginationResponse)
 def get_blog(
-    page:int=Query(1, ge=1),search:str=None,
-    limit:int=Query(10 ,ge=10),category_id:int=None,
-    status:str=None,sort:str="published_at",
-    order:str="desc",
-    current_user:Users=Depends(member_required),db:Session=Depends(get_db)):
+    page: int = Query(1, ge=1), search: str = None,
+    limit: int = Query(10, ge=10), category_id: int = None,
+    status: str = None, sort: str = "published_at",
+    order: str = "desc",
+    current_user: Users = Depends(member_required), db: Session = Depends(get_db)):
     
-    return services.get_all_blog_post(current_user,db,page,search,limit,category_id,status,sort,order)
+    return services.get_all_blog_post(current_user, db, page, search, limit, category_id, status, sort, order)
 
 @router.get("/{post_id}",tags=["Blog Post"],response_model=BlogPostResponse)
 def get_blog_post(post_id:int,current_user:Users=Depends(member_required),db:Session=Depends(get_db)):

@@ -7,8 +7,8 @@ class SubGroup(Base):
     __tablename__ = "sub_groups"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(25), unique=True, nullable=False)
-    slug =Column(String(100), unique=True, nullable= False)
+    name = Column(String(150), unique=True, nullable=False)
+    slug = Column(String(150), unique=True, nullable=False)
     description = Column(String(1000))
     icon_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
     cover_page_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))

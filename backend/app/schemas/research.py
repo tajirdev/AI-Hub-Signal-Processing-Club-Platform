@@ -4,16 +4,16 @@ from typing import Optional
 from app.schemas.MediaScham import MediaResponse
 
 class ResearchCreate(BaseModel):
-    title:str=Field(min_length=3,max_length=200)
-    abstract:str=Field(min_length=10,max_length=100)
-    content:str = Field(min_length=30)
+    title: str = Field(min_length=3, max_length=200)
+    abstract: str = Field(min_length=10, max_length=1500)
+    content: str = Field(min_length=30)
     file_id: Optional[int] = None
-    featured:bool=False
-    is_published:bool=False
-    publication_date:datetime |None=None
-    author_ids:list[int]
+    featured: bool = False
+    is_published: bool = False
+    publication_date: datetime | None = None
+    author_ids: list[int]
     
-    model_config=ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True) 
     
 class Researchupdate(BaseModel):
     title: Optional[str] = None

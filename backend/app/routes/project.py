@@ -14,17 +14,17 @@ editor_required = RoleChecker(["editor", "super_admin"])
 
 router = APIRouter(prefix="/projects")
 
-@router.post("/",response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, tags=["PROJECTS"])
+@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, tags=["PROJECTS"])
+@router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, tags=["PROJECTS"])
 def create_project(
-                    request: ProjectCreate,
-                    current_user:Users=Depends(editor_required),
-                   db: Session=Depends(get_db)
-                   
-                   ):
-   
-    return ProjectService.create_project(request,current_user,db)
+    request: ProjectCreate,
+    current_user: Users = Depends(editor_required),
+    db: Session = Depends(get_db)
+):
+    return ProjectService.create_project(request, current_user, db)
 
 
+@router.get("", response_model=PaginationResponse, tags=["PROJECTS"])
 @router.get("/", response_model=PaginationResponse, tags=["PROJECTS"])
 def get_all_projects(
     page: int = Query(1, ge=1),

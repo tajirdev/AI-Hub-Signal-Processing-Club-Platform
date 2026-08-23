@@ -19,22 +19,22 @@ router = APIRouter(
    
 )
 
-@router.post("", tags= ["SUB GROUPS"])
+@router.post("", tags=["SUB GROUPS"])
+@router.post("/", tags=["SUB GROUPS"])
 def new_group(
-        request:SubGroupSchm.SubGroup,
-        db:Session=Depends(get_db),
-        current_user:ModoleUsers.Users=Depends(admin_required)
-        ):
-
-    
-    return services.create_subgrp(request,db,current_user_id=current_user.id)
+    request: SubGroupSchm.SubGroup,
+    db: Session = Depends(get_db),
+    current_user: ModoleUsers.Users = Depends(admin_required)
+):
+    return services.create_subgrp(request, db, current_user_id=current_user.id)
 
 
-@router.get("", tags= ["SUB GROUPS"])
+@router.get("", tags=["SUB GROUPS"])
+@router.get("/", tags=["SUB GROUPS"])
 def return_all(
-    db:Session= Depends(get_db)
-    ,current_user:ModoleUsers.Users = Depends(get_current_user)
-    ):
+    db: Session = Depends(get_db),
+    current_user: ModoleUsers.Users = Depends(get_current_user)
+):
     return services.get_all(db)
 
 @router.get("/{id}", tags= ["SUB GROUPS"])
