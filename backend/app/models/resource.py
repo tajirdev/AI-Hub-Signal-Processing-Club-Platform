@@ -1,12 +1,11 @@
-
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, CheckConstraint,Enum
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, CheckConstraint, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 import enum
 
-class Role(str,enum.Enum):
-    super_admin="super_admin"
+class Role(str, enum.Enum):
+    super_admin = "super_admin"
 
 class Resource(Base):
     __tablename__ = "resources"
@@ -25,8 +24,3 @@ class Resource(Base):
     uploader = relationship("Users", back_populates="resource")
     subgroup = relationship("SubGroup", back_populates="resource")
     file = relationship("Media", foreign_keys=[file_id])
-
-    __table_args__ = (
-        CheckConstraint("file_id IS NOT NULL OR external_url IS NOT NULL", name="check_file_id_or_external_url"),
-    )
-

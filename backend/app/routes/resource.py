@@ -12,6 +12,8 @@ router = APIRouter(
     prefix="/resources",
     tags=["Resources"],)
 
+from app.core.auth import get_optional_current_user
+
 #Role-based access control dependency
 editor_required = RoleChecker(["editor", "super_admin"])
 member_required = RoleChecker(["member", "editor", "super_admin"])
@@ -30,18 +32,19 @@ def get_all_resources(
     search: Optional[str] = None, 
     subgroup_id: Optional[int] = None, 
     sort: str = "created_at", 
-    resource_type: Optional[str] = None,order: str = "desc",
-    current_user: Users = Depends(member_required), 
-    ):
-
+    resource_type: Optional[str] = None,
+    order: str = "desc",
+    current_user: Optional[Users] = Depends(get_optional_current_user), 
+):
     return ResourceService.get_all_resources(
         db, page, 
         limit, search, 
-        subgroup_id, resource_type,sort, sort_order=order)
+        subgroup_id, resource_type, sort, sort_order=order
+    )
 
 #get a resource by id
 @router.get("/{resource_id}", response_model=ResourceResponse)
-def get_resource_by_id(resource_id: int, current_user: Users = Depends(member_required), db: Session = Depends(get_db)):
+def get_resource_by_id(resource_id: int, current_user: Optional[Users] = Depends(get_optional_current_user), db: Session = Depends(get_db)):
     return ResourceService.get_resource_by_id(db=db, resource_id=resource_id)
 
 #Update a resource

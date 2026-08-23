@@ -29,9 +29,7 @@ export const resourcesAPI = {
   uploadFile: async (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await client.post(`/resources/${id}/upload`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await client.post(`/resources/${id}/file`, formData);
     return response.data;
   },
 
