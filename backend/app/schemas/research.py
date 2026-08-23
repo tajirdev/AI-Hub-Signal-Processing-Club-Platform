@@ -4,11 +4,12 @@ from typing import Optional
 from app.schemas.MediaScham import MediaResponse
 
 class ResearchCreate(BaseModel):
-    title:str=Field(min_length=5,max_length=150)
-    abstract:str=Field(min_length=30,max_length=100)
-    content:str
+    title:str=Field(min_length=3,max_length=200)
+    abstract:str=Field(min_length=10,max_length=100)
+    content:str = Field(min_length=30)
     file_id: Optional[int] = None
     featured:bool=False
+    is_published:bool=False
     publication_date:datetime |None=None
     author_ids:list[int]
     
@@ -21,7 +22,8 @@ class Researchupdate(BaseModel):
     file_id: Optional[int] = None
     publication_date: Optional[datetime] = None
     author_ids: Optional[list[int]] = None
-    featured: Optional[bool] = False
+    featured: Optional[bool] = None
+    is_published: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True) 
     
@@ -34,16 +36,17 @@ class ResearchResponse(BaseModel):
     id:int
     title:str
     slug:str
-    publication_date:datetime |None
+    publication_date:datetime |None = None
     abstract:str
     content:str
     file_id: Optional[int] = None
     file: Optional['MediaResponse'] = None
-    featured:bool
+    featured:bool = False
+    is_published:bool = False
     created_by:int
     created_at:datetime
     updated_at:datetime
     
     authors:list[ResearchAuthorResponse]=[]
     
-    model_config=ConfigDict(from_attributes=True)    
+    model_config=ConfigDict(from_attributes=True)

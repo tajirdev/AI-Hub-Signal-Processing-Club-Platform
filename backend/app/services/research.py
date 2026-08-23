@@ -1,50 +1,57 @@
-from app.schemas.research import ResearchCreate,Researchupdate
-from sqlalchemy.orm import Session
-from app.models.research import Research,ResearchAuthor
+from app.schemas.research import ResearchCreate, Researchupdate
+from sqlalchemy.orm import Session, joinedload
+from app.models.research import Research, ResearchAuthor
 from app.models.ModoleUsers import Users
 from app.models.ModoleMembers import Members
-from fastapi import HTTPException,status
+from fastapi import HTTPException, status
 from app.models.ModoleRoles import Role
-from sqlalchemy import or_,asc,desc
+from sqlalchemy import or_, asc, desc
+from datetime import datetime
 import math
 from app.models.media import Media
 from app.services.storage.local import delete_upload_file
-from app.services.storage.local import delete_upload_file
-from app.models.media import Media
 
-class ResearchServices(): 
-    
+class ResearchServices:
     @staticmethod
-    def generate_slug(title:str,db:Session):
-        base_slug=title.lower().replace(" ","-")
-        slug=base_slug
-        counter=1
-        while db.query(Research).filter(Research.slug==slug).first():
-            slug=f"{base_slug}-{counter}"
-            counter+=1
+    def generate_slug(title: str, db: Session):
+        base_slug = title.lower().replace(" ", "-")
+        slug = base_slug
+        counter = 1
+        while db.query(Research).filter(Research.slug == slug).first():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
         return slug
         
     @staticmethod
-    def addresearch(data:ResearchCreate,db:Session,current_user):
-        authors=[]
+    def addresearch(data: ResearchCreate, db: Session, current_user):
         if data.author_ids:
-            member=db.query(Members).filter(Members.id.in_(data.author_ids)).all()
+            member = db.query(Members).filter(Members.id.in_(data.author_ids)).all()
             if len(member) != len(data.author_ids):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=" the Authors member  not found")
-            
-        research=Research(
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="One or more author members not found")
+
+        pub_date = data.publication_date
+        is_pub = data.is_published
+        if is_pub and pub_date is None:
+            pub_date = datetime.now()
+        elif pub_date is not None:
+            is_pub = True
+
+        research = Research(
             title=data.title,
-            slug=ResearchServices.generate_slug(data.title,db),
+            slug=ResearchServices.generate_slug(data.title, db),
             abstract=data.abstract,
             content=data.content,
-            featured=data.featured,
+            file_id=data.file_id,
+            featured=str(data.featured) if data.featured is not None else "False",
+            is_published=is_pub,
+            publication_date=pub_date,
             created_by=current_user.id
-          
         )
         db.add(research)
         db.flush()
-        for order,member_id in enumerate(data.author_ids,start=1):
-            author=ResearchAuthor(
+
+        for order, member_id in enumerate(data.author_ids, start=1):
+            author = ResearchAuthor(
                 research_id=research.id,
                 member_id=member_id,
                 author_order=order
@@ -53,96 +60,128 @@ class ResearchServices():
         
         db.commit()
         db.refresh(research)
-        
         return research
     
     @staticmethod
-    def show_all(db:Session,current_user,
-                 page:int=1,search:str=None,
-                 limit:int=10,title:str=None,
-                 sort:str="publication_date",
-                 order:str="desc"):
-        roles = current_user.roles
-        research=db.query(Research)
+    def show_all(db: Session, current_user,
+                 page: int = 1, search: str = None,
+                 limit: int = 10, title: str = None,
+                 sort: str = "publication_date",
+                 order: str = "desc"):
+        roles = current_user.roles if current_user else []
+        query = db.query(Research).options(
+            joinedload(Research.file),
+            joinedload(Research.authors)
+        )
+
         if "super_admin" in roles:
             pass
-          
         elif "editor" in roles:
-            research=research.filter((Research.publication_date != None)|(Research.created_by==current_user.id)) 
-                    
-        elif "member" in roles:
-            research=research.filter(Research.publication_date != None)
-        if search:
-            research=research.filter(or_(
-                Research.title.ilike(f"%{search}"),
-                Research.abstract.ilike(f"%{search}"),
-                Research.content.ilike(f"%{search}")
-                
-            )) 
-        if sort=="title":
-            if order=="asc":
-                research=research.order_by(asc(Research.title))
-            else:
-                research=research.order_by(desc(Research.title))    
+            query = query.filter(
+                (Research.is_published == True) | 
+                (Research.publication_date != None) | 
+                (Research.created_by == current_user.id)
+            )
         else:
-            if order =="asc":
-                research=research.order_by(asc(Research.publication_date))
+            query = query.filter(
+                (Research.is_published == True) | 
+                (Research.publication_date != None)
+            )
+
+        if search:
+            query = query.filter(or_(
+                Research.title.ilike(f"%{search}%"),
+                Research.abstract.ilike(f"%{search}%"),
+                Research.content.ilike(f"%{search}%")
+            )) 
+
+        if sort == "title":
+            if order == "asc":
+                query = query.order_by(asc(Research.title))
             else:
-                research=research.order_by(desc(Research.publication_date)) 
+                query = query.order_by(desc(Research.title))    
+        else:
+            if order == "asc":
+                query = query.order_by(asc(Research.publication_date).nullslast())
+            else:
+                query = query.order_by(desc(Research.publication_date).nullslast()) 
                             
-        skip = (page - 1)* limit 
-        researchs=research.offset(skip).limit(limit).all()
-        
-        return researchs
+        skip = (page - 1) * limit 
+        results = query.offset(skip).limit(limit).all()
+        return results
     
     @staticmethod
-    def show_by_id(research_id:int,db:Session,current_user):
-        research=db.query(Research).filter(Research.id==research_id).first()
+    def show_by_id(research_id: int, db: Session, current_user):
+        research = db.query(Research).options(
+            joinedload(Research.file),
+            joinedload(Research.authors)
+        ).filter(Research.id == research_id).first()
+
         if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"research not found")
-        roles = current_user.roles
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research not found")
+
+        roles = current_user.roles if current_user else []
         if "super_admin" in roles:
             pass
         elif "editor" in roles:
-            if(research.publication_date == None and research.created_by != current_user.id):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
-        elif "member" in roles:
-            if (research.publication_date ==None):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
+            if not research.is_published and research.publication_date is None and research.created_by != current_user.id:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research not found")
+        else:
+            if not research.is_published and research.publication_date is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research not found")
                     
         return research
     
     @staticmethod
-    def update(research_id:int,data:Researchupdate,db:Session,current_user):
-        research =db.query(Research).filter(Research.id==research_id).first()
-        roles = current_user.roles
+    def update(research_id: int, data: Researchupdate, db: Session, current_user):
+        research = db.query(Research).options(
+            joinedload(Research.file),
+            joinedload(Research.authors)
+        ).filter(Research.id == research_id).first()
+
         if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research not found")
+
+        roles = current_user.roles
         if "super_admin" in roles:
-            research.featured=data.featured
-            
+            pass
         elif "editor" in roles:
-            if(research.created_by != current_user.id):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you not  have action to perform this")
-        if data.author_ids is not None:
-            member=db.query(Members).filter(Members.id.in_(data.author_ids)).all()
-            if len(member) != len(data.author_ids):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="One or  more authors  not found")
-            research.authors.clear()
+            if research.created_by != current_user.id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to edit this research")
+
+        if data.featured is not None:
+            research.featured = str(data.featured)
+
+        if data.is_published is not None:
+            research.is_published = data.is_published
+            if data.is_published and research.publication_date is None:
+                research.publication_date = datetime.now()
+
+        if data.publication_date is not None:
+            research.publication_date = data.publication_date
+            if not research.is_published:
+                research.is_published = True
+
         if data.title is not None:
-            research.title=data.title
-            research.slug=ResearchServices.generate_slug(data.title,db)
+            research.title = data.title
+            research.slug = ResearchServices.generate_slug(data.title, db)
+
         if data.abstract is not None:
-            research.abstract=data.abstract
+            research.abstract = data.abstract
+
         if data.content is not None:
-            research.content=data.content
+            research.content = data.content
+
         if data.file_id is not None:
-            research.file_id=data.file_id
-        
-       
+            research.file_id = data.file_id
+
         if data.author_ids is not None:
-            for order,member_id in enumerate(data.author_ids,start=1):
-                author=ResearchAuthor(
+            member = db.query(Members).filter(Members.id.in_(data.author_ids)).all()
+            if len(member) != len(data.author_ids):
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="One or more authors not found")
+            research.authors.clear()
+            for order, member_id in enumerate(data.author_ids, start=1):
+                author = ResearchAuthor(
                     member_id=member_id,
                     author_order=order
                 )
@@ -150,23 +189,20 @@ class ResearchServices():
           
         db.commit()
         db.refresh(research)
-        
         return research
     
     @staticmethod
-    def deleteresource(research_id,db:Session,current_user):
-
-        research=db.query(Research).filter(Research.id==research_id).first()
+    def deleteresource(research_id, db: Session, current_user):
+        research = db.query(Research).filter(Research.id == research_id).first()
         if not research:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="research not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research not found")
+
         roles = current_user.roles
-              
         if "super_admin" in roles:
-           pass
-                    
+            pass
         elif "editor" in roles:
-            if(research.created_by != current_user.id):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="you not  have action to perform this")
+            if research.created_by != current_user.id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to perform this action")
             
         if research.file_id:
             media_record = db.query(Media).filter(Media.id == research.file_id).first()
@@ -178,7 +214,7 @@ class ResearchServices():
         db.commit()
         
         return {
-            "message":"research delete succesful"
+            "message": "Research deleted successfully"
         }
 
 
@@ -190,10 +226,11 @@ class ResearchMediaService:
             raise HTTPException(status_code=404, detail="Research not found")
             
         user = db.query(Users).filter(Users.id == current_user_id).first()
-        if research.created_by != current_user_id and "super_admin" not in user.roles:
+        roles = user.roles if user else []
+        if research.created_by != current_user_id and "super_admin" not in roles and "editor" not in roles:
             raise HTTPException(status_code=403, detail="Not authorized")
             
-        media_record = db.query(Media).filter(Media.id == research.file_id).first()
+        media_record = db.query(Media).filter(Media.id == research.file_id).first() if research.file_id else None
         
         if media_record:
             delete_upload_file(media_record.path)
@@ -224,16 +261,19 @@ class ResearchMediaService:
             raise HTTPException(status_code=404, detail="Research not found")
             
         user = db.query(Users).filter(Users.id == current_user_id).first()
-        if research.created_by != current_user_id and "super_admin" not in user.roles:
+        roles = user.roles if user else []
+        if research.created_by != current_user_id and "super_admin" not in roles and "editor" not in roles:
             raise HTTPException(status_code=403, detail="Not authorized")
             
-        media_record = db.query(Media).filter(Media.id == research.file_id).first()
-        if not media_record:
+        if not research.file_id:
             raise HTTPException(status_code=404, detail="No file found for this research")
             
-        delete_upload_file(media_record.path)
+        media_record = db.query(Media).filter(Media.id == research.file_id).first()
+        if media_record:
+            delete_upload_file(media_record.path)
+            db.delete(media_record)
+
         research.file_id = None
-        db.delete(media_record)
         db.commit()
         return {"message": "File deleted successfully"}
 

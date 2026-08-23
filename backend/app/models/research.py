@@ -27,6 +27,7 @@ class Research(Base):
     file_id = Column(Integer, ForeignKey("media.id"), nullable=True)
     created_by=Column(Integer,ForeignKey("users.id"),nullable=False)
     featured=Column(String)
+    is_published=Column(Boolean,default=False,nullable=False)
     created_at=Column(DateTime,default=datetime.now)
     updated_at=Column(DateTime,default=datetime.now,onupdate=datetime.now)
     
