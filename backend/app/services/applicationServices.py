@@ -179,10 +179,7 @@ class ApplicationService:
             from app.services.email_service import EmailService
             if request.status == applicationModel.ApplicationStatus.approved:
                 OTPService.create_and_send_otp(db, application.email, "registration")
-                # Wait, create_and_send_otp actually sends "Your one-time password (OTP) for registration is..." 
-                # Let's adjust create_and_send_otp to just generate it and we'll send a custom email.
-                # Actually, in otp_service.py I can just let it send the default email or add a flag. 
-                # I'll just use EmailService.send_application_approved_email(application.email, application.first_name, otp) directly inside OTPService.
+                
             elif request.status == applicationModel.ApplicationStatus.rejected:
                 EmailService.send_application_rejected_email(application.email, application.first_name)
         except Exception as e:

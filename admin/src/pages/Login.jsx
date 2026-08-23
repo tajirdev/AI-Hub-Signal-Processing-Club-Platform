@@ -55,7 +55,7 @@ export default function Login() {
           <img
             src="/logo.png"
             alt="AI Hub Logo"
-            className="w-16 h-16 object-contain rounded-2xl shadow-xl shadow-blue-600/30"
+            className="w-16 h-16 object-cover rounded-full shadow-xl shadow-blue-600/30 ring-2 ring-blue-500/40"
           />
         </div>
         <h2 className="mt-4 text-center text-2xl font-black tracking-tight text-white">

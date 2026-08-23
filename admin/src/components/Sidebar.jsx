@@ -66,7 +66,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <img
               src="/logo.png"
               alt="AI Hub Logo"
-              className="w-9 h-9 object-contain rounded-xl shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/20"
+              className="w-9 h-9 object-cover rounded-full shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/25 ring-1 ring-blue-500/30"
             />
             <div className="flex flex-col">
               <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">AI Hub Admin</span>
