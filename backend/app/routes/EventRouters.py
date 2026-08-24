@@ -5,8 +5,8 @@ from app.core.RoleAuth import RoleChecker
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.services import EventService
-from app.core.auth import get_current_user
-from typing import List
+from app.core.auth import get_current_user,get_optional_current_user
+from typing import List,Optional
 from app.services.storage.local import save_upload_file,UploadCategory,IMAGE_TYPES
 
 
@@ -27,7 +27,7 @@ router = APIRouter(
 )
 
 
-@router.post("", tags=["EVENTS"])
+
 @router.post("/", tags=["EVENTS"])
 def PostNew(
     request: EventSchm.EventCreate,
@@ -37,7 +37,7 @@ def PostNew(
     return services.CreateEvent(request, db, current_user_id=current_user.id)
 
 
-@router.get("", response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
+
 @router.get("/", response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
 def get_blog(
     db: Session = Depends(get_db),
@@ -45,7 +45,7 @@ def get_blog(
     limit:int=10,
     status:str=None,sort:str="published_at",
     order:str="desc",
-    current_user:ModoleUsers.Users=Depends(member_required)
+    current_user:Optional[ModoleUsers.Users]=Depends(get_optional_current_user)
     
     ):
     
@@ -68,11 +68,11 @@ def GetMy(
 @router.get("/{event_id}",response_model=EventSchm.EventResponse, tags=["EVENTS"])
 def GetSingle(
     event_id:int,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(get_current_user)
+    db:Session=Depends(get_db)
+    
 
 ):
-    return services.ReturnSingle(event_id,db,current_user)
+    return services.ReturnSingle(event_id,db)
 
 
 @router.put("/{event_id}", tags=["EVENTS"])
@@ -142,8 +142,8 @@ def Postcover(
 @router.get("/{event_id}/cover",tags=["EVENTS COVER"])
 def GetCover(
     event_id:int,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(editor_required)
+    db:Session=Depends(get_db)
+    
 ):
     return services.GetCover(event_id,db)
 
