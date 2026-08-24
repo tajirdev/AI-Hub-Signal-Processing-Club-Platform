@@ -11,6 +11,11 @@ export const usersAPI = {
     return response.data;
   },
 
+  updateMe: async (userData) => {
+    const response = await client.put('/users/me', userData);
+    return response.data;
+  },
+
   getAvatar: async () => {
     const response = await client.get('/users/avatar');
     return response.data;
@@ -27,6 +32,26 @@ export const usersAPI = {
 
   deleteAvatar: async (avatarId) => {
     const response = await client.delete(`/users/avatar/${avatarId}`);
+    return response.data;
+  },
+
+  promote: async (userId, roleName) => {
+    const response = await client.post('/users/promote', { user_id: userId, role_name: roleName });
+    return response.data;
+  },
+
+  demote: async (userId, roleName) => {
+    const response = await client.post('/users/demote', { user_id: userId, role_name: roleName });
+    return response.data;
+  },
+
+  toggleActive: async (userId) => {
+    const response = await client.post(`/users/${userId}/toggle-active`);
+    return response.data;
+  },
+
+  delete: async (userId) => {
+    const response = await client.delete(`/users/${userId}`);
     return response.data;
   },
 };

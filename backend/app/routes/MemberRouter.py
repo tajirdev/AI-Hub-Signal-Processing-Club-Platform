@@ -44,19 +44,23 @@ def PostMember(
 
 
 @router.get("")
+@router.get("/")
 def All(
-    db:Session=Depends(get_db),
-    skip:int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0),
     limit: int = Query(
         10,
         ge=1,
-        le = 100
-        ),
-    search : str | None = None,
-    sort_by : str = "joined_at",
-    order : str = "desc"    
-    ):
-    return Services.GetAll(db,skip,limit,search,sort_by,order)
+        le=100
+    ),
+    search: str | None = None,
+    sort_by: str = "joined_at",
+    order: str = "desc",
+    sub_group_id: int | None = Query(None, description="Filter by subgroup ID"),
+    subgroup_id: int | None = Query(None, description="Alias for sub_group_id")
+):
+    target_subgroup_id = sub_group_id if sub_group_id is not None else subgroup_id
+    return Services.GetAll(db, skip, limit, search, sort_by, order, sub_group_id=target_subgroup_id)
 
 
 @router.get("/me")

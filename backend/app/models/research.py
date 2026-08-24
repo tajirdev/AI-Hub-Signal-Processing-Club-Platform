@@ -1,4 +1,4 @@
-﻿from app.core.database import Base  
+from app.core.database import Base  
 from sqlalchemy import Column,Integer,String,Date,ForeignKey,DateTime,Text,Boolean
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -24,11 +24,13 @@ class Research(Base):
     abstract=Column(String)
     content=Column(Text)
     publication_date=Column(DateTime,nullable=True)
-    pdf_url=Column(String,nullable=True)
+    file_id = Column(Integer, ForeignKey("media.id"), nullable=True)
     created_by=Column(Integer,ForeignKey("users.id"),nullable=False)
     featured=Column(String)
+    is_published=Column(Boolean,default=False,nullable=False)
     created_at=Column(DateTime,default=datetime.now)
     updated_at=Column(DateTime,default=datetime.now,onupdate=datetime.now)
     
     user=relationship("Users",back_populates="research")
+    file = relationship("Media", foreign_keys=[file_id])
     authors=relationship("ResearchAuthor",back_populates="research",cascade="all, delete-orphan",order_by="ResearchAuthor.author_order")

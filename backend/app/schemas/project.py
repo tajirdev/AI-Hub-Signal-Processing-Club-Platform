@@ -1,3 +1,4 @@
+from app.schemas.MediaScham import MediaResponse
 from pydantic import BaseModel, Field,HttpUrl
 from typing import Optional, List
 from datetime import datetime
@@ -34,6 +35,7 @@ class ProjectResponse(BaseModel):
     status: Optional[str] = None
     technology_stack: Optional[str] = None    
     thumbnail_id: Optional[int] = None
+    thumbnail: Optional[MediaResponse] = None
     created_by: int
     created_at: datetime
     updated_at: Optional[datetime] = None

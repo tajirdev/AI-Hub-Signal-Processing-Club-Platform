@@ -44,7 +44,7 @@ export default function Footer() {
           {/* Brand & Newsletter Column */}
           <div className="footer-brand-col">
             <div className="brand-logo">
-              <span className="logo-badge">AI</span>
+              <img src="/logo.png" alt="AI Hub Logo" className="footer-logo-img" />
               <div className="logo-text">
                 <span className="brand-title">AI &</span>
                 <span className="brand-sub">Signal Processing Hub</span>

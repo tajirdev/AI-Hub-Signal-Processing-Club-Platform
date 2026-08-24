@@ -18,13 +18,14 @@ router= APIRouter(
     tags=["Categories"]
 )
 
-@router.post("/create",response_model=CategoryResponse)
+@router.post("", response_model=CategoryResponse)
+@router.post("/create", response_model=CategoryResponse)
 def create_category(
-    data:CategoryCreate,
-    db:Session=Depends(get_db),
-    current_user:Users=Depends(admin_required)
-    ):
-    return services.create_category(data,db)
+    data: CategoryCreate,
+    db: Session = Depends(get_db),
+    current_user: Users = Depends(admin_required)
+):
+    return services.create_category(data, db)
 
 
 @router.get("",response_model=list[CategoryResponse])

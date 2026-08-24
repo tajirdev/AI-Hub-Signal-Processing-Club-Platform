@@ -47,6 +47,13 @@ class CategoryService:
         category=db.query(Category).filter(Category.id==category_id).first()
         if not category:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="category not found")
+        
+        if (category.blog_posts and len(category.blog_posts) > 0) or            (hasattr(category, 'news') and category.news and len(category.news) > 0) or            (hasattr(category, 'events') and category.events and len(category.events) > 0):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This category cannot be deleted because it is currently being used."
+            )
+            
         db.delete(category)
         db.commit()
         return {"message":"category deleted succesesfully"}

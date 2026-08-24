@@ -5,6 +5,7 @@ import {
   faChartPie,
   faUsers,
   faIdCard,
+  faClipboardList,
   faLayerGroup,
   faBlog,
   faTags,
@@ -16,6 +17,7 @@ import {
   faSignOutAlt,
   faTimes,
   faShieldAlt,
+  faUserCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { Routes } from '../routes';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +30,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const navItems = [
     { title: 'Overview', path: Routes.Overview.path, icon: faChartPie },
+    { title: 'Applications', path: Routes.Applications.path, icon: faClipboardList, badge: 'New' },
     { title: 'Users & Roles', path: Routes.Users.path, icon: faUsers, badge: 'Admin' },
     { title: 'Club Members', path: Routes.Members.path, icon: faIdCard },
     { title: 'Subgroups', path: Routes.Subgroups.path, icon: faLayerGroup },
@@ -38,6 +41,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { title: 'Projects', path: Routes.Projects.path, icon: faLaptopCode },
     { title: 'Research Papers', path: Routes.Research.path, icon: faFlask },
     { title: 'Resources', path: Routes.Resources.path, icon: faFolderOpen },
+    { title: 'My Profile', path: Routes.Profile.path, icon: faUserCircle },
   ];
 
   return (
@@ -58,13 +62,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       >
         {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-5 bg-gray-950 border-b border-gray-800">
-          <Link to={Routes.Overview.path} className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 font-extrabold text-lg">
-              AI
-            </div>
+          <Link to={Routes.Overview.path} className="flex items-center space-x-3 group">
+            <img
+              src="/logo.png"
+              alt="AI Hub Logo"
+              className="w-9 h-9 object-cover rounded-full shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/25 ring-1 ring-blue-500/30"
+            />
             <div className="flex flex-col">
-              <span className="text-white font-bold text-sm tracking-wide">AI Hub Admin</span>
-              <span className="text-xs text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
+              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">AI Hub Admin</span>
+              <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
             </div>
           </Link>
           <button

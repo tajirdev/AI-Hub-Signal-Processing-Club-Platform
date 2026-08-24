@@ -14,7 +14,7 @@ class RoleChecker:
     ) -> Users:
 
         
-        user_roles = {user_role.Roles.name for user_role in current_user.userRole}
+        user_roles = set(current_user.roles)
 
         # Super Admin bypass
         if "super_admin" in user_roles:

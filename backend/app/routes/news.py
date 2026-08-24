@@ -13,6 +13,7 @@ editor_required = RoleChecker(["super_admin", "editor"])
 router = APIRouter(prefix="/News", tags=["News"])
 
 @router.post("", response_model=NewsResponse)
+@router.post("/", response_model=NewsResponse)
 def create(
     data: NewsCreate,
     current_user: Users = Depends(editor_required),
@@ -20,6 +21,7 @@ def create(
 ):
     return News_Services.new_create(data, current_user, db)
 
+@router.get("", response_model=PaginationResponse)
 @router.get("/", response_model=PaginationResponse)
 def show_all(
     page: int = Query(1, ge=1),

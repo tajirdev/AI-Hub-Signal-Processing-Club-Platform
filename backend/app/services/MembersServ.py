@@ -52,6 +52,23 @@ class MembersServices:
             db.add(new_member)
             db.commit()
             db.refresh(new_member)
+            
+            # Explicit business rule: Assign 'member' role when user becomes a member
+            from app.models.ModoleRoles import Role
+            from app.models.ModelUserRoles import UserRole
+            
+            member_role = db.query(Role).filter(Role.name == "member").first()
+            if member_role:
+                # Check if user already has the member role
+                has_role = db.query(UserRole).filter(
+                    UserRole.user_id == target_user_id,
+                    UserRole.role_id == member_role.id
+                ).first()
+                if not has_role:
+                    new_role = UserRole(user_id=target_user_id, role_id=member_role.id)
+                    db.add(new_role)
+                    db.commit()
+            
         except IntegrityError:
             db.rollback()
             raise HTTPException(
@@ -61,20 +78,15 @@ class MembersServices:
         return new_member
 
     def GetAll(
-            self,
-            db:Session,
-            skip:int,
-            limit:int,
-            search : str |None =None,
-            sort_by: str = "joined_at",
-            order : str = "desc"
-            ):
-
-
-        
-
-
-        
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 10,
+        search: str | None = None,
+        sort_by: str = "joined_at",
+        order: str = "desc",
+        sub_group_id: int | None = None
+    ):
         query = (
             db.query(ModoleMembers.Members)
             .join(ModoleMembers.Members.user)
@@ -85,33 +97,38 @@ class MembersServices:
             )
         )
 
+        if sub_group_id:
+            query = query.filter(ModoleMembers.Members.subgroup_id == sub_group_id)
+
         if search:
             query = query.filter(
                 or_(
-                ModoleUsers.Users.first_name.ilike(f"%{search}%"),
-                ModoleUsers.Users.last_name.ilike(f"%{search}%"),
-                ModoleMembers.Members.position.ilike(f"%{search}%"),
-                SubGroupModel.SubGroup.name.ilike(f"%{search}%")
+                    ModoleUsers.Users.first_name.ilike(f"%{search}%"),
+                    ModoleUsers.Users.last_name.ilike(f"%{search}%"),
+                    ModoleUsers.Users.user_name.ilike(f"%{search}%"),
+                    ModoleUsers.Users.email.ilike(f"%{search}%"),
+                    ModoleMembers.Members.position.ilike(f"%{search}%"),
+                    SubGroupModel.SubGroup.name.ilike(f"%{search}%")
                 )
-                                            
             )
 
-        total =query.count()
+        total = query.count()
 
         sort_columns = {
             "first_name": ModoleUsers.Users.first_name,
             "last_name": ModoleUsers.Users.last_name,
+            "user_name": ModoleUsers.Users.user_name,
+            "email": ModoleUsers.Users.email,
             "position": ModoleMembers.Members.position,
             "joined_at": ModoleMembers.Members.joined_at,
-            "subgroup":SubGroupModel.SubGroup.name
+            "subgroup": SubGroupModel.SubGroup.name,
+            "sub_group": SubGroupModel.SubGroup.name
         }
 
-        column = sort_columns.get(sort_by,ModoleMembers.Members.joined_at)
-
+        column = sort_columns.get(sort_by, ModoleMembers.Members.joined_at)
 
         if order.lower() == "asc":
             query = query.order_by(column.asc())
-
         else:
             query = query.order_by(column.desc())
 
@@ -120,31 +137,45 @@ class MembersServices:
             .offset(skip)
             .limit(limit)
             .all()
-        ) 
-
+        )
 
         results = []
-
         for member in members:
             results.append({
-                "id":member.id,
-                "name": f"{member.user.first_name},{member.user.last_name}",
-                "sub_group":member.subgroup.name,
-                "position":member.position,
+                "id": member.id,
+                "user_id": member.user_id,
+                "subgroup_id": member.subgroup_id,
+                "sub_group_id": member.subgroup_id,
+                "name": f"{member.user.first_name or ''} {member.user.last_name or ''}".strip() or member.user.user_name,
+                "sub_group": member.subgroup.name if member.subgroup else "General",
+                "subgroup": {
+                    "id": member.subgroup.id if member.subgroup else None,
+                    "name": member.subgroup.name if member.subgroup else "General",
+                    "slug": member.subgroup.slug if member.subgroup else ""
+                },
+                "user": {
+                    "id": member.user.id,
+                    "first_name": member.user.first_name,
+                    "last_name": member.user.last_name,
+                    "user_name": member.user.user_name,
+                    "email": member.user.email,
+                    "avatar_url": member.user.avatar_url,
+                    "is_active": member.user.is_active
+                },
+                "position": member.position,
                 "github": member.github,
-                "linkedin":member.linkedin,
-                "portfolio":member.portfolio,
-                "joined_at":member.joined_at
-
+                "linkedin": member.linkedin,
+                "portfolio": member.portfolio,
+                "show_profile": member.show_profile,
+                "joined_at": member.joined_at.isoformat() if member.joined_at else None
             })
-        
-        return{
-            "total":total,
-            "skip":skip,
-            "limit":limit,
-            "returned":len(results),
-            "results":results
 
+        return {
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "returned": len(results),
+            "results": results
         } 
 
 

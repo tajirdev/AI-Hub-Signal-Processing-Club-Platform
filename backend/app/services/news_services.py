@@ -59,7 +59,7 @@ class News_Services():
         query = db.query(News).options(joinedload(News.category))
 
         if current_user:
-            roles = [ur.Roles.name for ur in current_user.userRole if ur.Roles]
+            roles = current_user.roles
             if "super_admin" in roles:
                 pass
             elif "editor" in roles:
@@ -119,7 +119,7 @@ class News_Services():
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")
         if news.status != StatusCheck.published:
             if current_user:
-                roles = [ur.Roles.name for ur in current_user.userRole if ur.Roles]
+                roles = current_user.roles
                 if "super_admin" in roles or ("editor" in roles and news.author_id == current_user.id):
                     return news
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not yet published")
@@ -128,7 +128,7 @@ class News_Services():
 
     @staticmethod
     def update_news(news_id: int, data: NewsUpdate, current_user, db: Session):
-        roles = [ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         if data.category_id is not None:
             category = db.query(Category).filter(Category.id == data.category_id).first()
             if not category:
@@ -162,7 +162,7 @@ class News_Services():
 
     @staticmethod
     def delete_news(news_id: int, current_user, db: Session):
-        roles = [ur.Roles.name for ur in current_user.userRole]
+        roles = current_user.roles
         news = db.query(News).filter(News.id == news_id).first()
         if not news:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news not found")

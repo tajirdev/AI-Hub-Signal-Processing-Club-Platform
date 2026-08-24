@@ -1,0 +1,45 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+*.so
+
+# Environments & Virtualenv
+.env
+.env.*
+!.env.example
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node & Frontend dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+
+# Uploads & Media
+backend/uploads/*
+uploads/*
+!uploads/.gitkeep
+!backend/uploads/.gitkeep
+
+# IDEs & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Scratch & temporary test scripts
+test_*.py
+patch_*.py
+fix_*.py
+*_test.py
+cleanup.py

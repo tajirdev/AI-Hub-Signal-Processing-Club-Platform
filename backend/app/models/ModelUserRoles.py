@@ -9,6 +9,6 @@ class UserRole(Base):
     role_id = Column(Integer,ForeignKey("role.id"))
 
     User = relationship("Users",back_populates="userRole")
-    Roles = relationship("Role",back_populates="usersRole")
+    Roles = relationship("Role",back_populates="usersRole", lazy="joined")
 
 
