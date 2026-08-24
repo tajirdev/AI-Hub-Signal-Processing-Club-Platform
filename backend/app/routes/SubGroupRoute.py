@@ -19,7 +19,7 @@ router = APIRouter(
    
 )
 
-@router.post("", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
+
 @router.post("/", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def new_group(
     request: SubGroupSchm.SubGroup,
@@ -29,19 +29,18 @@ def new_group(
     return services.create_subgrp(request, db, current_user_id=current_user.id)
 
 
-@router.get("", response_model=list[SubGroupSchm.SubGroupResponse], tags=["SUB GROUPS"])
+
 @router.get("/", response_model=list[SubGroupSchm.SubGroupResponse], tags=["SUB GROUPS"])
 def return_all(
-    db: Session = Depends(get_db),
-    current_user: ModoleUsers.Users = Depends(get_current_user)
+    db: Session = Depends(get_db)
+    
 ):
     return services.get_all(db)
 
 @router.get("/{id}", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def return_single(
     id: int,
-    db: Session = Depends(get_db),
-    current_user: ModoleUsers.Users = Depends(admin_required)
+    db: Session = Depends(get_db)
 ):
     return services.get_single(id, db)
 
@@ -92,8 +91,8 @@ def PostCoverPage(
 @router.get("/{subgroup_id}/cover_page",tags=["Cover"])
 def GetCover(
     subgroup_id:int,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(admin_required)
+    db:Session=Depends(get_db)
+   
 ):
     return services.ReturnCover( subgroup_id,db)
 
@@ -136,8 +135,7 @@ def PostIcon(
 @router.get("/{subgroup_id}/icon_page",tags=["Icon"])
 def GetIcon(
     subgroup_id:int,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(admin_required)
+    db:Session=Depends(get_db)
 ):
     return services.ReturnIcon( subgroup_id,db)
 
