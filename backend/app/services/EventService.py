@@ -45,8 +45,10 @@ class Event:
                     limit:int=10,
                     status:str=None,
                         sort:str="published_at",order:str="desc"):
-        roles = current_user.roles
+        roles = current_user.roles if current_user else []
         event =db.query(EventModel.Events)
+
+
         if "super_admin" in roles:
             pass
         
@@ -102,7 +104,7 @@ class Event:
         return events
 
     @staticmethod
-    def ReturnSingle(event_id:int,db:Session,current_user):
+    def ReturnSingle(event_id:int,db:Session):
         event = db.query(EventModel.Events).filter(
             EventModel.Events.id == event_id 
         ).first()
