@@ -1,10 +1,11 @@
 from fastapi import APIRouter,Depends,status,File,UploadFile,Query
-from typing import List
+from typing import Optional
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.ModoleUsers import Users
 from app.core.RoleAuth import RoleChecker
+from app.core.auth import get_optional_current_user
 from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate,BlogPostResponse,PaginationResponse
 from app.services.blog_post_services import BlogPostService
 from app.services.storage.local import save_upload_file,UploadCategory,IMAGE_TYPES
@@ -20,20 +21,20 @@ router= APIRouter(
     
 )
 
-@router.post("", tags=["Blog Post"], response_model=BlogPostResponse)
+
 @router.post("/", tags=["Blog Post"], response_model=BlogPostResponse)
 def create_blog_post(data: BlogPostCreate, current_user: Users = Depends(editor_required), db: Session = Depends(get_db)):
     return services.blog_post_create(data, current_user, db)
 
 
-@router.get("", tags=["Blog Post"], response_model=PaginationResponse)
+
 @router.get("/", tags=["Blog Post"], response_model=PaginationResponse)
 def get_blog(
     page: int = Query(1, ge=1), search: str = None,
     limit: int = Query(10, ge=10), category_id: int = None,
     status: str = None, sort: str = "published_at",
     order: str = "desc",
-    current_user: Users = Depends(member_required), db: Session = Depends(get_db)):
+    current_user:Optional[Users]  = Depends(get_optional_current_user), db: Session = Depends(get_db)):
     
     return services.get_all_blog_post(current_user, db, page, search, limit, category_id, status, sort, order)
 
@@ -75,8 +76,8 @@ def uploadpost(
 
 @router.get("/{post_id}/cover",tags=["Blog Post cover"])   
 def getpostcover(post_id:int,
-             db:Session=Depends(get_db),
-             current_user:Users=Depends(member_required)):
+             db:Session=Depends(get_db)
+             ):
     return services.getblogcover(post_id,db)        
 
 @router.delete("/{post_id}/cover",tags=["Blog Post cover"])   

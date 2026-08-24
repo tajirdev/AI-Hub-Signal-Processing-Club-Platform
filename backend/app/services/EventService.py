@@ -48,6 +48,10 @@ class Event:
         roles = current_user.roles if current_user else []
         event =db.query(EventModel.Events)
 
+        if current_user is None:
+             event=event.filter(EventModel.Events.status==EventModel.EventStatus.published)
+
+
 
         if "super_admin" in roles:
             pass

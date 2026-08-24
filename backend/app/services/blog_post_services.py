@@ -58,10 +58,16 @@ class BlogPostService:
                         category_id:int=None,
                         status:str=None,
                         sort:str="published_at",order:str="desc"):
-        roles = current_user.roles
+        roles = current_user.roles if current_user else []
+
+
+
         post =db.query(BlogPost)
         if "super_admin" in roles:
             pass
+
+        if current_user is None:
+            post=post.filter(BlogPost.status==PostStatus.published)
         
         elif "editor" in roles:
             post=post.filter((BlogPost.status==PostStatus.published)|(BlogPost.author_id==current_user.id)) 
@@ -111,8 +117,14 @@ class BlogPostService:
 
 
     def get_blog_post_by_id(self,post_id:int,current_user,db:Session):
-        roles = current_user.roles
+        roles = current_user.roles if current_user else []
         post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+
+        if current_user is None:
+            if post.status != PostStatus.published:
+                            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")    
+                        
+
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
         if "super_admin" in roles:

@@ -142,8 +142,8 @@ def Postcover(
 @router.get("/{event_id}/cover",tags=["EVENTS COVER"])
 def GetCover(
     event_id:int,
-    db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(editor_required)
+    db:Session=Depends(get_db)
+    
 ):
     return services.GetCover(event_id,db)
 
