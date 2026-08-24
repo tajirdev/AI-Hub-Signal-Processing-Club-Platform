@@ -39,7 +39,7 @@ def get_blog(
     return services.get_all_blog_post(current_user, db, page, search, limit, category_id, status, sort, order)
 
 @router.get("/{post_id}",tags=["Blog Post"],response_model=BlogPostResponse)
-def get_blog_post(post_id:int,current_user:Users=Depends(member_required),db:Session=Depends(get_db)):
+def get_blog_post(post_id:int,current_user:Optional[Users]=Depends(get_optional_current_user),db:Session=Depends(get_db)):
     return services.get_blog_post_by_id(post_id,current_user,db)
 
 @router.put("/{post_id}",tags=["Blog Post"],response_model=BlogPostResponse)
