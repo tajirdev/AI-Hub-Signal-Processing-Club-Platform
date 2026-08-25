@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI & Signal Processing Hub | MUST</title>
   </head>
-  <body>
+  <body><div id="error-log" style="color: red; padding: 20px; font-family: monospace; z-index: 9999; position: absolute;"></div><script>window.onerror = function(msg, src, line, col, err) { document.getElementById("error-log").innerHTML += "<br/>" + msg + " " + (err && err.stack ? err.stack : ""); }; window.onunhandledrejection = function(e) { document.getElementById("error-log").innerHTML += "<br/>Unhandled Promise: " + e.reason; };</script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

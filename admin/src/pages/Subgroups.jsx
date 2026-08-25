@@ -118,7 +118,7 @@ export default function Subgroups() {
       fetchSubgroups();
     } catch (err) {
       console.error(err);
-      setToast({ type: 'error', message: 'Failed to delete subgroup' });
+      setToast({ type: 'error', message: 'Only allowed to delete subgroup with no member or project' });
     }
   };
 

@@ -27,8 +27,7 @@ app = FastAPI(title="AI HUB PLATFORM API")
 
 # CORS configuration supporting environment-based origins and local dev
 raw_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:3000",
+    "CORS_ORIGINS"
 )
 allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
