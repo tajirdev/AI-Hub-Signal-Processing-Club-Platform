@@ -116,7 +116,7 @@ const ROW_2 = [
 
 export function SponsorsSection() {
   return (
-    <section className="py-20 md:py-28 overflow-hidden bg-[#f6f5f0] dark:bg-[#030b20] border-y border-gray-200/50 dark:border-white/5">
+    <section className="py-20 md:py-28 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-6 md:px-8 text-center mb-14">
         <h2 className="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-medium mb-1">
           Join some of
@@ -129,8 +129,8 @@ export function SponsorsSection() {
       {/* Marquees */}
       <div className="relative w-full flex flex-col gap-10 md:gap-14 overflow-hidden">
         {/* Fade gradients on edges */}
-        <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-[#f6f5f0] dark:from-[#030b20] to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-[#f6f5f0] dark:from-[#030b20] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-gray-50 dark:from-[#071225] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-gray-50 dark:from-[#071225] to-transparent z-10 pointer-events-none"></div>
         
         {/* Row 1 - Scroll Left */}
         <div className="flex animate-marquee-left whitespace-nowrap items-center w-max">
