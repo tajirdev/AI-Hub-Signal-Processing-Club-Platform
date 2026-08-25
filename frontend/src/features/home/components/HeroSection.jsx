@@ -19,20 +19,21 @@ export function HeroSection() {
   useEffect(() => {
     const currentDomain = DOMAINS[domainIndex];
     let typingSpeed = isDeleting ? 40 : 80;
+    let timeout;
     
     if (!isDeleting && typedText === currentDomain) {
       typingSpeed = 2000; // Pause at end of word
-      setTimeout(() => setIsDeleting(true), typingSpeed);
-      return;
+      timeout = setTimeout(() => setIsDeleting(true), typingSpeed);
     } else if (isDeleting && typedText === '') {
-      setIsDeleting(false);
-      setDomainIndex((prev) => (prev + 1) % DOMAINS.length);
-      return;
+      timeout = setTimeout(() => {
+        setIsDeleting(false);
+        setDomainIndex((prev) => (prev + 1) % DOMAINS.length);
+      }, 300); // Small pause before typing next word
+    } else {
+      timeout = setTimeout(() => {
+        setTypedText(currentDomain.substring(0, typedText.length + (isDeleting ? -1 : 1)));
+      }, typingSpeed);
     }
-    
-    const timeout = setTimeout(() => {
-      setTypedText(currentDomain.substring(0, typedText.length + (isDeleting ? -1 : 1)));
-    }, typingSpeed);
     
     return () => clearTimeout(timeout);
   }, [typedText, isDeleting, domainIndex]);

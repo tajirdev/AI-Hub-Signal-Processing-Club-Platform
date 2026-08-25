@@ -42,11 +42,12 @@ export function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    // Check initial theme
+    // Check local storage or system preference on mount
     if (localStorage.getItem('theme-mode') === 'dark' || 
        (!localStorage.getItem('theme-mode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDarkTheme(true);
+      const t = setTimeout(() => setIsDarkTheme(true), 0);
       document.documentElement.classList.add('dark');
+      return () => clearTimeout(t);
     }
   }, []);
 
@@ -70,8 +71,11 @@ export function Navbar() {
 
   useEffect(() => {
     // Close mobile menu on route change
-    setMobileMenuOpen(false);
-    setActiveDropdown(null);
+    const t = setTimeout(() => {
+      setMobileMenuOpen(false);
+      setActiveDropdown(null);
+    }, 0);
+    return () => clearTimeout(t);
   }, [location.pathname]);
 
   useEffect(() => {
