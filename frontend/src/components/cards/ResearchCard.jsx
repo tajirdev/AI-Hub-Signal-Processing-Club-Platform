@@ -75,12 +75,14 @@ export function ResearchCard({ research, className }) {
               href={getImageUrl(research.file.path)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-90 shadow-sm mt-2"
+              className="w-full flex items-center justify-between px-5 py-3 rounded-[14px] text-sm font-bold text-white transition-transform hover:scale-[1.02] shadow-sm mt-2"
               style={{ background: `linear-gradient(135deg, ${BRAND.navy}, ${BRAND.navyDark})` }}
             >
-              <FileText className="w-4 h-4 text-[#ffba08]" />
-              View PDF Document
-              <Download className="w-3.5 h-3.5 ml-auto mr-1 opacity-70" />
+              <div className="flex items-center gap-2.5">
+                <FileText className="w-5 h-5 text-[#ffba08]" />
+                <span>View PDF Document</span>
+              </div>
+              <Download className="w-4 h-4 opacity-80" />
             </a>
           )}
         </div>
