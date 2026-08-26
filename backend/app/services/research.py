@@ -79,14 +79,10 @@ class ResearchServices:
         elif "editor" in roles:
             query = query.filter(
                 (Research.is_published == True) | 
-                (Research.publication_date != None) | 
                 (Research.created_by == current_user.id)
             )
         else:
-            query = query.filter(
-                (Research.is_published == True) | 
-                (Research.publication_date != None)
-            )
+            query = query.filter(Research.is_published == True)
 
         if search:
             query = query.filter(or_(

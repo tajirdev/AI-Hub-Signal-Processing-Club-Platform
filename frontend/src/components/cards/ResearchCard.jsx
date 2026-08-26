@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, FileText, Download, Calendar, Star, CheckCircle } from 'lucide-react';
+import { BookOpen, Users, FileText, Download, Calendar, Star } from 'lucide-react';
 import { getImageUrl } from '../../services/api';
 import { cn } from '../../utils/cn';
 
@@ -43,20 +43,8 @@ export function ResearchCard({ research, className }) {
         <h3 className="font-bold text-lg text-[#0a2472] dark:text-white mb-2 line-clamp-2 leading-snug">
           {research.title}
         </h3>
-
-        <div className="flex gap-2 mb-3">
-          <span className={cn(
-            "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1",
-            research.is_published 
-              ? "text-green-600 dark:text-green-400 bg-green-500/10" 
-              : "text-[#ffba08] bg-[#ffba08]/10"
-          )}>
-            <CheckCircle className="w-3 h-3" />
-            {research.is_published ? "Published" : "Pre-print"}
-          </span>
-        </div>
         
-        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300 line-clamp-3 mb-2">
+        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300 line-clamp-3 mb-2 mt-1">
           <span className="font-semibold text-gray-800 dark:text-gray-200">Abstract: </span>
           {research.abstract}
         </p>
