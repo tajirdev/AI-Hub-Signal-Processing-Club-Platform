@@ -1,11 +1,12 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Label, Input, Textarea } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { submitApplication } from '../../services/endpoints';
+import { Label, Input, Textarea } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { submitApplication } from '../../../services/endpoints';
+import { ScrollReveal } from '../../../components/ui/ScrollReveal';
 import { CheckCircle2, BrainCircuit, Cpu, Sparkles, BookOpen, Code2, Rocket } from 'lucide-react';
 
-export function JoinPage() {
+export function ApplicationForm() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -73,8 +74,8 @@ export function JoinPage() {
 
   if (success) {
     return (
-      <div className="relative min-h-screen pt-24 pb-12 flex items-center justify-center bg-[#F8F9FA] dark:bg-[#071225]">
-        <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none">
+      <div id="application-form" className="relative py-24 pt-24 pb-12 flex items-center justify-center bg-[#F8F9FA] dark:bg-[#071225]">
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[10%] left-[15%] w-64 h-64 bg-purple-200/40 dark:bg-purple-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob"></div>
           <div className="absolute top-[40%] right-[15%] w-72 h-72 bg-amber/20 dark:bg-amber/10 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-2000"></div>
           <div className="absolute -bottom-8 left-[30%] w-80 h-80 bg-blue-200/40 dark:bg-blue-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-4000"></div>
@@ -101,44 +102,45 @@ export function JoinPage() {
   }
 
   return (
-    <div className="relative min-h-screen pt-24 pb-12 flex items-center justify-center bg-[#F8F9FA] dark:bg-[#071225]">
+    <div id="application-form" className="relative py-24 pt-24 pb-12 flex items-center justify-center bg-[#F8F9FA] dark:bg-[#071225]">
       
       {/* Playful Floating Background Elements & Inspiration Words (Fixed) */}
-      <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[15%] w-64 h-64 bg-purple-200/40 dark:bg-purple-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob"></div>
         <div className="absolute top-[40%] right-[15%] w-72 h-72 bg-amber/20 dark:bg-amber/10 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-8 left-[30%] w-80 h-80 bg-blue-200/40 dark:bg-blue-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-4000"></div>
         
         {/* Floating Icons */}
         <div className="absolute top-[10%] left-[25%] animate-bounce" style={{ animationDuration: '4s' }}>
-          <BrainCircuit className="w-10 h-10 text-gray-400/50 dark:text-gray-500/50 rotate-12" />
+          <BrainCircuit className="w-10 h-10 text-gray-400/20 dark:text-gray-500/20 rotate-12 blur-[2px]" />
         </div>
         <div className="absolute top-[30%] right-[20%] animate-bounce" style={{ animationDuration: '5s' }}>
-          <Rocket className="w-12 h-12 text-amber/40 dark:text-amber/20 -rotate-12" />
+          <Rocket className="w-12 h-12 text-amber/20 dark:text-amber/10 -rotate-12 blur-[2px]" />
         </div>
         <div className="absolute bottom-[20%] left-[15%] animate-bounce" style={{ animationDuration: '6s' }}>
-          <Code2 className="w-8 h-8 text-blue-400/50 dark:text-blue-500/30 -rotate-6" />
+          <Code2 className="w-8 h-8 text-blue-400/20 dark:text-blue-500/10 -rotate-6 blur-[2px]" />
         </div>
         <div className="absolute bottom-[25%] right-[25%] animate-bounce" style={{ animationDuration: '4.5s' }}>
-          <BookOpen className="w-10 h-10 text-purple-400/40 dark:text-purple-500/30 rotate-12" />
+          <BookOpen className="w-10 h-10 text-purple-400/20 dark:text-purple-500/10 rotate-12 blur-[2px]" />
         </div>
         
         {/* Inspiration Words */}
-        <div className="absolute top-[20%] left-[10%] animate-pulse text-2xl font-black text-gray-300/30 dark:text-gray-600/30 -rotate-12">INNOVATE</div>
-        <div className="absolute top-[45%] left-[5%] animate-bounce text-xl font-black text-purple-300/30 dark:text-purple-600/30 rotate-12" style={{ animationDuration: '5s' }}>CREATE</div>
-        <div className="absolute bottom-[35%] right-[5%] animate-pulse text-2xl font-black text-amber/20 dark:text-amber/20 rotate-6">FUTURE</div>
-        <div className="absolute top-[15%] right-[10%] animate-bounce text-3xl font-black text-blue-300/30 dark:text-blue-600/30 -rotate-6" style={{ animationDuration: '7s' }}>AI</div>
-        <div className="absolute bottom-[10%] left-[30%] animate-pulse text-xl font-black text-green-300/30 dark:text-green-600/30 rotate-12">SIGNAL PROCESSING</div>
+        <div className="absolute top-[20%] left-[10%] animate-pulse text-2xl font-black text-gray-300/10 dark:text-gray-600/10 -rotate-12 blur-[2px]">INNOVATE</div>
+        <div className="absolute top-[45%] left-[5%] animate-bounce text-xl font-black text-purple-300/10 dark:text-purple-600/10 rotate-12 blur-[2px]" style={{ animationDuration: '5s' }}>CREATE</div>
+        <div className="absolute bottom-[35%] right-[5%] animate-pulse text-2xl font-black text-amber/10 dark:text-amber/10 rotate-6 blur-[2px]">FUTURE</div>
+        <div className="absolute top-[15%] right-[10%] animate-bounce text-3xl font-black text-blue-300/10 dark:text-blue-600/10 -rotate-6 blur-[2px]" style={{ animationDuration: '7s' }}>AI</div>
+        <div className="absolute bottom-[10%] left-[30%] animate-pulse text-xl font-black text-green-300/10 dark:text-green-600/10 rotate-12 blur-[2px]">SIGNAL PROCESSING</div>
 
         <div className="absolute top-[50%] left-[20%] animate-pulse">
-          <Sparkles className="w-6 h-6 text-amber/50" />
+          <Sparkles className="w-6 h-6 text-amber/20 blur-[2px]" />
         </div>
         <div className="absolute top-[70%] right-[15%] animate-pulse">
-          <Cpu className="w-8 h-8 text-gray-400/40" />
+          <Cpu className="w-8 h-8 text-gray-400/20 blur-[2px]" />
         </div>
       </div>
 
       <div className="w-full max-w-2xl relative z-10 px-6">
+        <ScrollReveal animation="scale-up" delay={0}>
         <div className="bg-white/90 dark:bg-surface-dark/95 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2.5rem] p-8 sm:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
           
           <div className="text-center mb-10">
@@ -235,6 +237,7 @@ export function JoinPage() {
             </Button>
           </form>
         </div>
+        </ScrollReveal>
       </div>
     </div>
   );
