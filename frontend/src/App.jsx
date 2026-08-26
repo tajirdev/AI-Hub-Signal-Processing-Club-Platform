@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './layouts/PublicLayout';
 import { AuthLayout } from './layouts/AuthLayout';
 import { HomePage } from './features/home/HomePage';
+import { AboutPage } from './features/about/AboutPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/auth/JoinPage';
 import { OnboardingPage } from './features/auth/OnboardingPage';
@@ -28,7 +29,7 @@ function App() {
             {/* The user requested to keep Navbar on JoinPage only */}
             <Route path="/join" element={<JoinPage />} />
             
-            <Route path="/about" element={<PlaceholderPage title="About Us" />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/projects" element={<PlaceholderPage title="Projects Archive" />} />
             <Route path="/projects/:id" element={<PlaceholderPage title="Project Details" />} />
             <Route path="/research" element={<PlaceholderPage title="Research Publications" />} />

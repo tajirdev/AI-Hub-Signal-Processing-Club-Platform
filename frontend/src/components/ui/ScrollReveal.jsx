@@ -1,52 +1,82 @@
-import { useEffect, useRef, useState } from 'react';
-import { cn } from '../../utils/cn';
+﻿import { useEffect, useRef, useState } from 'react';
 
 export function ScrollReveal({ 
   children, 
-  className, 
-  animation = "fade-up", // options: fade-up, fade-in, slide-left, slide-right
-  duration = "duration-700",
-  delay = "delay-0",
-  threshold = 0.1 
+  className = "", 
+  animation = "fade-up", // fade-up, fade-in, scale-up, slide-left, slide-right
+  delay = 0,
+  duration = 700,
+  threshold = 0.1,
+  once = false
 }) {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
-    const currentRef = ref.current;
-    if (!currentRef) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          if (once && ref.current) {
+            observer.unobserve(ref.current);
+          }
+        } else if (!once) {
+          setIsVisible(false);
+        }
       },
-      { 
-        threshold,
-        rootMargin: '50px' // Start animation slightly before it comes into view
-      }
+      { threshold }
     );
 
-    observer.observe(currentRef);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
 
     return () => {
-      if (currentRef) observer.unobserve(currentRef);
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
     };
-  }, [threshold]);
+  }, [threshold, once]);
 
-  const baseClasses = `transition-all ease-out transform-gpu ${duration} ${delay}`;
-  
-  const animations = {
-    "fade-up": isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12",
-    "fade-in": isVisible ? "opacity-100" : "opacity-0",
-    "slide-left": isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12",
-    "slide-right": isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12",
+  // Base styles based on animation type
+  const getStyles = () => {
+    const base = {
+      transitionDuration: `${duration}ms`,
+      transitionDelay: `${isVisible ? delay : 0}ms`,
+      transitionProperty: 'opacity, transform',
+      transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
+    };
+
+    if (isVisible) {
+      return {
+        ...base,
+        opacity: 1,
+        transform: 'translate(0, 0) scale(1)',
+      };
+    }
+
+    // Initial hidden states
+    switch (animation) {
+      case 'fade-up':
+        return { ...base, opacity: 0, transform: 'translateY(40px)' };
+      case 'slide-up':
+        return { ...base, opacity: 0, transform: 'translateY(80px)' };
+      case 'fade-in':
+        return { ...base, opacity: 0, transform: 'translate(0, 0)' };
+      case 'scale-up':
+        return { ...base, opacity: 0, transform: 'scale(0.95)' };
+      case 'slide-left':
+        return { ...base, opacity: 0, transform: 'translateX(40px)' };
+      case 'slide-right':
+        return { ...base, opacity: 0, transform: 'translateX(-40px)' };
+      default:
+        return { ...base, opacity: 0, transform: 'translateY(40px)' };
+    }
   };
 
   return (
-    <div 
-      ref={ref} 
-      className={cn(baseClasses, animations[animation], className)}
-    >
+    <div ref={ref} className={className} style={getStyles()}>
       {children}
     </div>
   );

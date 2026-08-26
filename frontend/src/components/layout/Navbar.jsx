@@ -6,15 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_GROUPS = [
   { label: 'Home', href: '/' },
-  {
-    label: 'About',
-    items: [
-      { label: 'Mission', href: '/about#mission' },
-      { label: 'History', href: '/about#history' },
-      { label: 'Leadership', href: '/about#leadership' },
-      { label: 'MUST affiliation', href: '/about#must-affiliation' },
-    ],
-  },
+  { label: 'About Us', href: '/about' },
   { label: 'Members', href: '/members' },
   { label: 'Contact', href: '/contact' },
   {
