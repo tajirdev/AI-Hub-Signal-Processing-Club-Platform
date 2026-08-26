@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, Moon, Sun } from 'lucide-react';
+import { Menu, X, ChevronDown, Moon, Sun, LogOut, User } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_GROUPS = [
   { label: 'Home', href: '/' },
@@ -40,6 +41,7 @@ export function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const location = useLocation();
+  const { isAuthenticated, logout, user } = useAuth();
 
   useEffect(() => {
     // Check local storage or system preference on mount
@@ -171,9 +173,32 @@ export function Navbar() {
               {isDarkTheme ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             
-            <Link to="/join" className="bg-amber hover:bg-amber-hover text-gray-900 font-heading font-bold uppercase tracking-wider text-sm px-6 py-2.5 rounded-full shadow-[0_4px_20px_rgba(255,186,8,0.25)] transition-all hover:-translate-y-0.5">
-              Join Us
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+                  <User className="w-4 h-4 text-navy dark:text-amber" />
+                  <span className="text-sm font-bold text-navy dark:text-white truncate max-w-[100px]">
+                    {user?.user_name || 'Member'}
+                  </span>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="p-2.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 transition-colors"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="font-heading font-bold text-navy dark:text-white hover:text-amber dark:hover:text-amber transition-colors text-sm uppercase tracking-wider">
+                  Sign In
+                </Link>
+                <Link to="/join" className="bg-amber hover:bg-amber-hover text-gray-900 font-heading font-bold uppercase tracking-wider text-sm px-6 py-2.5 rounded-full shadow-[0_4px_20px_rgba(255,186,8,0.25)] transition-all hover:-translate-y-0.5">
+                  Join Us
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -232,9 +257,39 @@ export function Navbar() {
           ))}
           
           <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
-            <Link to="/join" className="flex items-center justify-center w-full bg-amber hover:bg-amber-hover text-gray-900 font-heading font-bold uppercase tracking-wider py-4 rounded-xl text-lg">
-              Join AI Hub
-            </Link>
+            {isAuthenticated ? (
+                <div className="flex flex-col gap-3 px-2 mt-2">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+                    <User className="w-5 h-5 text-navy dark:text-amber" />
+                    <span className="font-bold text-navy dark:text-white">
+                      {user?.user_name || 'Member'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => { logout(); setMobileMenuOpen(false); }}
+                    className="w-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="w-5 h-5" /> Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <Link 
+                    to="/login" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center w-full bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-navy dark:text-white font-heading font-bold uppercase tracking-wider py-4 rounded-xl text-lg transition-colors border border-gray-100 dark:border-gray-800"
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    to="/join" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center w-full bg-amber hover:bg-amber-hover text-gray-900 font-heading font-bold uppercase tracking-wider py-4 rounded-xl text-lg transition-colors shadow-lg shadow-amber/10"
+                  >
+                    Join AI Hub
+                  </Link>
+                </div>
+              )}
           </div>
         </div>
       </div>

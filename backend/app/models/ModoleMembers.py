@@ -20,4 +20,4 @@ class Members(Base):
 
     user = relationship("Users",back_populates="member")
     subgroup = relationship("SubGroup",back_populates="sub_member")
-    research_authors=relationship("ResearchAuthor",back_populates="member")
+    research_authors=relationship("ResearchAuthor",back_populates="member", cascade="all, delete-orphan")

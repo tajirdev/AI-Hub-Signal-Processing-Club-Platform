@@ -18,23 +18,24 @@ class Users(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(),nullable=False)
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now(),nullable=False)
     
-    blog_posts= relationship("BlogPost",back_populates="author",cascade="all, delete-orphan")
-    userRole = relationship("UserRole",back_populates="User",cascade="all, delete", lazy="joined")
-    subgroup = relationship("SubGroup", back_populates="leader",cascade="all, delete")
-    member = relationship("Members",back_populates="user",cascade="all, delete")
-    event = relationship("Events",back_populates="user",cascade="all, delete")
-    research=relationship("Research",foreign_keys="Research.created_by",back_populates="user")
+    blog_posts = relationship("BlogPost", back_populates="author", cascade="all, delete")
+    userRole = relationship("UserRole", back_populates="User", cascade="all, delete", lazy="joined")
+    subgroup = relationship("SubGroup", back_populates="leader", cascade="all, delete")
+    member = relationship("Members", back_populates="user", cascade="all, delete")
+    event = relationship("Events", back_populates="user", cascade="all, delete")
+    research = relationship("Research", foreign_keys="Research.created_by", back_populates="user", cascade="all, delete")
     media = relationship("Media", foreign_keys="[Media.uploaded_by]", back_populates="user", cascade="all, delete")
     avatar_media = relationship("Media", foreign_keys="[Users.avatar_id]", back_populates="avatar")
-    resource = relationship("Resource", back_populates="uploader")
-    new=relationship("News",foreign_keys="News.author_id",back_populates="user")
-    project=relationship("Project",foreign_keys="Project.created_by",back_populates="creator")
+    resource = relationship("Resource", back_populates="uploader", cascade="all, delete")
+    new = relationship("News", foreign_keys="News.author_id", back_populates="user", cascade="all, delete")
+    project = relationship("Project", foreign_keys="Project.created_by", back_populates="creator", cascade="all, delete")
 
     reviewed_applications = relationship(
         "Application",
         foreign_keys="Application.reviewed_by",
-        back_populates="reviewer"
-        )
+        back_populates="reviewer",
+        cascade="all, delete"
+    )
     @property
     def roles(self) -> list[str]:
         if self.userRole:

@@ -45,3 +45,40 @@ export const fetchResearch = async (params = { limit: 10, page: 1 }) => {
   const res = await api.get('/research', { params });
   return res.data;
 };
+
+// Auth Endpoints
+export const loginUser = async (email, password) => {
+  const formData = new URLSearchParams();
+  formData.append('username', email);
+  formData.append('password', password);
+  
+  const res = await api.post('/login', formData, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
+  return res.data;
+};
+
+export const fetchCurrentUser = async () => {
+  const res = await api.get('/users/me');
+  return res.data;
+};
+
+export const submitApplication = async (data) => {
+  const res = await api.post('/application/', data);
+  return res.data;
+};
+
+export const requestPasswordReset = async (email) => {
+  const res = await api.post('/password-reset/request', { email });
+  return res.data;
+};
+
+export const confirmPasswordReset = async (email, otp_code, new_password) => {
+  const res = await api.post('/password-reset/confirm', { email, otp_code, new_password });
+  return res.data;
+};
+
+export const submitOnboarding = async (data) => {
+  const res = await api.post('/application/onboarding', data);
+  return res.data;
+};

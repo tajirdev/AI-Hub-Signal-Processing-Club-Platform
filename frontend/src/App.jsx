@@ -1,6 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './layouts/PublicLayout';
 import { HomePage } from './features/home/HomePage';
+import { LoginPage } from './features/auth/LoginPage';
+import { JoinPage } from './features/auth/JoinPage';
+import { OnboardingPage } from './features/auth/OnboardingPage';
+import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
 
 // Placeholder components for routes not yet implemented
 const PlaceholderPage = ({ title }) => (
@@ -12,32 +18,39 @@ const PlaceholderPage = ({ title }) => (
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<PlaceholderPage title="About Us" />} />
-          <Route path="/projects" element={<PlaceholderPage title="Projects Archive" />} />
-          <Route path="/projects/:id" element={<PlaceholderPage title="Project Details" />} />
-          <Route path="/research" element={<PlaceholderPage title="Research Publications" />} />
-          <Route path="/research/:id" element={<PlaceholderPage title="Research Details" />} />
-          <Route path="/sub-groups" element={<PlaceholderPage title="Sub-Groups" />} />
-          <Route path="/sub-groups/:id" element={<PlaceholderPage title="Sub-Group Details" />} />
-          <Route path="/events" element={<PlaceholderPage title="Events Calendar" />} />
-          <Route path="/events/:id" element={<PlaceholderPage title="Event Details" />} />
-          <Route path="/blog" element={<PlaceholderPage title="Blog & News" />} />
-          <Route path="/blog/:id" element={<PlaceholderPage title="Blog Post" />} />
-          <Route path="/resources" element={<PlaceholderPage title="Resources" />} />
-          <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />
-          <Route path="/contact" element={<PlaceholderPage title="Contact Us" />} />
-          
-          {/* Join page (forms) will be built in Part C */}
-          <Route path="/join" element={<PlaceholderPage title="Join Application (Part C)" />} />
-          
-          <Route path="*" element={<PlaceholderPage title="404 - Page Not Found" />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<HomePage />} />
+            
+            {/* Authentication & Onboarding */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/join" element={<JoinPage />} />
+            <Route path="/onboard" element={<OnboardingPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            
+            <Route path="/about" element={<PlaceholderPage title="About Us" />} />
+            <Route path="/projects" element={<PlaceholderPage title="Projects Archive" />} />
+            <Route path="/projects/:id" element={<PlaceholderPage title="Project Details" />} />
+            <Route path="/research" element={<PlaceholderPage title="Research Publications" />} />
+            <Route path="/research/:id" element={<PlaceholderPage title="Research Details" />} />
+            <Route path="/sub-groups" element={<PlaceholderPage title="Sub-Groups" />} />
+            <Route path="/sub-groups/:id" element={<PlaceholderPage title="Sub-Group Details" />} />
+            <Route path="/events" element={<PlaceholderPage title="Events Calendar" />} />
+            <Route path="/events/:id" element={<PlaceholderPage title="Event Details" />} />
+            <Route path="/blog" element={<PlaceholderPage title="Blog & News" />} />
+            <Route path="/blog/:id" element={<PlaceholderPage title="Blog Post" />} />
+            <Route path="/resources" element={<PlaceholderPage title="Resources" />} />
+            <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />
+            <Route path="/contact" element={<PlaceholderPage title="Contact Us" />} />
+            
+            <Route path="*" element={<PlaceholderPage title="404 - Page Not Found" />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
