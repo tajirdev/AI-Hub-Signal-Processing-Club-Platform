@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './layouts/PublicLayout';
+import { AuthLayout } from './layouts/AuthLayout';
 import { HomePage } from './features/home/HomePage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/auth/JoinPage';
@@ -24,12 +25,8 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             
-            {/* Authentication & Onboarding */}
-            <Route path="/login" element={<LoginPage />} />
+            {/* The user requested to keep Navbar on JoinPage only */}
             <Route path="/join" element={<JoinPage />} />
-            <Route path="/onboard" element={<OnboardingPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             <Route path="/about" element={<PlaceholderPage title="About Us" />} />
             <Route path="/projects" element={<PlaceholderPage title="Projects Archive" />} />
@@ -47,6 +44,14 @@ function App() {
             <Route path="/contact" element={<PlaceholderPage title="Contact Us" />} />
             
             <Route path="*" element={<PlaceholderPage title="404 - Page Not Found" />} />
+          </Route>
+
+          {/* Authentication & Onboarding Forms without Navigation */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/onboard" element={<OnboardingPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
