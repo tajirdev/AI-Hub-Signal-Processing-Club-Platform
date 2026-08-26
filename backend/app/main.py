@@ -15,7 +15,8 @@ from app.routes import (
     resource,
     research,
     news,
-    applicationRoutes
+    applicationRoutes,
+    RouterContact
 )
 from app.core import seed_role
 from app.admin import route
@@ -54,6 +55,7 @@ app.include_router(news.router)
 app.include_router(project.router)
 app.include_router(route.router)
 app.include_router(applicationRoutes.router)
+app.include_router(RouterContact.router)
 
 
 

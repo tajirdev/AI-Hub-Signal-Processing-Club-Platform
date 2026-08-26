@@ -3,6 +3,7 @@ import { Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Label, Input, Textarea } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { ScrollReveal } from '../../../components/ui/ScrollReveal';
+import { submitContact } from '../../../services/endpoints';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -27,12 +28,14 @@ export function ContactForm() {
 
     setStatus('submitting');
     
-    // Simulate API call since real endpoint is not provided yet
-    setTimeout(() => {
-      // For demonstration, let's just assume success always.
+    try {
+      await submitContact(formData);
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 1500);
+    } catch (err) {
+      console.error("Failed to submit contact form:", err);
+      setStatus('error');
+    }
   };
 
   if (status === 'success') {

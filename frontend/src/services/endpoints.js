@@ -82,3 +82,8 @@ export const submitOnboarding = async (data) => {
   const res = await api.post('/application/onboarding', data);
   return res.data;
 };
+
+export const submitContact = async (data) => {
+  const res = await api.post('/contact/', data);
+  return res.data;
+};

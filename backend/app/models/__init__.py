@@ -15,7 +15,8 @@ from .resource import Resource
 from .newsmodel import News
 from .project import Project
 from .applicationModel import Application
+from .ModelContact import Contact
 
 # This allows Alembic to see everything through Base.metadata
-__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","News","Project","Events","Application","OTP"]
+__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","News","Project","Events","Application","OTP","Contact"]
 
