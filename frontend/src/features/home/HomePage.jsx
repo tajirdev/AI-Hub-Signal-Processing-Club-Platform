@@ -50,7 +50,7 @@ function DataSection({ title, label, subtitle, ctaText, ctaLink, fetchFn, render
         />
       </ScrollReveal>
 
-      <ScrollReveal animation="fade-up" delay="delay-150">
+      <ScrollReveal animation="fade-up" delay={150}>
         {loading ? (
           <LoadingState message={`Loading ${title.toLowerCase()}...`} />
         ) : error ? (
@@ -76,7 +76,7 @@ export function HomePage() {
     <div className="flex flex-col w-full">
       <HeroSection />
       
-      <ScrollReveal animation="fade-up" delay="delay-100">
+      <ScrollReveal animation="fade-up" delay={100}>
         <StatsSection />
       </ScrollReveal>
       

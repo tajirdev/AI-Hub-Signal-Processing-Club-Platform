@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollReveal } from '../../../components/ui/ScrollReveal';
 
 const LogoZindi = () => (
   <svg height="36" viewBox="0 0 120 40" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -118,12 +119,16 @@ export function SponsorsSection() {
   return (
     <section className="py-20 md:py-28 overflow-hidden">
       <div className="max-w-[1280px] mx-auto px-6 md:px-8 text-center mb-14">
+        <ScrollReveal animation="fade-up" delay={0}>
         <h2 className="text-gray-600 dark:text-gray-400 text-xl md:text-2xl font-medium mb-1">
           Join some of
         </h2>
+        </ScrollReveal>
+        <ScrollReveal animation="fade-up" delay={100}>
         <p className="text-gray-900 dark:text-white text-3xl md:text-5xl font-black font-heading tracking-tight">
           the best AI brands in Africa
         </p>
+        </ScrollReveal>
       </div>
       
       {/* Marquees */}
