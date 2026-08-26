@@ -182,10 +182,11 @@ export function OnboardingPage() {
                     id="subgroup_id" name="subgroup_id"
                     value={formData.subgroup_id} onChange={handleChange}
                     disabled={isLoading} required
+                    className="dark:bg-[#0b172a]"
                   >
                     <option value="" disabled>Select your primary track</option>
                     {subgroups.map(sg => (
-                      <option key={sg.id} value={sg.id}>{sg.title}</option>
+                      <option key={sg.id} value={sg.id} className="text-gray-900 dark:text-gray-100">{sg.name}</option>
                     ))}
                   </Select>
                 )}

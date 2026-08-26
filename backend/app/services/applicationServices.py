@@ -178,7 +178,7 @@ class ApplicationService:
             from app.services.otp_service import OTPService
             from app.services.email_service import EmailService
             if request.status == applicationModel.ApplicationStatus.approved:
-                OTPService.create_and_send_otp(db, application.email, "registration")
+                OTPService.create_and_send_otp(db, application.email, "registration", expires_in_minutes=4320)
                 
             elif request.status == applicationModel.ApplicationStatus.rejected:
                 EmailService.send_application_rejected_email(application.email, application.first_name)
