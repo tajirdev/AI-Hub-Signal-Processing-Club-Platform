@@ -238,7 +238,7 @@ Build:
 - Contact form
 - Success state
 - Error state
-- FAQ/quick information where appropriate
+- FAQ/quick information 
 #### Phase 3 Deliverable
 
 A complete:

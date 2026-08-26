@@ -6,6 +6,7 @@ import { HomePage } from './features/home/HomePage';
 import { AboutPage } from './features/about/AboutPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/join/JoinPage';
+import { ContactPage } from './features/contact/ContactPage';
 import { OnboardingPage } from './features/auth/OnboardingPage';
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
@@ -42,7 +43,7 @@ function App() {
             <Route path="/blog/:id" element={<PlaceholderPage title="Blog Post" />} />
             <Route path="/resources" element={<PlaceholderPage title="Resources" />} />
             <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />
-            <Route path="/contact" element={<PlaceholderPage title="Contact Us" />} />
+            <Route path="/contact" element={<ContactPage />} />
             
             <Route path="*" element={<PlaceholderPage title="404 - Page Not Found" />} />
           </Route>
