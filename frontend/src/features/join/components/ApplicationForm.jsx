@@ -179,7 +179,7 @@ export function ApplicationForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="email">University Email *</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input 
                   id="email" name="email" type="email"
                   value={formData.email} onChange={handleChange} 
@@ -198,7 +198,7 @@ export function ApplicationForm() {
               <div>
                 <Label htmlFor="registration_number">Registration Number (Numeric) *</Label>
                 <Input 
-                  id="registration_number" name="registration_number" type="number"
+                  id="registration_number" name="registration_number" type="text"
                   placeholder="e.g. 20230123"
                   value={formData.registration_number} onChange={handleChange} 
                   disabled={isLoading} required className="!bg-[#F5F6F8] dark:!bg-white/5 border-transparent focus:!border-amber shadow-inner rounded-2xl py-3.5 placeholder:text-gray-400" />
