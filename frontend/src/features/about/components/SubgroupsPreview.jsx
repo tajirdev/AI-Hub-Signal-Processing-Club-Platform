@@ -65,7 +65,7 @@ export function SubgroupsPreview() {
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-2 flex-grow">
                     {sg.description || 'A dedicated technical subgroup within the Hub.'}
                   </p>
-                  <Link to={`/sub-groups/${sg.id}`} className="inline-flex items-center gap-1 text-sm font-bold text-amber dark:text-amber mt-auto">
+                  <Link to={`/sub-groups/${sg.slug}`} className="inline-flex items-center gap-1 text-sm font-bold text-amber dark:text-amber mt-auto">
                     Learn More
                     <ArrowRight className="w-4 h-4" />
                   </Link>
