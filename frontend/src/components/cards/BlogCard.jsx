@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { Link } from 'react-router-dom';
 import { User } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { getImageUrl } from '../../services/api';
@@ -94,8 +93,7 @@ export function BlogCard({ post, className }) {
   }) : 'Recent';
 
   return (
-    <Link 
-      to={`/blog/${post.id}`}
+    <div
       className={cn(
         "relative w-full rounded-3xl overflow-hidden shadow-xl bg-white dark:bg-[#061539] transition-transform duration-300 hover:-translate-y-1 block shrink-0 snap-start h-full flex flex-col",
         "border border-gray-100 dark:border-white/5",
@@ -137,7 +135,7 @@ export function BlogCard({ post, className }) {
             {post.excerpt}
           </p>
         )}
-        <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400 line-clamp-3 mb-6 flex-grow">
+        <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400  mb-6 flex-grow">
           {post.content?.replace(/<[^>]*>?/gm, '') || ''}
         </p>
 
@@ -155,6 +153,6 @@ export function BlogCard({ post, className }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

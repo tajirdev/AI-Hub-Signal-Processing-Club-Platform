@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { Link } from 'react-router-dom';
 import { Megaphone, Rss, Calendar, User, Info, FileText } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -40,8 +39,7 @@ export function NewsCard({ news, className }) {
   const categoryName = news.category?.name || 'General';
 
   return (
-    <Link 
-      to={`/news/${news.id}`}
+    <div
       className={cn(
         "relative transition-transform duration-300 hover:-translate-y-1 block w-full shrink-0 snap-start",
         className
@@ -90,7 +88,7 @@ export function NewsCard({ news, className }) {
           </p>
 
           {/* Content */}
-          <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400 line-clamp-3 mb-6 flex-grow">
+          <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400  mb-6 flex-grow">
             {news.content?.replace(/<[^>]*>?/gm, '') || ''}
           </p>
 
@@ -113,6 +111,6 @@ export function NewsCard({ news, className }) {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
