@@ -243,26 +243,14 @@ class MembersServices:
         if member.subgroup and member.subgroup.leader:
             for p in member.subgroup.leader.project:
                 if p.status == "active" or is_owner:
-                    projects.append({
-                        "id": p.id,
-                        "title": p.title,
-                        "description": p.description,
-                        "type": "Project",
-                        "status": p.status
-                    })
+                    projects.append({**{k: v for k, v in p.__dict__.items() if not k.startswith("_")}, "type": "Project"})
         # Alternatively, if they have personal projects, we might add them too
         if user.project:
             for p in user.project:
                 if p.status == "active" or is_owner:
                     # Prevent duplicates
                     if not any(proj['id'] == p.id for proj in projects):
-                        projects.append({
-                            "id": p.id,
-                            "title": p.title,
-                            "description": p.description,
-                            "type": "Project",
-                            "status": p.status
-                        })
+                        projects.append({**{k: v for k, v in p.__dict__.items() if not k.startswith("_")}, "type": "Project"})
                     
         research = []
         # Research: The member is an author
@@ -270,13 +258,7 @@ class MembersServices:
             for ra in member.research_authors:
                 r = ra.research
                 if r and (r.is_published or is_owner):
-                    research.append({
-                        "id": r.id,
-                        "title": r.title,
-                        "description": r.abstract,
-                        "type": "Research",
-                        "is_published": r.is_published
-                    })
+                    research.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Research"})
                     
         news = []
         events = []
@@ -285,13 +267,13 @@ class MembersServices:
         if include_extra:
             if user.new:
                 for n in user.new:
-                    news.append({"id": n.id, "title": n.title, "type": "News"})
+                    news.append({**{k: v for k, v in n.__dict__.items() if not k.startswith("_")}, "type": "News"})
             if user.event:
                 for e in user.event:
-                    events.append({"id": e.id, "title": e.name, "type": "Event"})
+                    events.append({**{k: v for k, v in e.__dict__.items() if not k.startswith("_")}, "type": "Event"})
             if user.blog_posts:
                 for b in user.blog_posts:
-                    blogs.append({"id": b.id, "title": b.title, "type": "Blog"})
+                    blogs.append({**{k: v for k, v in b.__dict__.items() if not k.startswith("_")}, "type": "Blog"})
 
         return {
             "id": member.id,

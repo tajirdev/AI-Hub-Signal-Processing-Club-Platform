@@ -158,3 +158,57 @@ export const uploadAvatar = async (file) => {
   const res = await api.post('/users/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
   return res.data;
 };
+
+// Dynamic CRUD Endpoints
+export const createContent = async (type, data) => {
+  const res = await api.post(`/${type}`, data);
+  return res.data;
+};
+
+export const updateContent = async (type, id, data) => {
+  try {
+    const res = await api.put(`/${type}/me/${id}`, data);
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+      const resFallback = await api.put(`/${type}/${id}`, data);
+      return resFallback.data;
+    }
+    throw err;
+  }
+};
+
+export const deleteContent = async (type, id) => {
+  try {
+    const res = await api.delete(`/${type}/me/${id}`);
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status === 404) {
+      const resFallback = await api.delete(`/${type}/${id}`);
+      return resFallback.data;
+    }
+    throw err;
+  }
+};
+
+
+export const getCategories = async () => {
+  const res = await api.get('/category');
+  return res.data;
+};
+
+export const uploadContentMedia = async (type, id, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  let endpoint = `/${type}/${id}/cover`;
+  if (type === 'research') endpoint = `/${type}/${id}/file`;
+  if (type === 'blog-posts') endpoint = `/${type}/${id}`; // Backend specific
+  
+  const res = await api.post(endpoint, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};

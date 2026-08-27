@@ -5,6 +5,7 @@ import { fetchMemberById } from "../../services/endpoints";
 import { getImageUrl } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
 import { LoadingState, ErrorState } from "../../components/ui/States";
+import { ManageContentTab } from './components/ManageContentTab';
 import { EditProfileForm } from "./components/EditProfileForm";
 
 const BRAND = {
@@ -283,53 +284,8 @@ export function MemberProfilePage() {
 
         {activeTab === "manage" && canManageContent && (
           <div className="rounded-3xl bg-white dark:bg-[#0a1628] shadow-xl p-8 border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-navy dark:text-white">Content Management</h2>
-              <button className="bg-navy hover:bg-navy-light text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
-                + Create New
-              </button>
-            </div>
-            
-            <p className="text-sm text-gray-500 mb-6">Manage your Projects, Research, Events, News, and Blogs.</p>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Type</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Title</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.length === 0 ? (
-                    <tr>
-                      <td colSpan="3" className="py-8 text-center text-gray-500">No content found.</td>
-                    </tr>
-                  ) : (
-                    items.map((item, idx) => (
-                      <tr key={`manage-${item.type}-${item.id}-${idx}`} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <td className="py-3 px-4">
-                          <span className="inline-block rounded-full px-2 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                            {item.type}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-navy dark:text-white truncate max-w-[200px] sm:max-w-[400px]">
-                          {item.title}
-                          {item.status && item.status !== "active" && (
-                            <span className="ml-2 text-xs text-red-500">({item.status})</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button className="text-sm text-amber hover:underline mr-3">Edit</button>
-                          <button className="text-sm text-red-500 hover:underline">Delete</button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <h2 className="text-xl font-bold text-navy dark:text-white mb-6">Content Management</h2>
+            <ManageContentTab profile={profile} />
           </div>
         )}
       </div>
