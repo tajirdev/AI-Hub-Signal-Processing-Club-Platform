@@ -159,7 +159,7 @@ export function SubgroupCard({ subgroup, className }) {
         </div>
 
         <Link
-          to={`/sub-groups/${subgroup.id}`}
+          to={`/sub-groups/${subgroup.slug}`}
           className="mt-5 w-full rounded-full py-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90 text-white"
           style={{ background: `linear-gradient(135deg, ${BRAND.navy}, ${BRAND.amber})` }}
         >

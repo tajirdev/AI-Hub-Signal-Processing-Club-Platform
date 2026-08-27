@@ -31,9 +31,10 @@ def show_all(
     limit: int = 10,
     title: Optional[str] = None,
     sort: str = "publication_date",
-    order: str = "desc"
+    order: str = "desc",
+    subgroup_id: Optional[int] = None
 ):
-    return ResearchServices.show_all(db, current_user, page, search, limit, title, sort, order)
+    return ResearchServices.show_all(db, current_user, page, search, limit, title, sort, order, subgroup_id)
 
 @router.get("/{research_id}", response_model=ResearchResponse)
 def show_by_id(

@@ -67,12 +67,17 @@ class ResearchServices:
                  page: int = 1, search: str = None,
                  limit: int = 10, title: str = None,
                  sort: str = "publication_date",
-                 order: str = "desc"):
+                 order: str = "desc",
+                 subgroup_id: int = None):
+
         roles = current_user.roles if current_user else []
         query = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member)
         )
+        
+        if subgroup_id:
+            query = query.join(ResearchAuthor).join(Members).filter(Members.subgroup_id == subgroup_id)
 
         if "super_admin" in roles:
             pass

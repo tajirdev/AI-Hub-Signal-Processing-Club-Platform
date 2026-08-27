@@ -1,5 +1,6 @@
 import { GitBranch, ExternalLink } from "lucide-react";
 import { cn } from '../../utils/cn';
+import { Link } from "react-router-dom";
 import { getImageUrl } from '../../services/api';
 
 const BRAND = {
@@ -150,7 +151,7 @@ export function ProjectCard({ project, className }) {
           {/* Always show icons even if links don't exist? Only if requested. Let's hide if missing to be safe, or just render disabled versions. Assuming they just won't render if missing. */}
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-4">
+<div className="flex flex-wrap gap-2 mt-4">
           {stack.slice(0, 4).map((tech) => (
             <span
               key={tech}
@@ -165,7 +166,18 @@ export function ProjectCard({ project, className }) {
             </span>
           ))}
         </div>
+        
+        <div className="mt-6">
+          <Link
+            to={/projects/}
+            className="inline-flex items-center text-sm font-semibold transition-colors duration-200 group-hover:underline"
+            style={{ color: BRAND.amber }}
+          >
+            View Project &rarr;
+          </Link>
+        </div>
       </div>
     </div>
   );
+
 }

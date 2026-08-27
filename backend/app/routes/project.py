@@ -14,17 +14,16 @@ editor_required = RoleChecker(["editor", "super_admin"])
 
 router = APIRouter(prefix="/projects")
 
-@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, tags=["PROJECTS"])
 @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, tags=["PROJECTS"])
 def create_project(
     request: ProjectCreate,
-    current_user: Users = Depends(editor_required),
+    current_user: Users = Depends(member_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.create_project(request, current_user, db)
 
 
-@router.get("", response_model=PaginationResponse, tags=["PROJECTS"])
+
 @router.get("/", response_model=PaginationResponse, tags=["PROJECTS"])
 def get_all_projects(
     page: int = Query(1, ge=1),
@@ -32,9 +31,10 @@ def get_all_projects(
     search: Optional[str] = None,
     sort: Optional[str] = "created_at",
     order: Optional[str] = "desc",
+    subgroup_id: Optional[int] = Query(None, description="Filter by subgroup ID"),
     db: Session = Depends(get_db)
 ):
-    return ProjectService.get_projects(db,page,limit,search,sort,order)
+    return ProjectService.get_projects(db,page,limit,search,sort,order,subgroup_id)
 
 
 @router.get("/{project_id}", response_model=ProjectResponse, tags=["PROJECTS"])
@@ -50,7 +50,7 @@ def get_project(
 def update_project(
     project_id: int,
     request:ProjectUpdate,
-    current_user:Users=Depends(editor_required),
+    current_user:Users=Depends(member_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.update_project(db,project_id,request, current_user)
@@ -59,7 +59,7 @@ def update_project(
 @router.delete("/{project_id}", tags=["PROJECTS"])
 def delete_project(
     project_id: int,
-    current_user = Depends(editor_required),
+    current_user = Depends(member_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.delete_project(db=db, project_id=project_id, current_user=current_user)
@@ -72,7 +72,7 @@ def delete_project(
 def post_cover(
     project_id: int,
     file: UploadFile = File(...),
-    current_user = Depends(editor_required),
+    current_user = Depends(member_required),
     db: Session = Depends(get_db)
 ):
     file_path=save_upload_file(
@@ -101,7 +101,7 @@ def get_cover(
 @router.delete("/{project_id}/cover", tags=["PROJECTS COVER"])
 def delete_cover(
     project_id: int,
-    current_user = Depends(editor_required),
+    current_user = Depends(member_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.remove_cover(project_id=project_id, db=db, current_user=current_user)

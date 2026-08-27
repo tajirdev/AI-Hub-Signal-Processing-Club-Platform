@@ -1,3 +1,8 @@
+
+import { ProjectsPage } from './features/projects/ProjectsPage';
+import { ProjectDetailsPage } from './features/projects/ProjectDetailsPage';
+import { SubgroupsPage } from './features/subgroups/SubgroupsPage';
+import { SubgroupDetailsPage } from './features/subgroups/SubgroupDetailsPage';
 ﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './layouts/PublicLayout';
@@ -31,12 +36,12 @@ function App() {
             <Route path="/join" element={<JoinPage />} />
             
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/projects" element={<PlaceholderPage title="Projects Archive" />} />
-            <Route path="/projects/:id" element={<PlaceholderPage title="Project Details" />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailsPage />} />
             <Route path="/research" element={<PlaceholderPage title="Research Publications" />} />
             <Route path="/research/:id" element={<PlaceholderPage title="Research Details" />} />
-            <Route path="/sub-groups" element={<PlaceholderPage title="Sub-Groups" />} />
-            <Route path="/sub-groups/:id" element={<PlaceholderPage title="Sub-Group Details" />} />
+            <Route path="/sub-groups" element={<SubgroupsPage />} />
+            <Route path="/sub-groups/:slug" element={<SubgroupDetailsPage />} />
             <Route path="/events" element={<PlaceholderPage title="Events Calendar" />} />
             <Route path="/events/:id" element={<PlaceholderPage title="Event Details" />} />
             <Route path="/blog" element={<PlaceholderPage title="Blog & News" />} />

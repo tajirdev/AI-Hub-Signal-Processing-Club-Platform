@@ -87,3 +87,18 @@ export const submitContact = async (data) => {
   const res = await api.post('/contact/', data);
   return res.data;
 };
+
+export const fetchProjectById = async (id) => {
+  const res = await api.get(`/projects/${id}`);
+  return res.data;
+};
+
+export const fetchSubgroupBySlug = async (slug) => {
+  const res = await api.get(`/sub_groups/slug/${slug}`);
+  return res.data;
+};
+
+export const fetchMembers = async (params = {}) => {
+  const res = await api.get('/member', { params });
+  return res.data;
+};

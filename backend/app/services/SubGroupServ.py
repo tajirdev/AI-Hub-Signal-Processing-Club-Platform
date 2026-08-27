@@ -88,6 +88,23 @@ class SubGroups:
             )
         return group
 
+
+    @staticmethod
+    def get_by_slug(slug: str, db: Session):
+        from sqlalchemy.orm import joinedload
+        group = db.query(SubGroupModel.SubGroup).options(
+            joinedload(SubGroupModel.SubGroup.leader),
+            joinedload(SubGroupModel.SubGroup.Sub_icon),
+            joinedload(SubGroupModel.SubGroup.sub_cover)
+        ).filter(SubGroupModel.SubGroup.slug == slug).first()
+
+        if not group:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"sub-group with slug {slug} not found"
+            )
+        return group
+
     @staticmethod
     def update_group(id, request: SubGroupSchm.SubGroup, db: Session):
         exist_group = db.query(SubGroupModel.SubGroup).filter(SubGroupModel.SubGroup.id == id).first()
