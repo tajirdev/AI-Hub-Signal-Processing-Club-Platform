@@ -73,7 +73,7 @@ class ResearchServices:
         roles = current_user.roles if current_user else []
         query = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors).joinedload(ResearchAuthor.member)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         )
         
         if subgroup_id:
@@ -115,7 +115,7 @@ class ResearchServices:
     def show_by_id(research_id: int, db: Session, current_user):
         research = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         ).filter(Research.id == research_id).first()
 
         if not research:
@@ -137,7 +137,7 @@ class ResearchServices:
     def update(research_id: int, data: Researchupdate, db: Session, current_user):
         research = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         ).filter(Research.id == research_id).first()
 
         if not research:

@@ -169,7 +169,7 @@ export function ProjectCard({ project, className }) {
         
         <div className="mt-6">
           <Link
-            to={/projects/}
+            to={`/projects/${project.id}`}
             className="inline-flex items-center text-sm font-semibold transition-colors duration-200 group-hover:underline"
             style={{ color: BRAND.amber }}
           >

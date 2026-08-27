@@ -1,13 +1,13 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
-import { fetchProjects } from '../../services/endpoints';
-import { ProjectCard } from '../../components/cards/ProjectCard';
+import { fetchResources } from '../../services/endpoints';
+import { ResourceCard } from '../../components/cards/ResourceCard';
 import { LoadingState, EmptyState, ErrorState } from '../../components/ui/States';
-import { Search, FolderGit2 } from 'lucide-react';
+import { Search, Database } from 'lucide-react';
 import { Pagination } from '../../components/ui/Pagination';
 import { ScrollReveal } from '../../components/ui/ScrollReveal';
 
-export function ProjectsPage() {
-  const [projects, setProjects] = useState([]);
+export function ResourcesPage() {
+  const [resourcesList, setResourcesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -18,39 +18,39 @@ export function ProjectsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Debounce search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(1); // Reset page on new search
+      setPage(1);
     }, 500);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  const loadProjects = useCallback(async () => {
+  const loadResources = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchProjects({ 
+      const data = await fetchResources({ 
         page, 
         limit: 9, 
         search: debouncedSearch || undefined 
       });
-      setProjects(data.projects || []);
+      const items = Array.isArray(data) ? data : (data.results || data.items || []);
+      setResourcesList(items);
       setTotalPages(data.total_pages || 1);
-      setTotalItems(data.total_projects || 0);
+      setTotalItems(data.total || items.length);
     } catch (err) {
-      console.error("Failed to load projects:", err);
-      setError("Failed to load projects. Please try again later.");
+      console.error("Failed to load resources:", err);
+      setError("Failed to load resources. Please try again later.");
     } finally {
       setLoading(false);
     }
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Projects';
-    loadProjects();
-  }, [loadProjects]);
+    document.title = 'AI & Signal Processing Hub | Resources';
+    loadResources();
+  }, [loadResources]);
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-[#071225] flex flex-col">
@@ -61,20 +61,20 @@ export function ProjectsPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-6">
           <ScrollReveal animation="fade-up" delay={0}>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy/5 dark:bg-white/5 border border-navy/10 dark:border-white/10 text-sm font-semibold tracking-wide text-navy dark:text-gray-300 mb-8">
-              <FolderGit2 className="w-4 h-4 text-amber dark:text-amber" />
-              <span>HUB INNOVATION</span>
+              <Database className="w-4 h-4 text-amber dark:text-amber" />
+              <span>LEARNING & TOOLS</span>
             </div>
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={100}>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-black text-navy dark:text-white leading-tight tracking-tight mb-6">
-              Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber to-blue-600 dark:from-amber dark:to-orange-500">Projects</span>
+              Open <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber to-blue-600 dark:from-amber dark:to-orange-500">Resources</span>
             </h1>
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={200}>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 font-medium leading-relaxed max-w-2xl mx-auto">
-              Explore the innovative tools, libraries, and open-source models built by our technical subgroups to solve real-world problems.
+              Access curated datasets, pre-trained models, educational videos, and codebase templates shared by our community.
             </p>
           </ScrollReveal>
         </div>
@@ -84,14 +84,13 @@ export function ProjectsPage() {
       <section className="flex-1 py-16 px-6 relative z-10">
         <div className="max-w-[1280px] mx-auto">
           
-          {/* Controls */}
           <div className="mb-12 flex flex-col md:flex-row gap-4 items-center justify-between">
             <ScrollReveal animation="fade-right" delay={100} className="w-full md:w-[400px]">
               <div className="relative w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
                   type="text" 
-                  placeholder="Search projects..." 
+                  placeholder="Search resources by title, description..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a1628] text-navy dark:text-white focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all"
@@ -101,27 +100,26 @@ export function ProjectsPage() {
             
             <ScrollReveal animation="fade-left" delay={100}>
               <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Showing {projects.length} of {totalItems} project{totalItems !== 1 ? 's' : ''}
+                Showing {resourcesList.length} of {totalItems} resource{totalItems !== 1 ? 's' : ''}
               </div>
             </ScrollReveal>
           </div>
 
-          {/* Projects Grid */}
           {loading ? (
-            <LoadingState message="Loading projects..." />
+            <LoadingState message="Loading resources..." />
           ) : error ? (
-            <ErrorState message={error} onRetry={loadProjects} />
-          ) : projects.length === 0 ? (
+            <ErrorState message={error} onRetry={loadResources} />
+          ) : resourcesList.length === 0 ? (
             <EmptyState 
-              title="No projects found" 
-              message={debouncedSearch ? "No projects match your current search." : "No projects have been published yet."} 
+              title="No resources found" 
+              message={debouncedSearch ? "No resources match your current search." : "No resources have been shared yet."} 
             />
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                {projects.map((project, index) => (
-                  <ScrollReveal key={project.id} animation="fade-up" delay={(index % 9) * 100}>
-                    <ProjectCard project={project} />
+                {resourcesList.map((resource, index) => (
+                  <ScrollReveal key={resource.id} animation="fade-up" delay={(index % 9) * 100}>
+                    <ResourceCard resource={resource} />
                   </ScrollReveal>
                 ))}
               </div>
@@ -137,7 +135,6 @@ export function ProjectsPage() {
               </div>
             </>
           )}
-
         </div>
       </section>
     </main>

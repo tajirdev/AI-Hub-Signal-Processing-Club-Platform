@@ -12,6 +12,10 @@ import { AboutPage } from './features/about/AboutPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/join/JoinPage';
 import { ContactPage } from './features/contact/ContactPage';
+import { ResearchPage } from './features/research/ResearchPage';
+import { ResearchDetailsPage } from './features/research/ResearchDetailsPage';
+import { ResourcesPage } from './features/resources/ResourcesPage';
+import { ResourceDetailsPage } from './features/resources/ResourceDetailsPage';
 import { OnboardingPage } from './features/auth/OnboardingPage';
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
@@ -38,15 +42,16 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectDetailsPage />} />
-            <Route path="/research" element={<PlaceholderPage title="Research Publications" />} />
-            <Route path="/research/:id" element={<PlaceholderPage title="Research Details" />} />
+            <Route path="/research" element={<ResearchPage />} />
+            <Route path="/research/:id" element={<ResearchDetailsPage />} />
             <Route path="/sub-groups" element={<SubgroupsPage />} />
             <Route path="/sub-groups/:slug" element={<SubgroupDetailsPage />} />
             <Route path="/events" element={<PlaceholderPage title="Events Calendar" />} />
             <Route path="/events/:id" element={<PlaceholderPage title="Event Details" />} />
             <Route path="/blog" element={<PlaceholderPage title="Blog & News" />} />
             <Route path="/blog/:id" element={<PlaceholderPage title="Blog Post" />} />
-            <Route path="/resources" element={<PlaceholderPage title="Resources" />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/resources/:id" element={<ResourceDetailsPage />} />
             <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />
             <Route path="/contact" element={<ContactPage />} />
             

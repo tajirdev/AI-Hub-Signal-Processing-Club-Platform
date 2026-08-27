@@ -27,9 +27,26 @@ class Researchupdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True) 
     
+class UserPreview(BaseModel):
+    id: int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    user_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    model_config=ConfigDict(from_attributes=True)
+
+class MemberPreview(BaseModel):
+    id: int
+    position: Optional[str] = None
+    show_profile: Optional[bool] = True
+    user: Optional[UserPreview] = None
+    model_config=ConfigDict(from_attributes=True)
+
 class ResearchAuthorResponse(BaseModel):
     member_id:int
     author_order:int
+    member: Optional[MemberPreview] = None
     model_config=ConfigDict(from_attributes=True)
 
 class ResearchResponse(BaseModel):

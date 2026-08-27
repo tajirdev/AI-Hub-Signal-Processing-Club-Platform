@@ -102,3 +102,17 @@ export const fetchMembers = async (params = {}) => {
   const res = await api.get('/member', { params });
   return res.data;
 };
+export const fetchResearchById = async (id) => {
+  const res = await api.get(`/research/${id}`);
+  return res.data;
+};
+
+export const fetchResources = async (params = { limit: 10, page: 1 }) => {
+  const res = await api.get('/resources', { params });
+  return res.data;
+};
+
+export const fetchResourceById = async (id) => {
+  const res = await api.get(`/resources/${id}`);
+  return res.data;
+};
