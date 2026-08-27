@@ -119,7 +119,7 @@ export function ResourcesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 {resourcesList.map((resource, index) => (
                   <ScrollReveal key={resource.id} animation="fade-up" delay={(index % 9) * 100}>
-                    <ResourceCard resource={resource} />
+                    <ResourceCard resource={resource} className="w-full sm:w-full md:w-full" />
                   </ScrollReveal>
                 ))}
               </div>

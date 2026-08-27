@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Download, ExternalLink, Calendar, Database, File, Video, Code, Box } from 'lucide-react';
 
 import { Badge } from '../ui/Badge';
+import { cn } from '../../utils/cn';
 
-export function ResourceCard({ resource }) {
+export function ResourceCard({ resource, className }) {
   const getTypeIcon = (type) => {
     const t = type?.toLowerCase() || '';
     if (t.includes('dataset')) return <Database className="w-5 h-5" />;
@@ -15,7 +16,7 @@ export function ResourceCard({ resource }) {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0a1628] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full relative">
+    <div className={cn("w-[85vw] sm:w-[320px] md:w-[350px] shrink-0 snap-start bg-white dark:bg-[#0a1628] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full relative", className)}>
       <div className="p-6 md:p-8 flex-1 flex flex-col relative z-10">
         <div className="flex items-center gap-2 mb-4">
           <Badge variant="primary" className="bg-[#0a2472]/10 dark:bg-white/10 text-[#0a2472] dark:text-gray-200 border-none capitalize">
