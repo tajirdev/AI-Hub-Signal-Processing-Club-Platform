@@ -43,7 +43,10 @@ const FORM_CONFIG = {
     endpoint: "News",
     fields: [
       { name: "title", label: "Title", type: "text", required: true },
+      { name: "summary", label: "Summary", type: "textarea" },
       { name: "content", label: "Content", type: "textarea", required: true },
+      { name: "news_type", label: "News Type", type: "text", required: true },
+      { name: "category_id", label: "Category", type: "dynamic_select" },
       { name: "status", label: "Status", type: "select", options: ["draft", "published"], default: "draft" }
     ]
   },

@@ -94,18 +94,24 @@ export function NewsCard({ news, className }) {
 
           {/* Category + author */}
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#0a2472]/10 dark:border-white/10">
-            <span
-              className="rounded-full px-3 py-1 text-xs font-bold tracking-wide"
-              style={{ backgroundColor: colorTheme.bg, color: colorTheme.text }}
-            >
-              {categoryName}
-            </span>
+            <div className="flex flex-col gap-1">
+              <span
+                className="rounded-full px-3 py-1 text-xs font-bold tracking-wide w-fit"
+                style={{ backgroundColor: colorTheme.bg, color: colorTheme.text }}
+              >
+                {categoryName}
+              </span>
+              <span className="text-[10px] font-semibold text-navy/50 dark:text-gray-500 uppercase tracking-wider ml-1">
+                {news.created_at ? new Date(news.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}
+              </span>
+            </div>
+
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full flex items-center justify-center bg-[#0a2472]/10 dark:bg-white/10">
                 <User className="w-3.5 h-3.5 text-navy dark:text-gray-300" />
               </div>
               <span className="text-sm font-semibold text-navy dark:text-gray-300">
-                {news.author?.first_name || 'Admin'}
+                {news.user?.first_name || news.author?.first_name || 'Admin'}
               </span>
             </div>
           </div>

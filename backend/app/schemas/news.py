@@ -24,6 +24,14 @@ class NewsUpdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class AuthorResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class NewsResponse(BaseModel):
     id: int
     title: str
@@ -33,6 +41,7 @@ class NewsResponse(BaseModel):
     news_type: str
     status: StatusCheck
     author_id: int
+    user: Optional[AuthorResponse] = None
     category_id: Optional[int] = None
     category: Optional[CategoryResponse] = None
     published_at: Optional[datetime] = None
