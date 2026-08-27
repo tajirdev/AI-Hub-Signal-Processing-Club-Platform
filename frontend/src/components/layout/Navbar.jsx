@@ -21,7 +21,8 @@ const NAV_GROUPS = [
     label: 'Community',
     items: [
       { label: 'Events', href: '/events' },
-      { label: 'Blog / News', href: '/blog' },
+      { label: 'Blog', href: '/blog' },
+        { label: 'News', href: '/news' },
       { label: 'Resources', href: '/resources' },
     ],
   },

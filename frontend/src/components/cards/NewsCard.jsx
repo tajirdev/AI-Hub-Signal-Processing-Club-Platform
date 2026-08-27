@@ -3,8 +3,8 @@ import { Calendar } from 'lucide-react';
 import { getImageUrl } from '../../services/api';
 import { cn } from '../../utils/cn';
 
-export function BlogCard({ post, className }) {
-  const date = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', {
+export function NewsCard({ news, className }) {
+  const date = news.published_at ? new Date(news.published_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   }) : 'Recent';
 
@@ -15,16 +15,16 @@ export function BlogCard({ post, className }) {
       className
     )}>
       <div className="relative h-48 bg-gray-100 dark:bg-surface-darkAlt overflow-hidden">
-        {post.featured_image ? (
+        {news.cover_image ? (
           <img 
-            src={getImageUrl(post.featured_image)} 
-            alt={post.title}
+            src={getImageUrl(news.cover_image)} 
+            alt={news.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-navy/5 flex items-center justify-center text-navy/20 dark:bg-white/5 dark:text-white/20">
-             Blog Post
+             News Article
           </div>
         )}
       </div>
@@ -35,13 +35,13 @@ export function BlogCard({ post, className }) {
           {date}
         </div>
         <h3 className="font-heading font-bold text-xl text-navy dark:text-white mb-3 line-clamp-2 group-hover:text-amber transition-colors">
-          <Link to={`/blog/${post.id}`}>
+          <Link to={`/news/${news.id}`}>
             <span className="absolute inset-0"></span>
-            {post.title}
+            {news.title}
           </Link>
         </h3>
         <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">
-          {post.excerpt || post.content?.substring(0, 120)}
+          {news.summary || news.content?.substring(0, 120)}
         </p>
       </div>
     </div>

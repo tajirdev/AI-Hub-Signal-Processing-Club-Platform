@@ -16,7 +16,7 @@ export function EventCard({ event, className }) {
 
   return (
     <div className={cn(
-      "relative w-[320px] shrink-0 snap-start rounded-[24px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 flex flex-col h-full bg-white dark:bg-[#061539] border border-gray-100 dark:border-white/10",
+      "relative w-[85vw] sm:w-[320px] md:w-[350px] shrink-0 snap-start rounded-[24px] overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 flex flex-col h-full bg-white dark:bg-[#061539] border border-gray-100 dark:border-white/10",
       className
     )}>
       {/* Cover Image */}

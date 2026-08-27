@@ -21,8 +21,18 @@ class BlogPostUpdate(BaseModel):
     category_ids:Optional[list[int]]=None
  
         
+class UserPreview(BaseModel):
+    id: int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    user_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    model_config=ConfigDict(from_attributes=True)
+
 class BlogPostResponse(BaseModel):
     id:int
+    author:Optional[UserPreview]=None
     title:str
     slug:str
     excerpt:Optional[str]

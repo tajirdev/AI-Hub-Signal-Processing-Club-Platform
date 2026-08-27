@@ -12,6 +12,12 @@ import { AboutPage } from './features/about/AboutPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/join/JoinPage';
 import { ContactPage } from './features/contact/ContactPage';
+import { BlogPage } from './features/blog/BlogPage';
+import { BlogDetailsPage } from './features/blog/BlogDetailsPage';
+import { NewsPage } from './features/news/NewsPage';
+import { NewsDetailsPage } from './features/news/NewsDetailsPage';
+import { EventsPage } from './features/events/EventsPage';
+import { EventDetailsPage } from './features/events/EventDetailsPage';
 import { ResearchPage } from './features/research/ResearchPage';
 import { ResearchDetailsPage } from './features/research/ResearchDetailsPage';
 import { ResourcesPage } from './features/resources/ResourcesPage';
@@ -46,10 +52,12 @@ function App() {
             <Route path="/research/:id" element={<ResearchDetailsPage />} />
             <Route path="/sub-groups" element={<SubgroupsPage />} />
             <Route path="/sub-groups/:slug" element={<SubgroupDetailsPage />} />
-            <Route path="/events" element={<PlaceholderPage title="Events Calendar" />} />
-            <Route path="/events/:id" element={<PlaceholderPage title="Event Details" />} />
-            <Route path="/blog" element={<PlaceholderPage title="Blog & News" />} />
-            <Route path="/blog/:id" element={<PlaceholderPage title="Blog Post" />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id" element={<EventDetailsPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+              <Route path="/news" element={<NewsPage />} />
+            <Route path="/blog/:id" element={<BlogDetailsPage />} />
+              <Route path="/news/:id" element={<NewsDetailsPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/resources/:id" element={<ResourceDetailsPage />} />
             <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />

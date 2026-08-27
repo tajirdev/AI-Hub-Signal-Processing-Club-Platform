@@ -5,13 +5,13 @@ with open(filepath, 'r', encoding='utf-8') as f:
     text = f.read()
 
 text += """
-export const fetchEventById = async (id) => {
-  const res = await api.get(`/events/${id}`);
+export const fetchNews = async (params = { limit: 10, page: 1 }) => {
+  const res = await api.get('/News', { params });
   return res.data;
 };
 
-export const fetchBlogPostById = async (id) => {
-  const res = await api.get(`/blog-posts/${id}`);
+export const fetchNewsById = async (id) => {
+  const res = await api.get(`/News/${id}`);
   return res.data;
 };
 """

@@ -116,3 +116,23 @@ export const fetchResourceById = async (id) => {
   const res = await api.get(`/resources/${id}`);
   return res.data;
 };
+
+export const fetchEventById = async (id) => {
+  const res = await api.get(`/events/${id}`);
+  return res.data;
+};
+
+export const fetchBlogPostById = async (id) => {
+  const res = await api.get(`/blog-posts/${id}`);
+  return res.data;
+};
+
+export const fetchNews = async (params = { limit: 10, page: 1 }) => {
+  const res = await api.get('/News', { params });
+  return res.data;
+};
+
+export const fetchNewsById = async (id) => {
+  const res = await api.get(`/News/${id}`);
+  return res.data;
+};
