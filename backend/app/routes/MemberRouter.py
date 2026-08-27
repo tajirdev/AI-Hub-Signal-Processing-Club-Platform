@@ -1,12 +1,12 @@
 from fastapi import APIRouter,Depends,Query
 from app.services import MembersServ
 from app.core.database import get_db
-from app.core.auth import  get_current_user
+from app.core.auth import get_optional_current_user,   get_current_user
 from app.core.RoleAuth import RoleChecker
 from app.schemas import MemberSchm
 from app.models import ModoleUsers
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 
 admin_required = RoleChecker(["super_admin"])
@@ -43,7 +43,7 @@ def PostMember(
 
 
 
-@router.get("")
+
 @router.get("/")
 def All(
     db: Session = Depends(get_db),
@@ -57,10 +57,11 @@ def All(
     sort_by: str = "joined_at",
     order: str = "desc",
     sub_group_id: int | None = Query(None, description="Filter by subgroup ID"),
-    subgroup_id: int | None = Query(None, description="Alias for sub_group_id")
+    subgroup_id: int | None = Query(None, description="Alias for sub_group_id"),
+    current_user: Optional[ModoleUsers.Users] = Depends(get_optional_current_user)
 ):
     target_subgroup_id = sub_group_id if sub_group_id is not None else subgroup_id
-    return Services.GetAll(db, skip, limit, search, sort_by, order, sub_group_id=target_subgroup_id)
+    return Services.GetAll(db=db, current_user=current_user, skip=skip, limit=limit, search=search, sort_by=sort_by, order=order, sub_group_id=target_subgroup_id)
 
 
 @router.get("/me")

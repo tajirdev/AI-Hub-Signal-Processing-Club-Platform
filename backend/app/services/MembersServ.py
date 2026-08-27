@@ -80,6 +80,7 @@ class MembersServices:
     def GetAll(
         self,
         db: Session,
+        current_user=None,
         skip: int = 0,
         limit: int = 10,
         search: str | None = None,
@@ -96,6 +97,17 @@ class MembersServices:
                 joinedload(ModoleMembers.Members.subgroup)
             )
         )
+
+        roles = current_user.roles if current_user else []
+        if "super_admin" in roles:
+            pass
+        elif "editor" in roles:
+            query = query.filter(
+                (ModoleMembers.Members.show_profile == True) | 
+                (ModoleMembers.Members.user_id == current_user.id)
+            )
+        else:
+            query = query.filter(ModoleMembers.Members.show_profile == True)
 
         if sub_group_id:
             query = query.filter(ModoleMembers.Members.subgroup_id == sub_group_id)
