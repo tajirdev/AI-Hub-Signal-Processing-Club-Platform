@@ -172,7 +172,8 @@ class MembersServices:
                     "user_name": member.user.user_name,
                     "email": member.user.email,
                     "avatar_url": member.user.avatar_url,
-                    "is_active": member.user.is_active
+                    "is_active": member.user.is_active,
+                    "roles": member.user.roles
                 },
                 "position": member.position,
                 "github": member.github,
