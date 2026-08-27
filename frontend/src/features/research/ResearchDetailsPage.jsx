@@ -53,7 +53,7 @@ export function ResearchDetailsPage() {
               </Badge>
               <span className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 ml-2">
                 <Calendar className="w-4 h-4 mr-1.5" />
-                {research.publication_date ? new Date(research.publication_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown Date'}
+                {research.publication_date ? new Date(research.publication_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Ongoing'}
               </span>
             </div>
 

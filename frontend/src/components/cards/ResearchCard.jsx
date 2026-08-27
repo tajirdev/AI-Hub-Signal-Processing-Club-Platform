@@ -32,7 +32,7 @@ export function ResearchCard({ research, className }) {
         <div className="mt-auto pt-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
           <span className="inline-flex items-center text-xs font-semibold text-gray-500 dark:text-gray-400">
             <Calendar className="w-3.5 h-3.5 mr-1.5" />
-            {research.created_at ? new Date(research.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Recent'}
+            {research.publication_date ? new Date(research.publication_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Ongoing'}
           </span>
           <Link
             to={`/research/${research.id}`}
