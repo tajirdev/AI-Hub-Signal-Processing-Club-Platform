@@ -41,8 +41,8 @@ class ResearchResponse(BaseModel):
     content:str
     file_id: Optional[int] = None
     file: Optional['MediaResponse'] = None
-    featured:bool = False
-    is_published:bool = False
+    featured: Optional[bool] = False
+    is_published: Optional[bool] = False
     created_by:int
     created_at:datetime
     updated_at:datetime

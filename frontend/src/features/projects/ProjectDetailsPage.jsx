@@ -71,7 +71,7 @@ export function ProjectDetailsPage() {
   const imageUrl = project.thumbnail ? getImageUrl(project.thumbnail.path) : null;
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC]">
+    <main className="min-h-screen bg-gray-50 dark:bg-[#071225] pt-20 md:pt-24">
       
       {/* Back button */}
       <div className="max-w-4xl mx-auto px-6 pt-12 pb-6">

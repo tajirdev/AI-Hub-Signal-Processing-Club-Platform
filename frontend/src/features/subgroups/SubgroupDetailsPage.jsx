@@ -55,7 +55,7 @@ export function SubgroupDetailsPage() {
   const iconUrl = subgroup.icon_url ? getImageUrl(subgroup.icon_url) : null;
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-[#071225]">
+    <main className="min-h-screen bg-gray-50 dark:bg-[#071225] pt-20 md:pt-24">
       {/* Cover Image Header */}
       <div className="relative w-full h-64 md:h-80 overflow-hidden bg-navy dark:bg-black">
         {coverUrl ? (
@@ -93,10 +93,30 @@ export function SubgroupDetailsPage() {
               <h1 className="text-3xl md:text-5xl font-heading font-black text-navy dark:text-white mb-4 leading-tight">{subgroup.name}</h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">{subgroup.description}</p>
               
-              <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap gap-4">
-                <Link to="/join" className="inline-flex items-center px-6 py-3 bg-amber text-navy font-bold rounded-full hover:bg-amber-hover transition-colors shadow-lg shadow-amber/20">
+              <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center gap-6">
+                <Link to="/join" className="inline-flex items-center px-6 py-3 bg-amber text-navy font-bold rounded-full hover:bg-amber-hover transition-colors shadow-lg shadow-amber/20 shrink-0">
                   Apply to Join this Subgroup
                 </Link>
+
+                {subgroup.leader && (
+                  <div className="flex items-center gap-3 md:pl-4 md:border-l border-gray-200 dark:border-gray-800">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-700 overflow-hidden shrink-0 flex items-center justify-center shadow-sm">
+                      {subgroup.leader.avatar_url ? (
+                        <img src={getImageUrl(subgroup.leader.avatar_url)} alt={subgroup.leader.first_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-lg font-bold text-gray-400">
+                          {subgroup.leader.first_name ? subgroup.leader.first_name[0] : <Users className="w-5 h-5" />}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-0.5">Subgroup Leader</p>
+                      <p className="text-sm font-bold text-navy dark:text-white">
+                        {subgroup.leader.first_name} {subgroup.leader.last_name}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

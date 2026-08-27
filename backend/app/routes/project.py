@@ -50,7 +50,7 @@ def get_project(
 def update_project(
     project_id: int,
     request:ProjectUpdate,
-    current_user:Users=Depends(member_required),
+    current_user:Users=Depends(editor_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.update_project(db,project_id,request, current_user)
@@ -59,7 +59,7 @@ def update_project(
 @router.delete("/{project_id}", tags=["PROJECTS"])
 def delete_project(
     project_id: int,
-    current_user = Depends(member_required),
+    current_user = Depends(editor_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.delete_project(db=db, project_id=project_id, current_user=current_user)
@@ -72,7 +72,7 @@ def delete_project(
 def post_cover(
     project_id: int,
     file: UploadFile = File(...),
-    current_user = Depends(member_required),
+    current_user = Depends(editor_required),
     db: Session = Depends(get_db)
 ):
     file_path=save_upload_file(
@@ -101,7 +101,7 @@ def get_cover(
 @router.delete("/{project_id}/cover", tags=["PROJECTS COVER"])
 def delete_cover(
     project_id: int,
-    current_user = Depends(member_required),
+    current_user = Depends(editor_required),
     db: Session = Depends(get_db)
 ):
     return ProjectService.remove_cover(project_id=project_id, db=db, current_user=current_user)
