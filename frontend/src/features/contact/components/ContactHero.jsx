@@ -22,7 +22,7 @@ export function ContactHero() {
         <ScrollReveal animation="fade-up" delay={100}>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-black text-navy dark:text-white leading-tight tracking-tight mb-8">
             Let's Talk <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
+            <span className="text-amber">
               Innovation.
             </span>
           </h1>

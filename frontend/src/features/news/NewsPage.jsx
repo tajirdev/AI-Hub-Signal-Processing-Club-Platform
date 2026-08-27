@@ -65,7 +65,7 @@ export function NewsPage() {
 
           <ScrollReveal animation="fade-up" delay={100}>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-black text-navy dark:text-white leading-tight tracking-tight mb-6">
-              Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber to-blue-600 dark:from-amber dark:to-orange-500">News</span>
+              Latest <span className="text-amber">News</span>
             </h1>
           </ScrollReveal>
 
