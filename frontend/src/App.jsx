@@ -10,6 +10,7 @@ import { AuthLayout } from './layouts/AuthLayout';
 import { HomePage } from './features/home/HomePage';
 import { AboutPage } from './features/about/AboutPage';
 import { MembersPage } from './features/members/MembersPage';
+import { MemberProfilePage } from './features/members/MemberProfilePage';
 import { LoginPage } from './features/auth/LoginPage';
 import { JoinPage } from './features/join/JoinPage';
 import { ContactPage } from './features/contact/ContactPage';
@@ -46,6 +47,7 @@ function App() {
             
             <Route path="/about" element={<AboutPage />} />
           <Route path="/members" element={<MembersPage />} />
+          <Route path="/members/:id" element={<MemberProfilePage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectDetailsPage />} />
             <Route path="/research" element={<ResearchPage />} />

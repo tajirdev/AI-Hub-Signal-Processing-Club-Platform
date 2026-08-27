@@ -136,3 +136,8 @@ export const fetchNewsById = async (id) => {
   const res = await api.get(`/News/${id}`);
   return res.data;
 };
+
+export const fetchMemberById = async (id) => {
+  const res = await api.get(`/member/${id}`);
+  return res.data;
+};

@@ -2,7 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { fetchResearchById } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
-import { MemberCard } from '../../components/cards/MemberCard';
+import { CompactMemberCard } from '../../components/cards/CompactMemberCard';
 import { getImageUrl } from '../../services/api';
 import { ArrowLeft, ExternalLink, Download, Calendar, BookOpen, FileText } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
@@ -107,7 +107,7 @@ export function ResearchDetailsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {research.authors.map((authorEntry, idx) => (
                   <ScrollReveal key={idx} animation="fade-up" delay={idx * 100}>
-                    <MemberCard member={authorEntry.member || authorEntry} />
+                    <CompactMemberCard member={authorEntry.member || authorEntry} />
                   </ScrollReveal>
                 ))}
               </div>

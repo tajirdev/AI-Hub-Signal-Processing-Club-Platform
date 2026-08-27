@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getImageUrl } from '../../services/api';
 
 const BRAND = {
@@ -72,14 +73,13 @@ export function MemberCard({ member }) {
               {member.sub_group || member.position || 'Member'}
             </p>
           </div>
-          <a
-            href="#"
+          <Link
+          to={`/members/${member.id}`}
             className="flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold text-white flex-shrink-0 backdrop-blur-sm transition-transform duration-200 hover:scale-105"
             style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
-            onClick={(e) => e.preventDefault()}
-          >
+            >
             View More <ArrowRight className="w-3 h-3" />
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -95,14 +95,13 @@ export function MemberCard({ member }) {
             {member.sub_group || member.position || 'Member'}
           </p>
         </div>
-        <a
-          href="#"
+        <Link
+          to={`/members/${member.id}`}
           className="flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold text-white flex-shrink-0 transition-transform duration-200 hover:scale-105"
           style={{ background: `linear-gradient(135deg, ${BRAND.navy}, ${accent})` }}
-          onClick={(e) => e.preventDefault()}
-        >
+          >
           View More <ArrowRight className="w-3 h-3" />
-        </a>
+        </Link>
       </div>
     </div>
   );

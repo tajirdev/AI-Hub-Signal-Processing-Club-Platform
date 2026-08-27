@@ -2,7 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { fetchSubgroupBySlug, fetchMembers, fetchProjects, fetchResearch } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
-import { MemberCard } from '../../components/cards/MemberCard';
+import { CompactMemberCard } from '../../components/cards/CompactMemberCard';
 import { ProjectCard } from '../../components/cards/ProjectCard';
 import { ResearchCard } from '../../components/cards/ResearchCard';
 import { getImageUrl } from '../../services/api';
@@ -178,7 +178,7 @@ export function SubgroupDetailsPage() {
                 ) : (
                   <div className="space-y-4">
                     {members.map(member => (
-                      <MemberCard key={member.id} member={member} />
+                      <CompactMemberCard key={member.id} member={member} />
                     ))}
                   </div>
                 )}

@@ -2,7 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { fetchProjectById, fetchMembers } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
-import { MemberCard } from '../../components/cards/MemberCard';
+import { CompactMemberCard } from '../../components/cards/CompactMemberCard';
 import { getImageUrl } from '../../services/api';
 import { ArrowLeft, ExternalLink, GitBranch, Calendar, FolderGit2 } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
@@ -153,7 +153,7 @@ export function ProjectDetailsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {members.map((member, idx) => (
                   <ScrollReveal key={member.id} animation="fade-up" delay={idx * 100}>
-                    <MemberCard member={member} />
+                    <CompactMemberCard member={member} />
                   </ScrollReveal>
                 ))}
               </div>

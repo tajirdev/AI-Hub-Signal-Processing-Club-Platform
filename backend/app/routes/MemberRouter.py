@@ -77,9 +77,9 @@ def ReturnMe(
 def ReturnSingle(
     member_id:int,
     db:Session=Depends(get_db),
-    current_user:ModoleUsers.Users=Depends(admin_required)
+    current_user:Optional[ModoleUsers.Users]=Depends(get_optional_current_user)
 ):
-    return Services.GetSingle(member_id,db)
+    return Services.GetSingle(member_id,db,current_user)
 
 @router.patch("/me")
 def PatchMe(
