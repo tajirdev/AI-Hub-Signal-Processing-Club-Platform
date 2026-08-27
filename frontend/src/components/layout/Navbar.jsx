@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getImageUrl } from '../../services/api';
 import { Menu, X, ChevronDown, Moon, Sun, LogOut, User } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../contexts/AuthContext';
@@ -168,12 +169,25 @@ export function Navbar() {
             
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
-                  <User className="w-4 h-4 text-navy dark:text-amber" />
+                <Link 
+                  to="/members/me"
+                  className="flex items-center gap-2 px-1.5 py-1.5 pr-4 rounded-full bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  {user?.avatar_url ? (
+                    <img 
+                      src={getImageUrl(user.avatar_url)} 
+                      alt={user.user_name}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-navy/10 dark:bg-amber/10 flex items-center justify-center">
+                      <User className="w-4 h-4 text-navy dark:text-amber" />
+                    </div>
+                  )}
                   <span className="text-sm font-bold text-navy dark:text-white truncate max-w-[100px]">
                     {user?.user_name || 'Member'}
                   </span>
-                </div>
+                </Link>
                 <button 
                   onClick={logout}
                   className="p-2.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 transition-colors"
@@ -252,12 +266,26 @@ export function Navbar() {
           <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
             {isAuthenticated ? (
                 <div className="flex flex-col gap-3 px-2 mt-2">
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
-                    <User className="w-5 h-5 text-navy dark:text-amber" />
+                  <Link 
+                    to="/members/me"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-surface-dark border border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    {user?.avatar_url ? (
+                      <img 
+                        src={getImageUrl(user.avatar_url)} 
+                        alt={user.user_name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-navy/10 dark:bg-amber/10 flex items-center justify-center">
+                        <User className="w-5 h-5 text-navy dark:text-amber" />
+                      </div>
+                    )}
                     <span className="font-bold text-navy dark:text-white">
                       {user?.user_name || 'Member'}
                     </span>
-                  </div>
+                  </Link>
                   <button 
                     onClick={() => { logout(); setMobileMenuOpen(false); }}
                     className="w-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2"

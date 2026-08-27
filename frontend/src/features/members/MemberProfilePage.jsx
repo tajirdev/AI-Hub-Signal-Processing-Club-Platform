@@ -5,6 +5,7 @@ import { fetchMemberById } from "../../services/endpoints";
 import { getImageUrl } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
 import { LoadingState, ErrorState } from "../../components/ui/States";
+import { EditProfileForm } from "./components/EditProfileForm";
 
 const BRAND = {
   navy: "#0a2472",
@@ -107,6 +108,8 @@ export function MemberProfilePage() {
 
   const user = profile.user || {};
   const isOwner = profile.is_owner;
+  const isMentorOrAbove = user.roles?.some(r => ['mentor', 'editor', 'super_admin'].includes(r));
+  const canManageContent = isOwner && isMentorOrAbove;
   
   const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.user_name || 'Anonymous';
   const initial = name.charAt(0).toUpperCase();
@@ -149,14 +152,16 @@ export function MemberProfilePage() {
             >
               Edit Profile
             </button>
-            <button
-              onClick={() => setActiveTab("manage")}
-              className={`px-4 py-2 font-semibold text-sm border-b-2 transition-colors ${
-                activeTab === "manage" ? "border-amber text-amber" : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              }`}
-            >
-              Manage Content
-            </button>
+            {canManageContent && (
+              <button
+                onClick={() => setActiveTab("manage")}
+                className={`px-4 py-2 font-semibold text-sm border-b-2 transition-colors ${
+                  activeTab === "manage" ? "border-amber text-amber" : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                Manage Content
+              </button>
+            )}
           </div>
         )}
 
@@ -268,21 +273,15 @@ export function MemberProfilePage() {
         {/* Dashboard Tabs */}
         {activeTab === "settings" && (
           <div className="rounded-3xl bg-white dark:bg-[#0a1628] shadow-xl p-8 border border-gray-100 dark:border-gray-800">
-            <h2 className="text-xl font-bold text-navy dark:text-white mb-6">Edit Profile (Mock)</h2>
-            <div className="bg-amber/10 text-amber p-4 rounded-xl text-sm mb-6 flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 flex-shrink-0" />
-              <p>This is a placeholder for the Edit Info and OTP Password Reset forms. As per the implementation plan, fully functioning forms will be built out in a dedicated phase due to their complexity.</p>
-            </div>
-            <div className="space-y-4">
-              <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
-              <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
-              <div className="h-32 bg-gray-100 dark:bg-gray-800 rounded animate-pulse"></div>
-              <div className="h-10 w-32 bg-amber rounded"></div>
-            </div>
+            <h2 className="text-xl font-bold text-navy dark:text-white mb-6">Edit Profile</h2>
+            <EditProfileForm 
+              profile={profile} 
+              onUpdate={() => window.location.reload()} 
+            />
           </div>
         )}
 
-        {activeTab === "manage" && (
+        {activeTab === "manage" && canManageContent && (
           <div className="rounded-3xl bg-white dark:bg-[#0a1628] shadow-xl p-8 border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-navy dark:text-white">Content Management</h2>

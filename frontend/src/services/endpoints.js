@@ -141,3 +141,20 @@ export const fetchMemberById = async (id) => {
   const res = await api.get(`/member/${id}`);
   return res.data;
 };
+
+export const updateUserMe = async (data) => {
+  const res = await api.put('/users/me', data);
+  return res.data;
+};
+
+export const updateMemberMe = async (data) => {
+  const res = await api.patch('/member/me', data);
+  return res.data;
+};
+
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await api.post('/users/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  return res.data;
+};

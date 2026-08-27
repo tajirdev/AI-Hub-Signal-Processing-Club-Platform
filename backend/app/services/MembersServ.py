@@ -199,8 +199,18 @@ class MembersServices:
             ModoleMembers.Members.user_id == current_user_id
         ).first()
 
-
-        return member
+        if not member:
+            from fastapi import HTTPException, status
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="You do not have a member profile."
+            )
+        
+        # Get the current_user object to pass to GetSingle
+        from app.models import ModoleUsers
+        current_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
+        
+        return self.GetSingle(member.id, db, current_user)
 
     def GetSingle(self,member_id:int,db:Session,current_user=None):
         member = db.query(ModoleMembers.Members).filter(ModoleMembers.Members.id == member_id).first()
@@ -327,6 +337,8 @@ class MembersServices:
         me.github = request.github
         me.linkedin = request.linkedin
         me.portfolio = request.portfolio
+        if request.show_profile is not None:
+            me.show_profile = request.show_profile
         me.user_id = current_user_id
 
         try:
