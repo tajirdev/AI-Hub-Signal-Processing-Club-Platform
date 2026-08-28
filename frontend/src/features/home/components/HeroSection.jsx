@@ -59,7 +59,7 @@ export function HeroSection() {
             
             <ScrollReveal animation="fade-up" delay={100}>
             <h1 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-navy dark:text-white leading-[1.1] mb-6 min-h-[100px] sm:min-h-[120px] md:min-h-[160px] lg:min-h-[200px]">
-              Empowering Tanzania through <br className="hidden md:block"/>
+              Empowering Tanzania through <br className="block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber to-amber-hover">
                 {typedText}
               </span>

@@ -21,11 +21,11 @@ export function ResearchCard({ research, className }) {
           )}
         </div>
 
-        <h3 className="text-xl font-heading font-black text-navy dark:text-white mb-3 group-hover:text-amber transition-colors line-clamp-2">
+        <h3 className="text-xl font-heading font-black text-navy dark:text-white mb-3 group-hover:text-amber transition-colors line-clamp-2 break-words">
           {research.title}
         </h3>
 
-        <div className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-3 leading-relaxed">
+        <div className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-3 leading-relaxed break-words">
           {research.abstract}
         </div>
 
