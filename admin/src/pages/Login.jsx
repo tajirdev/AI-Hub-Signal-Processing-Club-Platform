@@ -206,7 +206,7 @@ export default function Login() {
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-lg">
-          AI Hub Admin Portal
+          SignAI Admin Portal
         </h2>
         <p className="mt-1 text-xs text-gray-400 font-medium">
           Signal Processing Club — Super Admin Control Panel

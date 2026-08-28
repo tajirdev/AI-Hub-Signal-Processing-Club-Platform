@@ -71,7 +71,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               className="w-9 h-9 object-cover rounded-full shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/25 ring-1 ring-blue-500/30"
             />
             <div className="flex flex-col">
-              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">AI Hub Admin</span>
+              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">SignAI Admin</span>
               <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
             </div>
           </Link>

@@ -10,11 +10,11 @@ export function Terminal3D() {
   const containerRef = useRef(null);
 
   const commands = [
-    { text: 'pip install "AI_Hub[standard]"', type: 'input' },
+    { text: 'pip install "SigniAI[standard]"', type: 'input' },
     { text: 'Installing components...', type: 'process', delay: 800 },
     { text: 'Building wheels...', type: 'process', delay: 1200 },
-    { text: 'Successfully installed AI_Hub-1.0.0', type: 'success', delay: 600 },
-    { text: 'python run AI_HUB', type: 'input', delay: 800 },
+    { text: 'Successfully installed SigniAI-1.0.0', type: 'success', delay: 600 },
+    { text: 'python run SigniAI', type: 'input', delay: 800 },
     { text: 'Empowering the next generation of technologists to solve real-world challenges in Tanzania through collaborative excellence in AI and Signal Processing.', type: 'mission', delay: 1000 }
   ];
 
