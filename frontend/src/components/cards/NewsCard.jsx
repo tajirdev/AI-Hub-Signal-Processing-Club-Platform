@@ -71,24 +71,24 @@ export function NewsCard({ news, className }) {
           </div>
 
           {/* Title */}
-          <h3 className="text-xl md:text-2xl font-black font-heading leading-snug text-navy dark:text-white mb-2">
+          <h3 className="text-xl md:text-2xl font-black font-heading leading-snug text-navy dark:text-white mb-2 break-words line-clamp-2">
             {news.title}
           </h3>
 
           {/* Slug */}
           <div className="mb-4">
-            <span className="inline-block rounded-full px-3 py-1 text-xs font-mono bg-[#0a2472]/5 dark:bg-white/5 text-navy dark:text-amber">
+            <span className="inline-block rounded-full px-3 py-1 text-xs font-mono bg-[#0a2472]/5 dark:bg-white/5 text-navy dark:text-amber break-all line-clamp-1">
               /{news.slug}
             </span>
           </div>
 
           {/* Summary */}
-          <p className="text-base italic font-semibold text-navy/70 dark:text-gray-300 mb-2">
+          <p className="text-base italic font-semibold text-navy/70 dark:text-gray-300 mb-2 break-words line-clamp-2">
             {news.summary}
           </p>
 
           {/* Content */}
-          <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400  mb-6 flex-grow">
+          <p className="text-sm leading-relaxed text-navy/60 dark:text-gray-400 mb-6 flex-grow break-words line-clamp-3">
             {news.content?.replace(/<[^>]*>?/gm, '') || ''}
           </p>
 
