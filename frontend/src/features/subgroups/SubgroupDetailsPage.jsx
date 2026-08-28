@@ -90,7 +90,7 @@ export function SubgroupDetailsPage() {
             )}
             
             <div className="flex-1">
-              <h1 className="text-3xl md:text-5xl font-heading font-black text-navy dark:text-white mb-4 leading-tight">{subgroup.name}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-heading font-black text-navy dark:text-white mb-4 leading-tight break-words">{subgroup.name}</h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">{subgroup.description}</p>
               
               <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center gap-6">

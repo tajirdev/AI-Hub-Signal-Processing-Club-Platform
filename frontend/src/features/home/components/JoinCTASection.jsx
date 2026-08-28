@@ -13,7 +13,7 @@ export function JoinCTASection() {
         </span>
         </ScrollReveal>
         <ScrollReveal animation="fade-up" delay={100}>
-        <h2 className="font-heading font-black text-4xl md:text-5xl text-[#0a2472] dark:text-white leading-tight mb-6">
+        <h2 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl break-words hyphens-auto text-[#0a2472] dark:text-white leading-tight mb-6">
           Ready to build the future of technology in Tanzania?
         </h2>
         </ScrollReveal>

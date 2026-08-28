@@ -68,7 +68,7 @@ export function ResearchPage() {
           </ScrollReveal>
 
           <ScrollReveal animation="fade-up" delay={100}>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-black text-navy dark:text-white leading-tight tracking-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-black text-navy dark:text-white leading-tight tracking-tight mb-6 break-words hyphens-auto">
               Our <span className="text-amber">Research</span>
             </h1>
           </ScrollReveal>

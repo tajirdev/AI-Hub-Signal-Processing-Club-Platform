@@ -66,7 +66,7 @@ export function ResourceDetailsPage() {
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-black text-navy dark:text-white leading-tight mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-black text-navy dark:text-white leading-tight mb-6 break-words">
               {resource.title}
             </h1>
 

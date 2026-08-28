@@ -80,7 +80,7 @@ export function StatsSection() {
                 <div className="w-14 h-14 rounded-2xl bg-amber/10 text-amber flex items-center justify-center mb-5">
                   <Icon className="w-7 h-7" />
                 </div>
-                <h3 className="font-heading font-black text-4xl md:text-5xl text-navy dark:text-white mb-3">
+                <h3 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl break-words hyphens-auto text-navy dark:text-white mb-3">
                   <AnimatedCounter endValue={item.value} />+
                 </h3>
                 <p className="text-gray-500 font-bold uppercase tracking-wider text-[11px] md:text-xs">

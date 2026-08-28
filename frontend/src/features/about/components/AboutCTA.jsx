@@ -10,7 +10,7 @@ export function AboutCTA() {
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <ScrollReveal animation="fade-up">
-          <h2 className="text-4xl md:text-6xl font-heading font-black mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl break-words hyphens-auto font-heading font-black mb-6">
             Build With Us.
           </h2>
         </ScrollReveal>
