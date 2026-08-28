@@ -1,6 +1,5 @@
 from app.core.database import Base
 from .otp import OTP
-from .modeltest import Test
 from .ModelUserRoles import UserRole
 from .ModoleRoles import Role
 from .ModoleUsers import Users
@@ -19,5 +18,5 @@ from .ModelContact import Contact
 from .ModelNewsletter import NewsletterSubscribers
 
 # This allows Alembic to see everything through Base.metadata
-__all__ = ["Base","Test","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","News","Project","Events","Application","OTP","Contact", "NewsletterSubscribers"]
+__all__ = ["Base","Users","Role","UserRole","SubGroup","BlogPost","BlogCategory","Category","Members","Media","Research","Resource","News","Project","Events","Application","OTP","Contact", "NewsletterSubscribers"]
 
