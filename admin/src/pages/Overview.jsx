@@ -149,7 +149,7 @@ export default function Overview() {
       <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-blue-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-blue-500/20 rounded-full text-blue-300 text-xs font-semibold">
-            <span>Signal Processing & AI Hub</span>
+            <span>Signal Processing & SigniAI Club</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Welcome back, {user?.first_name || 'Super Admin'}!

@@ -1,4 +1,4 @@
-﻿from fastapi import HTTPException
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.ModelContact import Contact
 from app.schemas.schemaContact import ContactCreate, ContactUpdate

@@ -28,9 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="AI HUB PLATFORM API")
 
 # CORS configuration supporting environment-based origins and local dev
-raw_origins = os.getenv(
-    "CORS_ORIGINS"
-)
+raw_origins = os.getenv("CORS_ORIGINS", "")
 allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 app.add_middleware(

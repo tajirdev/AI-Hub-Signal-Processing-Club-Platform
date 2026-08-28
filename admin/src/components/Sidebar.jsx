@@ -69,7 +69,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <Link to={Routes.Overview.path} className="flex items-center space-x-3 group">
             <img
               src="/logo.png"
-              alt="AI Hub Logo"
+              alt="SigniAI Logo"
               className="w-9 h-9 object-cover rounded-full shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/25 ring-1 ring-blue-500/30"
             />
             <div className="flex flex-col">

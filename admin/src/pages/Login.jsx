@@ -193,7 +193,7 @@ export default function Login() {
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-70 group-hover:opacity-100 transition duration-500 animate-pulse" />
           <img
             src="/logo.png"
-            alt="AI Hub Logo"
+            alt="SigniAI Logo"
             className="relative w-16 h-16 object-cover rounded-full shadow-2xl ring-2 ring-white/30 bg-gray-900"
           />
         </div>

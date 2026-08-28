@@ -1,4 +1,4 @@
-﻿from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 from app.models.ModelNewsletter import NewsletterSubscribers
 from app.schemas.NewsletterSchm import SubscriberCreate
 
