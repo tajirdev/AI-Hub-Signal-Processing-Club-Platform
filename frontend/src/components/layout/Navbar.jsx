@@ -9,7 +9,6 @@ const NAV_GROUPS = [
   { label: 'Home', href: '/' },
   { label: 'About Us', href: '/about' },
   { label: 'Members', href: '/members' },
-  { label: 'Contact', href: '/contact' },
   {
     label: 'Initiatives',
     items: [
@@ -23,10 +22,11 @@ const NAV_GROUPS = [
     items: [
       { label: 'Events', href: '/events' },
       { label: 'Blog', href: '/blog' },
-        { label: 'News', href: '/news' },
+      { label: 'News', href: '/news' },
       { label: 'Resources', href: '/resources' },
     ],
   },
+  { label: 'Contact', href: '/contact' },
 ];
 
 export function Navbar() {
