@@ -2,12 +2,15 @@
 import { FileText, Calendar, Rss, Code, BookOpen, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
 import { ContentFormModal } from './ContentFormModal';
 import { deleteContent } from '../../../services/endpoints';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export function ManageContentTab({ profile }) {
   const [activeCategory, setActiveCategory] = useState("events");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const { user } = useAuth();
+  const isSuperAdmin = user?.roles?.includes('super_admin');
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -39,7 +42,7 @@ export function ManageContentTab({ profile }) {
     { id: "events", label: "Events", icon: Calendar, data: profile.events || [], endpoint: 'events' },
     { id: "news", label: "News", icon: Rss, data: profile.news || [], endpoint: 'News' },
     { id: "projects", label: "Projects", icon: Code, data: profile.projects || [], endpoint: 'projects' },
-    { id: "research", label: "Research", icon: BookOpen, data: profile.research || [], endpoint: 'research' },
+    ...(isSuperAdmin ? [{ id: "research", label: "Research", icon: BookOpen, data: profile.research || [], endpoint: 'research' }] : []),
     { id: "blogs", label: "Blogs", icon: FileText, data: profile.blogs || [], endpoint: 'blog-posts' },
   ];
 
@@ -127,6 +130,7 @@ export function ManageContentTab({ profile }) {
         onClose={() => setIsModalOpen(false)}
         categoryId={activeCategory}
         editingItem={editingItem}
+        memberId={profile?.id}
         onSuccess={() => window.location.reload()}
       />
     </div>

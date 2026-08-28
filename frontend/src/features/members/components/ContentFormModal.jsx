@@ -14,7 +14,7 @@ const FORM_CONFIG = {
       { name: "registration_link", label: "Registration Link", type: "url" },
       { name: "category_id", label: "Category", type: "dynamic_select" },
       { name: "status", label: "Status", type: "select", options: ["draft", "published", "completed", "cancelled"], default: "draft" },
-      { name: "cover_image", label: "Cover Image", type: "file" }
+      { name: "cover_image", label: "Cover Image", type: "file", accept: "image/*" }
     ]
   },
   projects: {
@@ -26,7 +26,7 @@ const FORM_CONFIG = {
       { name: "demo_url", label: "Demo URL", type: "url" },
       { name: "technology_stack", label: "Tech Stack (comma separated)", type: "text" },
       { name: "status", label: "Status", type: "select", options: ["active", "completed", "archived"], default: "active" },
-      { name: "cover_image", label: "Cover Image", type: "file" }
+      { name: "cover_image", label: "Cover Image", type: "file", accept: "image/*" }
     ]
   },
   research: {
@@ -36,7 +36,7 @@ const FORM_CONFIG = {
       { name: "abstract", label: "Abstract", type: "textarea", required: true },
       { name: "content", label: "Content (Markdown)", type: "textarea" },
       { name: "is_published", label: "Published?", type: "checkbox", default: false },
-      { name: "cover_image", label: "Cover Image / Document", type: "file" }
+      { name: "cover_image", label: "Cover Image / Document", type: "file", accept: "image/*,application/pdf" }
     ]
   },
   news: {
@@ -57,12 +57,12 @@ const FORM_CONFIG = {
       { name: "excerpt", label: "Excerpt", type: "textarea" },
       { name: "content", label: "Content", type: "textarea", required: true },
       { name: "is_published", label: "Published?", type: "checkbox", default: false },
-      { name: "cover_image", label: "Cover Image / Document", type: "file" }
+      { name: "cover_image", label: "Cover Image / Document", type: "file", accept: "image/*,application/pdf" }
     ]
   }
 };
 
-export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onSuccess }) {
+export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onSuccess, memberId }) {
   if (!isOpen) return null;
 
   const config = FORM_CONFIG[categoryId];
@@ -131,6 +131,12 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
         payload[f.name] = val;
       });
       
+      // Inject author_ids for research if missing
+      if (categoryId === 'research' && memberId) {
+        payload.author_ids = [memberId];
+      }
+      
+      
 
       let itemId = editingItem ? editingItem.id : null;
       if (editingItem) {
@@ -142,13 +148,34 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
       
       const fileField = config.fields.find(f => f.type === 'file');
       if (fileField && formData[fileField.name] instanceof File && itemId) {
-        await uploadContentMedia(config.endpoint, itemId, formData[fileField.name]);
+        try {
+          await uploadContentMedia(config.endpoint, itemId, formData[fileField.name]);
+        } catch (uploadErr) {
+          console.error("Upload failed", uploadErr);
+          alert(`Success! However, the file upload failed. \n\nWarning: You likely uploaded an unsupported file format (e.g., a PDF instead of an image). \n\nThe content was saved, but the image was not attached.`);
+        }
       }
       
       onSuccess();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || "An error occurred while saving.");
+      let errorMsg = "An error occurred while saving.";
+      if (err.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        if (Array.isArray(detail)) {
+          errorMsg = detail.map(e => `${e.loc ? e.loc.join('.') : 'field'}: ${e.msg}`).join(', ');
+        } else if (typeof detail === 'string') {
+          errorMsg = detail;
+        } else {
+          errorMsg = JSON.stringify(detail);
+        }
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
+      setError(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     } finally {
       setLoading(false);
     }
@@ -223,13 +250,7 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
                     className="w-5 h-5 text-amber bg-gray-100 border-gray-300 rounded focus:ring-amber"
                   />
                 ) : field.type === 'file' ? (
-                  <input
-                    type="file"
-                    name={field.name}
-                    onChange={handleChange}
-                    required={field.required}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-amber focus:border-amber outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber/10 file:text-amber hover:file:bg-amber/20"
-                  />
+                  <input type="file" name={field.name} onChange={handleChange} required={field.required} accept={field.accept || "image/*,application/pdf"} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-amber focus:border-amber outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber/10 file:text-amber hover:file:bg-amber/20" />
                 ) : (
                   <input
                     type={field.type}
