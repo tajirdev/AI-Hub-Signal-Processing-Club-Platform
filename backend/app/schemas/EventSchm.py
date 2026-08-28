@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Optional
 from app.schemas.category import CategoryResponse
 from app.schemas.MediaScham import MediaResponse
+from app.schemas.SchemaUser import UserResponse
 
 
 class EventCreate(BaseModel):
@@ -39,6 +40,7 @@ class EventResponse(BaseModel):
     category: Optional[CategoryResponse] = None
     status: str
     created_by: int
+    user: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True
