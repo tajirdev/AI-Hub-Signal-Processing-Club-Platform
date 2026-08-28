@@ -1,7 +1,7 @@
 import { ensureExternalUrl } from '../../utils/url';
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Mail, Phone, Code, Globe, Briefcase, ArrowLeft } from "lucide-react";
+import { Mail, Phone, Code, Globe, Briefcase, ArrowLeft, Calendar } from "lucide-react";
 import { fetchMemberById } from "../../services/endpoints";
 import { getImageUrl } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";

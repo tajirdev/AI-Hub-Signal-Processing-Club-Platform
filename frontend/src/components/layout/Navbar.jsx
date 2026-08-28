@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getImageUrl } from '../../services/api';
 import { Menu, X, ChevronDown, Moon, Sun, LogOut, User } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -36,6 +36,13 @@ export function Navbar() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const location = useLocation();
   const { isAuthenticated, logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     // Check local storage or system preference on mount
@@ -185,7 +192,7 @@ export function Navbar() {
                   </span>
                 </Link>
                 <button 
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="p-2.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 transition-colors"
                   aria-label="Logout"
                 >
@@ -283,7 +290,7 @@ export function Navbar() {
                     </span>
                   </Link>
                   <button 
-                    onClick={() => { logout(); setMobileMenuOpen(false); }}
+                    onClick={handleLogout}
                     className="w-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2"
                   >
                     <LogOut className="w-5 h-5" /> Sign Out
