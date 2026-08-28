@@ -3,7 +3,17 @@ import { ProjectsPage } from './features/projects/ProjectsPage';
 import { ProjectDetailsPage } from './features/projects/ProjectDetailsPage';
 import { SubgroupsPage } from './features/subgroups/SubgroupsPage';
 import { SubgroupDetailsPage } from './features/subgroups/SubgroupDetailsPage';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 import { AuthProvider } from './contexts/AuthContext';
 import { PublicLayout } from './layouts/PublicLayout';
 import { AuthLayout } from './layouts/AuthLayout';
@@ -40,6 +50,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />

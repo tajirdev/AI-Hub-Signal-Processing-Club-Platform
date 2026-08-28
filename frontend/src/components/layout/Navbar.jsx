@@ -45,12 +45,14 @@ export function Navbar() {
   };
 
   useEffect(() => {
-    // Check local storage or system preference on mount
-    if (localStorage.getItem('theme-mode') === 'dark' || 
-       (!localStorage.getItem('theme-mode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Check local storage on mount (Default to light mode)
+    if (localStorage.getItem('theme-mode') === 'dark') {
       const t = setTimeout(() => setIsDarkTheme(true), 0);
       document.documentElement.classList.add('dark');
       return () => clearTimeout(t);
+    } else {
+      document.documentElement.classList.remove('dark');
+      setIsDarkTheme(false);
     }
   }, []);
 
