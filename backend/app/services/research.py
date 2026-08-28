@@ -67,26 +67,27 @@ class ResearchServices:
                  page: int = 1, search: str = None,
                  limit: int = 10, title: str = None,
                  sort: str = "publication_date",
-                 order: str = "desc"):
+                 order: str = "desc",
+                 subgroup_id: int = None):
+
         roles = current_user.roles if current_user else []
         query = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         )
+        
+        if subgroup_id:
+            query = query.join(ResearchAuthor).join(Members).filter(Members.subgroup_id == subgroup_id)
 
         if "super_admin" in roles:
             pass
         elif "editor" in roles:
             query = query.filter(
                 (Research.is_published == True) | 
-                (Research.publication_date != None) | 
                 (Research.created_by == current_user.id)
             )
         else:
-            query = query.filter(
-                (Research.is_published == True) | 
-                (Research.publication_date != None)
-            )
+            query = query.filter(Research.is_published == True)
 
         if search:
             query = query.filter(or_(
@@ -106,15 +107,17 @@ class ResearchServices:
             else:
                 query = query.order_by(desc(Research.publication_date).nullslast()) 
                             
-        skip = (page - 1) * limit 
-        results = query.offset(skip).limit(limit).all()
-        return results
+        total = query.count()
+        import math
+        skip = (page - 1) * limit
+        items = query.offset(skip).limit(limit).all()
+        return {"total": total, "total_pages": math.ceil(total / limit) if limit > 0 else 1, "items": items}
     
     @staticmethod
     def show_by_id(research_id: int, db: Session, current_user):
         research = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         ).filter(Research.id == research_id).first()
 
         if not research:
@@ -136,7 +139,7 @@ class ResearchServices:
     def update(research_id: int, data: Researchupdate, db: Session, current_user):
         research = db.query(Research).options(
             joinedload(Research.file),
-            joinedload(Research.authors)
+            joinedload(Research.authors).joinedload(ResearchAuthor.member).joinedload(Members.user)
         ).filter(Research.id == research_id).first()
 
         if not research:

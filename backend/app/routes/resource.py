@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.RoleAuth import RoleChecker
 from app.models.ModoleUsers import Users
-from app.schemas.resourse import ResourceCreate, ResourceUpdate, ResourceResponse
+from app.schemas.resourse import ResourceCreate, ResourceUpdate, ResourceResponse, ResourcePagination
 from app.services.resource_service import ResourceService, ResourceMediaService
 from app.services.storage.local import save_upload_file, UploadCategory, DOCUMENT_TYPES, IMAGE_TYPES, VIDEO_TYPES
 
@@ -24,7 +24,7 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db), cur
     return ResourceService.create_resource(db=db, resource=resource, uploaded_by=current_user.id)
 
 #get all resources
-@router.get("/")
+@router.get("/", response_model=ResourcePagination)
 def get_all_resources(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),

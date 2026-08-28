@@ -1,3 +1,4 @@
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import Session
 from fastapi import HTTPException,status,File,UploadFile,Query
 from app.schemas.blog_post import BlogPostCreate,BlogPostUpdate
@@ -118,7 +119,7 @@ class BlogPostService:
 
     def get_blog_post_by_id(self,post_id:int,current_user,db:Session):
         roles = current_user.roles if current_user else []
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
 
         if current_user is None:
             if post.status != PostStatus.published:
@@ -142,7 +143,7 @@ class BlogPostService:
 
     def update_blog_post(self,post_id:int,data:BlogPostUpdate,current_user,db:Session):
         roles = current_user.roles
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
         if (post.author_id !=current_user.id and "super_admin" not in roles):
@@ -176,7 +177,7 @@ class BlogPostService:
 
     def delete_blog_post(self,post_id:int,current_user,db:Session):
         roles = current_user.roles
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="blog post not found")
         if (post.author_id !=current_user.id and "super_admin" not in roles):
@@ -197,7 +198,7 @@ class BlogPostService:
                             filename:str
                             ):
         roles = current_user.roles
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"blog post with id {post_id} not found")
         #only admin and post owner can add blog cover
@@ -234,7 +235,7 @@ class BlogPostService:
     @staticmethod
     def getblogcover(post_id:int,db:Session):
         
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
         if  not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="post not found ")
         
@@ -247,7 +248,7 @@ class BlogPostService:
     @staticmethod
     def removeblogCover(post_id:int,current_user,db:Session):
         roles = current_user.roles
-        post=db.query(BlogPost).filter(BlogPost.id==post_id).first()
+        post=db.query(BlogPost).options(joinedload(BlogPost.author)).filter(BlogPost.id==post_id).first()
         if  not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="post not found ")
         #only admin and post owner can remove blog cover

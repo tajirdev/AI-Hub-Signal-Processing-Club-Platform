@@ -45,8 +45,36 @@ class EmailService:
 
     @staticmethod
     def send_application_approved_email(to_email: str, first_name: str, otp: str):
+        import urllib.parse
+        
+        # Try to get FRONTEND_URL. If it's missing (because docker-compose doesn't pass it), 
+        # fallback to the first CORS origin which is the frontend URL.
+        frontend_url = os.getenv("FRONTEND_URL")
+        if not frontend_url:
+            cors_origins = os.getenv("CORS_ORIGINS", "")
+            if cors_origins:
+                frontend_url = cors_origins.split(",")[0].strip()
+            else:
+                frontend_url = "http://localhost:5174"
+                
+        encoded_email = urllib.parse.quote(to_email)
+        magic_link = f"{frontend_url}/onboard?email={encoded_email}&otp={otp}"
+        
         subject = "Application Approved - AI & Signal Processing Hub"
-        body = f"Hello {first_name},\n\nYour application has been approved! Use the following OTP to complete your registration: {otp}\n\nWelcome to the Hub!"
+        body = f"""Hello {first_name},
+
+Congratulations! Your application to the AI & Signal Processing Hub has been approved.
+
+Please click the secure link below to complete your onboarding and set up your member profile. 
+This link will expire in 3 days.
+{magic_link}
+
+If the link above does not work, please contact our IT support onboard@signia.com
+
+Welcome to the Hub!
+
+Best regards,
+AI & Signal Processing Hub Team"""
         return EmailService.send_email(to_email, subject, body)
 
     @staticmethod

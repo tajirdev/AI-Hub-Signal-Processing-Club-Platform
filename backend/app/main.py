@@ -15,7 +15,9 @@ from app.routes import (
     resource,
     research,
     news,
-    applicationRoutes
+    applicationRoutes,
+    RouterContact,
+    NewsletterRouter
 )
 from app.core import seed_role
 from app.admin import route
@@ -26,10 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="AI HUB PLATFORM API")
 
 # CORS configuration supporting environment-based origins and local dev
-raw_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:3000",
-)
+raw_origins = os.getenv("CORS_ORIGINS", "")
 allowed_origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 app.add_middleware(
@@ -55,6 +54,8 @@ app.include_router(news.router)
 app.include_router(project.router)
 app.include_router(route.router)
 app.include_router(applicationRoutes.router)
+app.include_router(RouterContact.router)
+app.include_router(NewsletterRouter.router)
 
 
 

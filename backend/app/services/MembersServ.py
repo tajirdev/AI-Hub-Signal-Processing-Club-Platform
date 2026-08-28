@@ -80,6 +80,7 @@ class MembersServices:
     def GetAll(
         self,
         db: Session,
+        current_user=None,
         skip: int = 0,
         limit: int = 10,
         search: str | None = None,
@@ -96,6 +97,17 @@ class MembersServices:
                 joinedload(ModoleMembers.Members.subgroup)
             )
         )
+
+        roles = current_user.roles if current_user else []
+        if "super_admin" in roles:
+            pass
+        elif "editor" in roles:
+            query = query.filter(
+                (ModoleMembers.Members.show_profile == True) | 
+                (ModoleMembers.Members.user_id == current_user.id)
+            )
+        else:
+            query = query.filter(ModoleMembers.Members.show_profile == True)
 
         if sub_group_id:
             query = query.filter(ModoleMembers.Members.subgroup_id == sub_group_id)
@@ -160,7 +172,8 @@ class MembersServices:
                     "user_name": member.user.user_name,
                     "email": member.user.email,
                     "avatar_url": member.user.avatar_url,
-                    "is_active": member.user.is_active
+                    "is_active": member.user.is_active,
+                    "roles": member.user.roles
                 },
                 "position": member.position,
                 "github": member.github,
@@ -186,10 +199,20 @@ class MembersServices:
             ModoleMembers.Members.user_id == current_user_id
         ).first()
 
+        if not member:
+            from fastapi import HTTPException, status
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="You do not have a member profile."
+            )
+        
+        # Get the current_user object to pass to GetSingle
+        from app.models import ModoleUsers
+        current_user = db.query(ModoleUsers.Users).filter(ModoleUsers.Users.id == current_user_id).first()
+        
+        return self.GetSingle(member.id, db, current_user)
 
-        return member
-
-    def GetSingle(self,member_id:int,db:Session):
+    def GetSingle(self,member_id:int,db:Session,current_user=None):
         member = db.query(ModoleMembers.Members).filter(ModoleMembers.Members.id == member_id).first()
 
         if not member:
@@ -197,8 +220,101 @@ class MembersServices:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"there is no member with that id of {member_id}"
             )
+            
+        roles = current_user.roles if current_user else []
+        is_owner = current_user and current_user.id == member.user_id
+        is_admin = "super_admin" in roles
+        is_editor = "editor" in roles
 
-        return member
+        if not member.show_profile and not (is_owner or is_admin or is_editor):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Profile is hidden"
+            )
+
+        user = member.user
+        
+        # Determine if we should include extra details (like news, events, blogs)
+        is_mentor = "mentor" in user.roles
+        include_extra = is_mentor or is_owner
+        
+        projects = []
+        # Projects: If member is in a subgroup, get projects from the subgroup leader
+        if member.subgroup and member.subgroup.leader:
+            for p in member.subgroup.leader.project:
+                if p.status == "active" or is_owner:
+                    projects.append({**{k: v for k, v in p.__dict__.items() if not k.startswith("_")}, "type": "Project"})
+        # Alternatively, if they have personal projects, we might add them too
+        if user.project:
+            for p in user.project:
+                if p.status == "active" or is_owner:
+                    # Prevent duplicates
+                    if not any(proj['id'] == p.id for proj in projects):
+                        projects.append({**{k: v for k, v in p.__dict__.items() if not k.startswith("_")}, "type": "Project"})
+                    
+        research = []
+        # Research: The member is an author
+        if member.research_authors:
+            for ra in member.research_authors:
+                r = ra.research
+                if r and (r.is_published or is_owner):
+                    research.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Research"})
+        
+        # Research: The member created it (important for authors who didn't link their member profile)
+        if include_extra and user.research:
+            for r in user.research:
+                if r.is_published or is_owner:
+                    if not any(res['id'] == r.id for res in research):
+                        research.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Research"})
+                    
+        news = []
+        events = []
+        blogs = []
+        resources = []
+        
+        if include_extra:
+            if user.new:
+                for n in user.new:
+                    news.append({**{k: v for k, v in n.__dict__.items() if not k.startswith("_")}, "type": "News"})
+            if user.event:
+                for e in user.event:
+                    events.append({**{k: v for k, v in e.__dict__.items() if not k.startswith("_")}, "type": "Event"})
+            if user.blog_posts:
+                for b in user.blog_posts:
+                    blogs.append({**{k: v for k, v in b.__dict__.items() if not k.startswith("_")}, "type": "Blog"})
+            if user.resource:
+                for r in user.resource:
+                    resources.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Resource"})
+
+        return {
+            "id": member.id,
+            "user_id": member.user_id,
+            "sub_group": member.subgroup.name if member.subgroup else "General",
+            "position": member.position,
+            "github": member.github,
+            "linkedin": member.linkedin,
+            "portfolio": member.portfolio,
+            "show_profile": member.show_profile,
+            "joined_at": member.joined_at.isoformat() if member.joined_at else None,
+            "user": {
+                "id": user.id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "user_name": user.user_name,
+                "email": user.email,
+                "phone": user.phone,
+                "bio": user.bio,
+                "avatar_url": user.avatar_url,
+                "roles": user.roles,
+                "is_active": user.is_active
+            },
+            "projects": projects,
+            "research": research,
+            "news": news,
+            "events": events,
+            "blogs": blogs,
+            "is_owner": is_owner
+        }
 
 
     def EditeMe(self,request:MemberSchm.Members,db:Session,current_user_id:int):
@@ -214,6 +330,8 @@ class MembersServices:
         me.github = request.github
         me.linkedin = request.linkedin
         me.portfolio = request.portfolio
+        if request.show_profile is not None:
+            me.show_profile = request.show_profile
         me.user_id = current_user_id
 
         try:

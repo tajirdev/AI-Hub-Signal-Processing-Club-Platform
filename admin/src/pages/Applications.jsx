@@ -48,7 +48,7 @@ export default function Applications() {
     try {
       await applicationsAPI.review(selectedApp.id, status);
       const actionMsg = status === 'approved' 
-        ? 'Application approved and registration OTP email sent successfully!' 
+        ? 'Application approved and registration email sent successfully!' 
         : 'Application rejected and notification email sent successfully.';
       setToast({ type: 'success', message: actionMsg });
       setIsReviewModalOpen(false);

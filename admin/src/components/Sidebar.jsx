@@ -14,6 +14,8 @@ import {
   faLaptopCode,
   faFlask,
   faFolderOpen,
+  faEnvelopeOpenText,
+  faEnvelope,
   faSignOutAlt,
   faTimes,
   faShieldAlt,
@@ -41,6 +43,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { title: 'Projects', path: Routes.Projects.path, icon: faLaptopCode },
     { title: 'Research Papers', path: Routes.Research.path, icon: faFlask },
     { title: 'Resources', path: Routes.Resources.path, icon: faFolderOpen },
+    { title: 'Contact Messages', path: Routes.Contacts.path, icon: faEnvelope },
+      { title: 'Newsletter Subscribers', path: Routes.Newsletter.path, icon: faEnvelopeOpenText },
     { title: 'My Profile', path: Routes.Profile.path, icon: faUserCircle },
   ];
 
@@ -65,11 +69,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <Link to={Routes.Overview.path} className="flex items-center space-x-3 group">
             <img
               src="/logo.png"
-              alt="AI Hub Logo"
+              alt="SigniAI Logo"
               className="w-9 h-9 object-cover rounded-full shrink-0 transition-transform group-hover:scale-105 shadow-md shadow-blue-500/25 ring-1 ring-blue-500/30"
             />
             <div className="flex flex-col">
-              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">AI Hub Admin</span>
+              <span className="text-white font-bold text-sm tracking-wide group-hover:text-blue-400 transition-colors">SignAI Admin</span>
               <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-wider">Super Admin</span>
             </div>
           </Link>

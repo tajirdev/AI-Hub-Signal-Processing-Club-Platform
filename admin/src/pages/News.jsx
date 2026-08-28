@@ -42,8 +42,9 @@ export default function News() {
         categoriesAPI.getAll(),
       ]);
 
-      if (newsRes && newsRes.news) {
-        setNewsList(newsRes.news);
+      if (newsRes && (newsRes.items || newsRes.news)) {
+        setNewsList(newsRes.items || newsRes.news);
+        
         setTotalPages(newsRes.total_pages || 1);
         setTotalItems(newsRes.total || 0);
       } else if (Array.isArray(newsRes)) {
@@ -250,7 +251,7 @@ export default function News() {
             required
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="e.g. MUST AI Hub Launches Regional Machine Learning Hackathon"
+            placeholder="e.g. MUST SigniAI Launches Regional Machine Learning Hackathon"
             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>

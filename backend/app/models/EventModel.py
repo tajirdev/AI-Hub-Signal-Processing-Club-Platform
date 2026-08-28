@@ -20,7 +20,7 @@ class Events(Base):
     location = Column(String)
     event_date = Column(Date,nullable=False,index=True)
     registration_link = Column(String(225))
-    cover_image_id= Column(Integer,ForeignKey("media.id"))
+    cover_image_id= Column(Integer,ForeignKey("media.id",ondelete="SET NULL"))
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     status = Column(Enum(EventStatus),default=EventStatus.draft,nullable=False,index=True)
     created_by = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),index=True)

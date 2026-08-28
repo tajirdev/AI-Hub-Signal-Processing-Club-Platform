@@ -27,9 +27,13 @@ class ProjectService():
         return new_project
 
     @staticmethod
-    def get_projects(db: Session, page: int = 1, limit: int = 10, search: Optional[str] = None, sort: Optional[str] = "created_at", order: Optional[str] = "desc"):
+    def get_projects(db: Session, page: int = 1, limit: int = 10, search: Optional[str] = None, sort: Optional[str] = "created_at", order: Optional[str] = "desc", subgroup_id: Optional[int] = None):
         query = db.query(Project)
         
+        if subgroup_id:
+            from app.models.SubGroupModel import SubGroup
+            query = query.join(SubGroup, SubGroup.lead_id == Project.created_by).filter(SubGroup.id == subgroup_id)
+            
         if search:
             search_filter = f"%{search}%"
             query = query.filter(

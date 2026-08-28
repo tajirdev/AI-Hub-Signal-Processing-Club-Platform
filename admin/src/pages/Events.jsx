@@ -56,8 +56,9 @@ export default function Events() {
         search: search || undefined,
       });
 
-      if (data && data.events) {
-        setEvents(data.events);
+      if (data && (data.items || data.events)) {
+        setEvents(data.items || data.events);
+        
         setTotalPages(data.total_pages || 1);
         setTotalItems(data.total || 0);
       } else if (Array.isArray(data)) {

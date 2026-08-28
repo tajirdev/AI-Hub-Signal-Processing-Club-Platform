@@ -27,9 +27,26 @@ class Researchupdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True) 
     
+class UserPreview(BaseModel):
+    id: int
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    user_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    model_config=ConfigDict(from_attributes=True)
+
+class MemberPreview(BaseModel):
+    id: int
+    position: Optional[str] = None
+    show_profile: Optional[bool] = True
+    user: Optional[UserPreview] = None
+    model_config=ConfigDict(from_attributes=True)
+
 class ResearchAuthorResponse(BaseModel):
     member_id:int
     author_order:int
+    member: Optional[MemberPreview] = None
     model_config=ConfigDict(from_attributes=True)
 
 class ResearchResponse(BaseModel):
@@ -41,8 +58,8 @@ class ResearchResponse(BaseModel):
     content:str
     file_id: Optional[int] = None
     file: Optional['MediaResponse'] = None
-    featured:bool = False
-    is_published:bool = False
+    featured: Optional[bool] = False
+    is_published: Optional[bool] = False
     created_by:int
     created_at:datetime
     updated_at:datetime

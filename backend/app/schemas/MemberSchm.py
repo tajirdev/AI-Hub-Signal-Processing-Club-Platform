@@ -7,6 +7,7 @@ class Members(BaseModel):
     linkedin : Optional[str] = None
     portfolio : Optional[str] = None
     user_id : Optional[int] = None
+    show_profile : Optional[bool] = None
 
 
 

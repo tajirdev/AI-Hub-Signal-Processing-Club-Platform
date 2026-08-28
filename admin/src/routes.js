@@ -12,6 +12,8 @@ export const Routes = {
   Projects: { path: "/projects" },
   Research: { path: "/research" },
   Resources: { path: "/resources" },
+  Contacts: { path: "/contacts" },
+  Newsletter: { path: "/newsletter" },
   Profile: { path: "/profile" },
   NotFound: { path: "/404" },
 };

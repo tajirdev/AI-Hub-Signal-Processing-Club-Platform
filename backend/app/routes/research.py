@@ -11,6 +11,7 @@ from app.core.auth import get_optional_current_user
 
 member_required = RoleChecker(["member", "editor", "super_admin"])
 editor_required = RoleChecker(["editor", "super_admin"])
+admin_required = RoleChecker(["super_admin"])
 
 router = APIRouter(prefix="/research", tags=["Research"])
 
@@ -18,11 +19,11 @@ router = APIRouter(prefix="/research", tags=["Research"])
 def New_research(
     data: ResearchCreate,
     db: Session = Depends(get_db),
-    current_user: Users = Depends(editor_required)
+    current_user: Users = Depends(admin_required)
 ):
     return ResearchServices.addresearch(data, db, current_user)
 
-@router.get("/", response_model=list[ResearchResponse])
+@router.get("/")
 def show_all(
     db: Session = Depends(get_db),
     current_user: Optional[Users] = Depends(get_optional_current_user),
@@ -31,9 +32,10 @@ def show_all(
     limit: int = 10,
     title: Optional[str] = None,
     sort: str = "publication_date",
-    order: str = "desc"
+    order: str = "desc",
+    subgroup_id: Optional[int] = None
 ):
-    return ResearchServices.show_all(db, current_user, page, search, limit, title, sort, order)
+    return ResearchServices.show_all(db, current_user, page, search, limit, title, sort, order, subgroup_id)
 
 @router.get("/{research_id}", response_model=ResearchResponse)
 def show_by_id(
@@ -44,18 +46,18 @@ def show_by_id(
     return ResearchServices.show_by_id(research_id, db, current_user)
 
 @router.put("/{research_id}",response_model=ResearchResponse)
-def update(research_id:int,data:Researchupdate,db:Session=Depends(get_db),current_user:Users=Depends(editor_required)):
+def update(research_id:int,data:Researchupdate,db:Session=Depends(get_db),current_user:Users=Depends(admin_required)):
     return ResearchServices.update(research_id,data,db,current_user)
 
 @router.delete("/{research_id}")
-def delete(research_id:int,db:Session=Depends(get_db),current_user:Users=Depends(editor_required)):
+def delete(research_id:int,db:Session=Depends(get_db),current_user:Users=Depends(admin_required)):
     return ResearchServices.deleteresource(research_id,db,current_user)
 
 @router.post("/{research_id}/file", tags=["RESEARCH FILE"])
 def post_file(
     research_id: int,
     db: Session = Depends(get_db),
-    current_user: Users = Depends(editor_required),
+    current_user: Users = Depends(admin_required),
     file: UploadFile = File(...)
 ):
     allowed = DOCUMENT_TYPES + ["application/pdf"]
@@ -77,6 +79,6 @@ def post_file(
 def delete_file(
     research_id: int,
     db: Session = Depends(get_db),
-    current_user: Users = Depends(editor_required)
+    current_user: Users = Depends(admin_required)
 ):
     return ResearchMediaService.RemoveFile(research_id, db, current_user.id)

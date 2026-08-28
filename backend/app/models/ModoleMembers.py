@@ -8,7 +8,7 @@ class Members(Base):
     __tablename__ = "members"
     id = Column(Integer,primary_key=True,nullable=False)
     user_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
-    subgroup_id = Column(Integer,ForeignKey("sub_groups.id"))
+    subgroup_id = Column(Integer,ForeignKey("sub_groups.id",ondelete="SET NULL"))
     position = Column(String(150))
     github = Column(String)
     linkedin = Column(String)
@@ -20,4 +20,4 @@ class Members(Base):
 
     user = relationship("Users",back_populates="member")
     subgroup = relationship("SubGroup",back_populates="sub_member")
-    research_authors=relationship("ResearchAuthor",back_populates="member")
+    research_authors=relationship("ResearchAuthor",back_populates="member", cascade="all, delete-orphan")

@@ -45,6 +45,14 @@ def return_single(
     return services.get_single(id, db)
 
 
+@router.get("/slug/{slug}", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
+def return_single_by_slug(
+    slug: str,
+    db: Session = Depends(get_db)
+):
+    return services.get_by_slug(slug, db)
+
+
 @router.put("/{id}", response_model=SubGroupSchm.SubGroupResponse, tags=["SUB GROUPS"])
 def edite_group(
     id: int,
