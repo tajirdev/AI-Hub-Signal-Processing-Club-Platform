@@ -102,9 +102,9 @@ export function BlogCard({ post, className }) {
     >
       {/* Cover image / Graphic */}
       <div className="h-40 w-full overflow-hidden shrink-0 relative bg-navy">
-        {post.featured_image ? (
+        {post.media?.path ? (
           <img 
-            src={getImageUrl(post.featured_image)} 
+            src={getImageUrl(post.media.path)} 
             alt={post.title}
             className="w-full h-full object-cover"
             loading="lazy"

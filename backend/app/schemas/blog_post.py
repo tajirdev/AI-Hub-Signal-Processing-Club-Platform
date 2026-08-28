@@ -21,6 +21,13 @@ class BlogPostUpdate(BaseModel):
     category_ids:Optional[list[int]]=None
  
         
+
+class MediaResponse(BaseModel):
+    id: int
+    path: str
+    
+    model_config = ConfigDict(from_attributes=True)
+
 class UserPreview(BaseModel):
     id: int
     first_name: Optional[str] = None
@@ -38,6 +45,7 @@ class BlogPostResponse(BaseModel):
     excerpt:Optional[str]
     content:str
     featured_image_id:Optional[int]
+    media:Optional[MediaResponse]=None
     status:str
     published_at:Optional[datetime]
     categories:Optional[list[CategoryResponse]]=[]
