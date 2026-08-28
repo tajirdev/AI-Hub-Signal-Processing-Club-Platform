@@ -23,7 +23,7 @@ class BlogPost(Base):
     slug=Column(String(180),nullable=False,unique=True)
     excerpt=Column(String(500),nullable=True,index=True)
     content=Column(Text,nullable=True)
-    featured_image_id=Column(Integer,ForeignKey("media.id"),nullable=True)
+    featured_image_id=Column(Integer,ForeignKey("media.id",ondelete="SET NULL"),nullable=True)
     status=Column(Enum(PostStatus),default=PostStatus.draft)
     published_at=Column(DateTime,default=datetime.now)
     author_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),nullable=False)

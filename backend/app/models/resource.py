@@ -14,10 +14,10 @@ class Resource(Base):
     title = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     type = Column(String(30), nullable=False)
-    file_id = Column(Integer, ForeignKey("media.id"), nullable=True)
+    file_id = Column(Integer, ForeignKey("media.id",ondelete="SET NULL"), nullable=True)
     external_url = Column(String(500), nullable=True)
-    subgroup_id = Column(Integer, ForeignKey("sub_groups.id"), nullable=False)
-    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    subgroup_id = Column(Integer, ForeignKey("sub_groups.id",ondelete="CASCADE"), nullable=False)
+    uploaded_by = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

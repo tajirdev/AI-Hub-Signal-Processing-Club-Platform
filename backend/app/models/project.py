@@ -14,7 +14,7 @@ class Project(Base):
     thumbnail_id = Column(Integer,ForeignKey("media.id",ondelete="SET NULL"))
     status = Column(String, default="active")
     technology_stack = Column(String, nullable=True)
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id",ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime,default=datetime.now)
     updated_at = Column(DateTime,default=datetime.now, onupdate=datetime.now)
 

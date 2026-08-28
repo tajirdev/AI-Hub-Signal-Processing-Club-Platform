@@ -8,7 +8,7 @@ class Members(Base):
     __tablename__ = "members"
     id = Column(Integer,primary_key=True,nullable=False)
     user_id = Column(Integer,ForeignKey("users.id",ondelete="CASCADE"))
-    subgroup_id = Column(Integer,ForeignKey("sub_groups.id"))
+    subgroup_id = Column(Integer,ForeignKey("sub_groups.id",ondelete="SET NULL"))
     position = Column(String(150))
     github = Column(String)
     linkedin = Column(String)
