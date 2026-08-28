@@ -19,7 +19,7 @@ export function JoinCTASection() {
         </ScrollReveal>
         <ScrollReveal animation="fade-up" delay={200}>
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 leading-relaxed">
-          Join a community of passionate builders. Learn, collaborate, research, and innovate with the AI & Signal Processing Hub.
+          Join a community of passionate builders. Learn, collaborate, research, and innovate with the SigniAI.
         </p>
         </ScrollReveal>
         

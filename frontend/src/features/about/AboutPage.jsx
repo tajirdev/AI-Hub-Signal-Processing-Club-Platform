@@ -12,7 +12,7 @@ import { AboutCTA } from './components/AboutCTA';
 
 export function AboutPage() {
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | About Us';
+    document.title = 'SigniAI | About Us';
     
     // Update meta description
     let metaDescription = document.querySelector('meta[name="description"]');
@@ -21,12 +21,12 @@ export function AboutPage() {
       metaDescription.name = 'description';
       document.head.appendChild(metaDescription);
     }
-    metaDescription.content = 'Learn about the AI & Signal Processing Hub at Mbeya University of Science and Technology, our mission, vision, research, innovation and commitment to solving real-world challenges.';
+    metaDescription.content = 'Learn about the SigniAI at Mbeya University of Science and Technology, our mission, vision, research, innovation and commitment to solving real-world challenges.';
 
     // Cleanup on unmount (optional, but good practice if not using a library)
     return () => {
-      document.title = 'AI & Signal Processing Hub'; // Or whatever default is
-      metaDescription.content = 'AI & Signal Processing Hub at MUST.'; // Default description
+      document.title = 'SigniAI'; // Or whatever default is
+      metaDescription.content = 'SigniAI at MUST.'; // Default description
     };
   }, []);
 

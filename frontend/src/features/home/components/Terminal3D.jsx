@@ -126,7 +126,7 @@ export function Terminal3D() {
             <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-amber-500"></div>
             <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-500"></div>
           </div>
-          <div className="flex-1 text-center text-[10px] md:text-xs font-mono text-gray-400">user@aihub:~</div>
+          <div className="flex-1 text-center text-[10px] md:text-xs font-mono text-gray-400">user@SigniAI:~</div>
         </div>
 
         {/* Terminal Body */}

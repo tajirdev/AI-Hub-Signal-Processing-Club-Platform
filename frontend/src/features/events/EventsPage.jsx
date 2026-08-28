@@ -49,7 +49,7 @@ export function EventsPage() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Events';
+    document.title = 'SigniAI | Events';
     loadEvents();
   }, [loadEvents]);
 

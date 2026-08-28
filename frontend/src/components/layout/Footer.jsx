@@ -29,12 +29,11 @@ export function Footer() {
           
           <div className="lg:col-span-4 flex flex-col gap-6">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-navy font-heading font-black text-2xl">
-                AI
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-navy font-heading font-black text-3xl">
+                S
               </div>
-              <div className="flex flex-col">
-                <span className="font-heading font-black text-xl leading-none text-white">AI &</span>
-                <span className="font-body text-sm text-gray-300 font-semibold tracking-wide">Signal Processing Hub</span>
+              <div className="flex flex-col justify-center">
+                <span className="font-heading font-black text-2xl leading-none text-white tracking-wide">SigniAI</span>
               </div>
             </Link>
             <p className="text-gray-300/80 text-sm leading-relaxed max-w-xs">
@@ -80,9 +79,9 @@ export function Footer() {
             </div>
 
             <div className="flex flex-col gap-3 text-sm text-gray-400">
-              <a href="mailto:contact@aihub.org" className="flex items-center gap-3 hover:text-white transition-colors">
+              <a href="mailto:contact@SigniAI.org" className="flex items-center gap-3 hover:text-white transition-colors">
                 <Mail className="w-4 h-4 text-amber" />
-                <span>contact@aihub.org</span>
+                <span>contact@SigniAI.org</span>
               </a>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-amber shrink-0 mt-0.5" />
@@ -95,7 +94,7 @@ export function Footer() {
 
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <p className="text-xs text-gray-500 font-medium">
-            &copy; {currentYear} AI & Signal Processing Hub. All rights reserved.
+            &copy; {currentYear} SigniAI. All rights reserved.
           </p>
           
           <div className="flex items-center gap-4">

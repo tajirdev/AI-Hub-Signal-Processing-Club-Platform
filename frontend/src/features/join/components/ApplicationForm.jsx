@@ -90,7 +90,7 @@ export function ApplicationForm() {
               Application Submitted
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed mb-8">
-              Thank you for applying to the AI & Signal Processing Hub. Our team will review your application and send you an email with the next steps soon.
+              Thank you for applying to the SigniAI. Our team will review your application and send you an email with the next steps soon.
             </p>
             <Button asChild className="w-full bg-[#FFB347] hover:bg-[#FFA012] text-white shadow-[0_8px_20px_rgba(255,179,71,0.4)] hover:-translate-y-0.5 transition-all rounded-2xl py-4 font-body font-bold text-base normal-case tracking-normal">
               <Link to="/">Return to Home</Link>
@@ -148,7 +148,7 @@ export function ApplicationForm() {
               Apply to Join
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed max-w-md mx-auto">
-              Submit your application to become a member of the MUST AI & Signal Processing Hub.
+              Submit your application to become a member of the MUST SigniAI.
             </p>
           </div>
   
@@ -227,7 +227,7 @@ export function ApplicationForm() {
               <Label htmlFor="motivation">Motivation (Optional)</Label>
               <Textarea 
                 id="motivation" name="motivation" 
-                placeholder="Why do you want to join the AI & Signal Processing Hub?"
+                placeholder="Why do you want to join the SigniAI?"
                 value={formData.motivation} onChange={handleChange} 
                 disabled={isLoading} className="!bg-[#F5F6F8] dark:!bg-white/5 border-transparent focus:!border-amber shadow-inner rounded-2xl py-3.5 placeholder:text-gray-400" />
             </div>

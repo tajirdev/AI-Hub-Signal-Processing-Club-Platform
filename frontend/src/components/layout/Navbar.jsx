@@ -104,12 +104,11 @@ export function Navbar() {
           
           {/* Brand */}
           <Link to="/" className="flex items-center gap-3 z-50">
-            <div className="w-10 h-10 bg-navy rounded-xl flex items-center justify-center text-white font-heading font-black text-xl">
-              AI
+            <div className="w-10 h-10 bg-navy dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-navy font-heading font-black text-2xl">
+              S
             </div>
-            <div className="flex flex-col">
-              <span className={cn("font-heading font-black text-lg leading-none", isScrolled ? "text-navy dark:text-white" : "text-navy dark:text-white")}>AI &</span>
-              <span className="font-body text-xs text-gray-500 font-semibold tracking-wide">Signal Processing Hub</span>
+            <div className="flex flex-col justify-center">
+              <span className={cn("font-heading font-black text-xl leading-none tracking-wide", isScrolled ? "text-navy dark:text-white" : "text-navy dark:text-white")}>SigniAI</span>
             </div>
           </Link>
 
@@ -312,7 +311,7 @@ export function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center w-full bg-amber hover:bg-amber-hover text-gray-900 font-heading font-bold uppercase tracking-wider py-4 rounded-xl text-lg transition-colors shadow-lg shadow-amber/10"
                   >
-                    Join AI Hub
+                    Join SigniAI
                   </Link>
                 </div>
               )}

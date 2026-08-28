@@ -16,7 +16,7 @@ export function WhoWeAre() {
             <div className="space-y-6 text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
               <ScrollReveal animation="fade-up" delay={100}>
                 <p>
-                  The AI & Signal Processing Hub is a pioneering student-led technical organization 
+                  The SigniAI is a pioneering student-led technical organization 
                   at <strong>Mbeya University of Science and Technology (MUST)</strong>. 
                 </p>
               </ScrollReveal>

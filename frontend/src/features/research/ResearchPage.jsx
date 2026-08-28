@@ -49,7 +49,7 @@ export function ResearchPage() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Research';
+    document.title = 'SigniAI | Research';
     loadResearch();
   }, [loadResearch]);
 

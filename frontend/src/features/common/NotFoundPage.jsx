@@ -4,7 +4,7 @@ import { Home, Search, AlertTriangle } from 'lucide-react';
 
 export function NotFoundPage() {
   useEffect(() => {
-    document.title = '404 - Page Not Found | AI & Signal Processing Hub';
+    document.title = '404 - Page Not Found | SigniAI';
   }, []);
 
   return (

@@ -11,7 +11,7 @@ export function SubgroupsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Subgroups';
+    document.title = 'SigniAI | Subgroups';
     
     async function loadData() {
       setLoading(true);

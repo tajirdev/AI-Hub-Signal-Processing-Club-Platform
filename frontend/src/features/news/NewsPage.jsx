@@ -45,7 +45,7 @@ export function NewsPage() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | News';
+    document.title = 'SigniAI | News';
     loadNews();
   }, [loadNews]);
 

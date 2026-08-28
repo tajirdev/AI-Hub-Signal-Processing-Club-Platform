@@ -45,7 +45,7 @@ export function BlogPage() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Blog';
+    document.title = 'SigniAI | Blog';
     loadBlogPosts();
   }, [loadBlogPosts]);
 

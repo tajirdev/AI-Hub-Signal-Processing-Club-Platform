@@ -19,7 +19,7 @@ export function JoinCTA() {
         </ScrollReveal>
         <ScrollReveal animation="fade-up" delay={100}>
           <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Stop waiting for the perfect time. Join the AI & Signal Processing Hub today and start building the future of technology in Africa.
+            Stop waiting for the perfect time. Join the SigniAI today and start building the future of technology in Africa.
           </p>
         </ScrollReveal>
 

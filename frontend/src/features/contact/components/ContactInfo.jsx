@@ -46,8 +46,8 @@ export function ContactInfo() {
             <Mail className="w-6 h-6" />
           </div>
           <h3 className="text-xl font-bold text-navy dark:text-white mb-2">Email</h3>
-          <a href="mailto:hello@mustaihub.ac.tz" className="text-gray-600 dark:text-gray-400 hover:text-amber dark:hover:text-amber transition-colors font-medium">
-            hello@mustaihub.ac.tz
+          <a href="mailto:hello@mustSigniAI.ac.tz" className="text-gray-600 dark:text-gray-400 hover:text-amber dark:hover:text-amber transition-colors font-medium">
+            hello@mustSigniAI.ac.tz
           </a>
         </div>
       </ScrollReveal>

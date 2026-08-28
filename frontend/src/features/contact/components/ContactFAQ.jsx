@@ -5,7 +5,7 @@ import { ScrollReveal } from '../../../components/ui/ScrollReveal';
 export function ContactFAQ() {
   const faqs = [
     {
-      q: "Where is the AI Hub located?",
+      q: "Where is the SigniAI located?",
       a: "We are currently situated within the Department of Electronics & Telecommunication Engineering at Mbeya University of Science and Technology (MUST)."
     },
     {
@@ -18,7 +18,7 @@ export function ContactFAQ() {
     },
     {
       q: "Who should I contact for media inquiries?",
-      a: "For press and media, please email us directly at hello@mustaihub.ac.tz with 'Media Inquiry' in the subject line."
+      a: "For press and media, please email us directly at hello@mustSigniAI.ac.tz with 'Media Inquiry' in the subject line."
     }
   ];
 

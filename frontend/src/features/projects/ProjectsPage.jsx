@@ -48,7 +48,7 @@ export function ProjectsPage() {
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    document.title = 'AI & Signal Processing Hub | Projects';
+    document.title = 'SigniAI | Projects';
     loadProjects();
   }, [loadProjects]);
 
