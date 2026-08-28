@@ -203,6 +203,7 @@ export const uploadContentMedia = async (type, id, file) => {
   
   let endpoint = `/${type}/${id}/cover`;
   if (type === 'research') endpoint = `/${type}/${id}/file`;
+  if (type === 'resources') endpoint = `/${type}/${id}/file`;
   if (type === 'blog-posts') endpoint = `/${type}/${id}`; // Backend specific
   
   const res = await api.post(endpoint, formData, {
@@ -210,5 +211,10 @@ export const uploadContentMedia = async (type, id, file) => {
       'Content-Type': 'multipart/form-data',
     },
   });
+  return res.data;
+};
+
+export const getSubgroups = async () => {
+  const res = await api.get('/sub_groups');
   return res.data;
 };

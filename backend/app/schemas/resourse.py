@@ -51,3 +51,11 @@ class ResourceResponse(BaseModel):
 
 
         
+class ResourcePagination(BaseModel):
+    total: int
+    page: int
+    limit: int
+    returned: int
+    results: list[ResourceResponse]
+
+    model_config = ConfigDict(from_attributes=True)

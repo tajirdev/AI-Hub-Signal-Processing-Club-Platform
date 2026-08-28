@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { FileText, Calendar, Rss, Code, BookOpen, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
+import { FileText, Calendar, Rss, Code, BookOpen, Edit, Trash2, Plus, Loader2, FileArchive } from 'lucide-react';
 import { ContentFormModal } from './ContentFormModal';
 import { deleteContent } from '../../../services/endpoints';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -44,6 +44,7 @@ export function ManageContentTab({ profile }) {
     { id: "projects", label: "Projects", icon: Code, data: profile.projects || [], endpoint: 'projects' },
     ...(isSuperAdmin ? [{ id: "research", label: "Research", icon: BookOpen, data: profile.research || [], endpoint: 'research' }] : []),
     { id: "blogs", label: "Blogs", icon: FileText, data: profile.blogs || [], endpoint: 'blog-posts' },
+    { id: "resources", label: "Resources", icon: FileArchive, data: profile.resources || [], endpoint: 'resources' },
   ];
 
   const currentCategory = categories.find(c => c.id === activeCategory);

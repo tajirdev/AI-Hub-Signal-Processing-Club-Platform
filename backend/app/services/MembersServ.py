@@ -263,6 +263,7 @@ class MembersServices:
         news = []
         events = []
         blogs = []
+        resources = []
         
         if include_extra:
             if user.new:
@@ -274,6 +275,9 @@ class MembersServices:
             if user.blog_posts:
                 for b in user.blog_posts:
                     blogs.append({**{k: v for k, v in b.__dict__.items() if not k.startswith("_")}, "type": "Blog"})
+            if user.resource:
+                for r in user.resource:
+                    resources.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Resource"})
 
         return {
             "id": member.id,

@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { X, Loader2, Save } from 'lucide-react';
-import { createContent, updateContent, getCategories, uploadContentMedia } from '../../../services/endpoints';
+import { createContent, updateContent, getCategories, uploadContentMedia, getSubgroups } from '../../../services/endpoints';
 
 // Configuration for fields
 const FORM_CONFIG = {
@@ -58,9 +58,19 @@ const FORM_CONFIG = {
       { name: "content", label: "Content", type: "textarea", required: true },
       { name: "status", label: "Status", type: "select", options: ["draft", "published"], default: "draft" },
       { name: "cover_image", label: "Cover Image / Document", type: "file", accept: "image/*,application/pdf" }
-    ]
-  }
-};
+    ]    },
+    resources: {
+      endpoint: "resources",
+      fields: [
+        { name: "title", label: "Title", type: "text", required: true },
+        { name: "description", label: "Description", type: "textarea" },
+        { name: "type", label: "Type", type: "select", options: ["PDF", "PRESENTATION", "DATASET", "VIDEO", "EXTERNAL_LINK"], default: "PDF" },
+        { name: "external_url", label: "External URL (if link)", type: "url" },
+        { name: "subgroup_id", label: "Subgroup", type: "dynamic_select_subgroup", required: true },
+        { name: "cover_image", label: "Upload File", type: "file", accept: "*/*" }
+      ]
+    }
+  };
 
 export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onSuccess, memberId }) {
   if (!isOpen) return null;
@@ -72,12 +82,17 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [subgroups, setSubgroups] = useState([]);
 
   useEffect(() => {
-    // Fetch categories if the form requires them
+    // Fetch options if the form requires them
     const hasCategoryField = config.fields.some(f => f.type === 'dynamic_select');
     if (hasCategoryField) {
       getCategories().then(setCategories).catch(console.error);
+    }
+    const hasSubgroupField = config.fields.some(f => f.type === 'dynamic_select_subgroup');
+    if (hasSubgroupField) {
+      getSubgroups().then(setSubgroups).catch(console.error);
     }
   }, [categoryId]);
 
@@ -130,6 +145,12 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
         }
         payload[f.name] = val;
       });
+      
+      // Inject author_ids for research if missing
+      if (categoryId === 'research' && memberId) {
+        payload.author_ids = [memberId];
+      }
+      
       
       // Inject author_ids for research if missing
       if (categoryId === 'research' && memberId) {
@@ -228,7 +249,7 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
                       <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
                     ))}
                   </select>
-                ) : field.type === 'dynamic_select' ? (
+                ) : field.type === 'dynamic_select' || field.type === 'dynamic_select_subgroup' ? (
                   <select
                     name={field.name}
                     value={formData[field.name] || ''}
@@ -236,9 +257,9 @@ export function ContentFormModal({ isOpen, onClose, categoryId, editingItem, onS
                     required={field.required}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber focus:border-amber outline-none transition-all"
                   >
-                    <option value="">-- Select Category (Optional) --</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option value="">{field.type === 'dynamic_select' ? '-- Select Category (Optional) --' : '-- Select Subgroup --'}</option>
+                    {(field.type === 'dynamic_select' ? categories : subgroups).map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.name}</option>
                     ))}
                   </select>
                 ) : field.type === 'checkbox' ? (
