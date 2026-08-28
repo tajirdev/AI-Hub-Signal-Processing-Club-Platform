@@ -1,7 +1,7 @@
 import { ensureExternalUrl } from '../../utils/url';
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Mail, Phone, Code, Globe, Briefcase, ArrowLeft, Calendar } from "lucide-react";
+import { Mail, Phone, Code, Globe, Briefcase, ArrowLeft, Calendar, CheckCircle } from "lucide-react";
 import { fetchMemberById } from "../../services/endpoints";
 import { getImageUrl } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
@@ -109,6 +109,9 @@ export function MemberProfilePage() {
   if (!profile) return <ErrorState message="Profile not found." />;
 
   const user = profile.user || {};
+  const roles = user.roles || [];
+  const isAdmin = roles.includes('super_admin') || roles.includes('admin');
+  const isEditor = roles.includes('editor');
   const isOwner = profile.is_owner;
   const isMentorOrAbove = user.roles?.some(r => ['mentor', 'editor', 'super_admin'].includes(r));
   const canManageContent = isOwner && isMentorOrAbove;
@@ -186,8 +189,10 @@ export function MemberProfilePage() {
                   )}
                 </div>
 
-                <h1 className="text-xl font-bold mt-4 text-navy dark:text-white">
+                <h1 className="text-xl font-bold mt-4 text-navy dark:text-white flex items-center justify-center gap-1.5">
                   {name}
+                  {isAdmin && <CheckCircle className="w-5 h-5 text-[#ffba08]" />}
+                  {isEditor && !isAdmin && <CheckCircle className="w-5 h-5 text-blue-500" />}
                 </h1>
                 <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
                   @{user.user_name}

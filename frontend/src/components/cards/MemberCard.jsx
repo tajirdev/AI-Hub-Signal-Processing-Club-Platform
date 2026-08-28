@@ -35,8 +35,8 @@ export function MemberCard({ member }) {
   const accent = getAccentColor(name);
   const roles = user.roles || [];
   
-  const isSuperAdmin = roles.includes('super_admin');
-  const isMentor = roles.includes('mentor'); // Assuming 'mentor' is a role
+  const isAdmin = roles.includes('super_admin') || roles.includes('admin');
+  const isEditor = roles.includes('editor');
 
   return (
     <div className="relative w-full rounded-3xl overflow-hidden shadow-xl transition-transform duration-300 hover:-translate-y-1 bg-white dark:bg-transparent">
@@ -66,8 +66,8 @@ export function MemberCard({ member }) {
           <div>
             <h3 className="text-white font-bold text-base flex items-center gap-1.5">
               {name}
-              {isSuperAdmin && <CheckCircle className="w-4 h-4 text-[#ffba08]" />}
-              {isMentor && !isSuperAdmin && <CheckCircle className="w-4 h-4 text-white" />}
+              {isAdmin && <CheckCircle className="w-4 h-4 text-[#ffba08]" />}
+              {isEditor && !isAdmin && <CheckCircle className="w-4 h-4 text-blue-400" />}
             </h3>
             <p className="text-xs mt-0.5 text-white/75">
               {member.sub_group || member.position || 'Member'}
@@ -88,8 +88,8 @@ export function MemberCard({ member }) {
         <div>
           <h3 className="font-bold text-base flex items-center gap-1.5" style={{ color: BRAND.navy }}>
             {name}
-            {isSuperAdmin && <CheckCircle className="w-4 h-4 text-[#ffba08]" />}
-            {isMentor && !isSuperAdmin && <CheckCircle className="w-4 h-4 text-[#0a2472]" />}
+            {isAdmin && <CheckCircle className="w-4 h-4 text-[#ffba08]" />}
+            {isEditor && !isAdmin && <CheckCircle className="w-4 h-4 text-blue-500" />}
           </h3>
           <p className="text-xs mt-0.5" style={{ color: "rgba(10,36,114,0.55)" }}>
             {member.sub_group || member.position || 'Member'}
