@@ -88,6 +88,16 @@ export const submitContact = async (data) => {
   return res.data;
 };
 
+export const subscribeNewsletter = async (email) => {
+  const res = await api.post('/newsletter/subscribe', { email });
+  return res.data;
+};
+
+export const getNewsletterSubscribers = async () => {
+  const res = await api.get('/newsletter/');
+  return res.data;
+};
+
 export const fetchProjectById = async (id) => {
   const res = await api.get(`/projects/${id}`);
   return res.data;

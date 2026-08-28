@@ -22,6 +22,7 @@ import Resources from './pages/Resources';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Contacts from './pages/Contacts';
+import Newsletter from './pages/Newsletter';
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
             <Route path={Routes.Research.path} element={<Research />} />
             <Route path={Routes.Resources.path} element={<Resources />} />
             <Route path={Routes.Contacts.path} element={<Contacts />} />
+            <Route path={Routes.Newsletter.path} element={<Newsletter />} />
             <Route path={Routes.Profile.path} element={<Profile />} />
           </Route>
 

@@ -14,6 +14,7 @@ import {
   faLaptopCode,
   faFlask,
   faFolderOpen,
+  faEnvelopeOpenText,
   faEnvelope,
   faSignOutAlt,
   faTimes,
@@ -43,6 +44,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { title: 'Research Papers', path: Routes.Research.path, icon: faFlask },
     { title: 'Resources', path: Routes.Resources.path, icon: faFolderOpen },
     { title: 'Contact Messages', path: Routes.Contacts.path, icon: faEnvelope },
+      { title: 'Newsletter Subscribers', path: Routes.Newsletter.path, icon: faEnvelopeOpenText },
     { title: 'My Profile', path: Routes.Profile.path, icon: faUserCircle },
   ];
 

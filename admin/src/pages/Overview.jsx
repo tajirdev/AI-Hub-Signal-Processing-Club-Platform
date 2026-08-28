@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,7 +14,9 @@ import {
   faFolderOpen,
   faSpinner,
   faPlus,
-  faClipboardList
+  faClipboardList,
+  faEnvelope,
+  faEnvelopeOpenText
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 import { Routes } from '../routes';
@@ -30,6 +32,8 @@ import { projectsAPI } from '../api/projects';
 import { researchAPI } from '../api/research';
 import { resourcesAPI } from '../api/resources';
 import { applicationsAPI } from '../api/applications';
+import { getContacts } from '../api/contacts';
+import { newsletterApi } from '../api/newsletter';
 
 const StatCard = ({ title, value, icon, color, subtext, link }) => (
   <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between">
@@ -78,7 +82,9 @@ export default function Overview() {
     projects: 0,
     research: 0,
     resources: 0,
-    applications: 0
+    applications: 0,
+    contacts: 0,
+    newsletter: 0
   });
 
   useEffect(() => {
@@ -95,7 +101,9 @@ export default function Overview() {
           projectsRes,
           researchRes,
           resourcesRes,
-          appsRes
+          appsRes,
+          contactsRes,
+          newsletterRes
         ] = await Promise.allSettled([
           usersAPI.getAll(),
           membersAPI.getAll(),
@@ -107,6 +115,8 @@ export default function Overview() {
           researchAPI.getAll(),
           resourcesAPI.getAll(),
           applicationsAPI.getAll(),
+          getContacts(),
+          newsletterApi.getAll(),
         ]);
 
         setStats({
@@ -115,11 +125,13 @@ export default function Overview() {
           subgroups: subgroupsRes.status === 'fulfilled' ? (Array.isArray(subgroupsRes.value) ? subgroupsRes.value.length : 0) : 0,
           posts: blogRes.status === 'fulfilled' ? (blogRes.value?.total || (Array.isArray(blogRes.value?.posts) ? blogRes.value.posts.length : 0)) : 0,
           news: newsRes.status === 'fulfilled' ? (newsRes.value?.total || (Array.isArray(newsRes.value?.news) ? newsRes.value.news.length : 0)) : 0,
-          events: eventsRes.status === 'fulfilled' ? (eventsRes.value?.total || (Array.isArray(eventsRes.value?.events) ? eventsRes.value.events.length : 0)) : 0,
+          events: eventsRes.status === 'fulfilled' ? (Array.isArray(eventsRes.value) ? eventsRes.value.length : eventsRes.value?.total || 0) : 0,
           projects: projectsRes.status === 'fulfilled' ? (projectsRes.value?.total || (Array.isArray(projectsRes.value?.projects) ? projectsRes.value.projects.length : 0)) : 0,
-          research: researchRes.status === 'fulfilled' ? (researchRes.value?.total || (Array.isArray(researchRes.value?.research) ? researchRes.value.research.length : 0)) : 0,
+          research: researchRes.status === 'fulfilled' ? (Array.isArray(researchRes.value) ? researchRes.value.length : researchRes.value?.total || 0) : 0,
           resources: resourcesRes.status === 'fulfilled' ? (resourcesRes.value?.total || (Array.isArray(resourcesRes.value?.resources) ? resourcesRes.value.resources.length : 0)) : 0,
           applications: appsRes.status === 'fulfilled' ? (Array.isArray(appsRes.value) ? appsRes.value.filter(a => a.status === 'pending').length : 0) : 0,
+          contacts: contactsRes.status === 'fulfilled' ? (Array.isArray(contactsRes.value) ? contactsRes.value.length : contactsRes.value?.total || 0) : 0,
+          newsletter: newsletterRes.status === 'fulfilled' ? (Array.isArray(newsletterRes.value) ? newsletterRes.value.length : newsletterRes.value?.total || 0) : 0,
         });
       } catch (err) {
         console.error('Failed to load dashboard metrics', err);
@@ -158,93 +170,126 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-gray-700">Platform Analytics</h2>
-          {loading && (
-            <div className="flex items-center space-x-1.5 text-xs text-blue-600">
-              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-              <span>Updating...</span>
-            </div>
-          )}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <FontAwesomeIcon icon={faSpinner} className="animate-spin text-3xl text-blue-600 mb-4" />
+          <p className="text-sm font-semibold text-gray-600">Syncing ecosystem metrics...</p>
         </div>
+      ) : (
+        <>
+          {/* Key Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <StatCard
+              title="Total Users"
+              value={stats.users}
+              icon={faUsers}
+              color="blue"
+              link={Routes.Users.path}
+            />
+            <StatCard
+              title="Club Members"
+              value={stats.members}
+              icon={faIdCard}
+              color="indigo"
+              link={Routes.Members.path}
+            />
+            <StatCard
+              title="Active Subgroups"
+              value={stats.subgroups}
+              icon={faLayerGroup}
+              color="violet"
+              link={Routes.Subgroups.path}
+            />
+            <StatCard
+              title="Blog Posts"
+              value={stats.posts}
+              icon={faBlog}
+              color="pink"
+              link={Routes.BlogPosts.path}
+            />
+            <StatCard
+              title="News Updates"
+              value={stats.news}
+              icon={faBullhorn}
+              color="amber"
+              link={Routes.News.path}
+            />
+            <StatCard
+              title="Events"
+              value={stats.events}
+              icon={faCalendarAlt}
+              color="orange"
+              link={Routes.Events.path}
+            />
+            <StatCard
+              title="Projects"
+              value={stats.projects}
+              icon={faLaptopCode}
+              color="emerald"
+              link={Routes.Projects.path}
+            />
+            <StatCard
+              title="Research Papers"
+              value={stats.research}
+              icon={faFlask}
+              color="cyan"
+              link={Routes.Research.path}
+            />
+            <StatCard
+              title="Resources"
+              value={stats.resources}
+              icon={faFolderOpen}
+              color="sky"
+              link={Routes.Resources.path}
+            />
+            <StatCard
+              title="Contact Messages"
+              value={stats.contacts}
+              icon={faEnvelope}
+              color="rose"
+              link={Routes.Contacts.path}
+            />
+            <StatCard
+              title="Subscribers"
+              value={stats.newsletter}
+              icon={faEnvelopeOpenText}
+              color="teal"
+              link={Routes.Newsletter.path}
+            />
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard
-            title="Pending Apps"
-            value={stats.applications}
-            icon={faClipboardList}
-            color="emerald"
-            subtext="Awaiting review"
-            link={Routes.Applications.path}
-          />
-          <StatCard
-            title="Registered Users"
-            value={stats.users}
-            icon={faUsers}
-            color="blue"
-            subtext="Platform accounts"
-            link={Routes.Users.path}
-          />
-          <StatCard
-            title="Club Members"
-            value={stats.members}
-            icon={faIdCard}
-            color="amber"
-            subtext="Active members directory"
-            link={Routes.Members.path}
-          />
-          <StatCard
-            title="AI Subgroups"
-            value={stats.subgroups}
-            icon={faLayerGroup}
-            color="purple"
-            subtext="Specialized study groups"
-            link={Routes.Subgroups.path}
-          />
-          <StatCard
-            title="Editorial Blog Posts"
-            value={stats.posts}
-            icon={faBlog}
-            color="emerald"
-            subtext="Articles & tutorials"
-            link={Routes.BlogPosts.path}
-          />
-          <StatCard
-            title="Club Events"
-            value={stats.events}
-            icon={faCalendarAlt}
-            color="indigo"
-            subtext="Workshops & meetups"
-            link={Routes.Events.path}
-          />
-          <StatCard
-            title="Projects Showcase"
-            value={stats.projects}
-            icon={faLaptopCode}
-            color="blue"
-            subtext="Student & faculty projects"
-            link={Routes.Projects.path}
-          />
-          <StatCard
-            title="Research Papers"
-            value={stats.research}
-            icon={faFlask}
-            color="purple"
-            subtext="Academic publications"
-            link={Routes.Research.path}
-          />
-          <StatCard
-            title="Learning Resources"
-            value={stats.resources}
-            icon={faFolderOpen}
-            color="amber"
-            subtext="Datasets, PDFs & code"
-            link={Routes.Resources.path}
-          />
-        </div>
-      </div>
+          {/* Quick Actions */}
+          <div className="pt-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 px-2">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <QuickActionCard
+                title="Review Applications"
+                description="Process pending club join requests."
+                icon={faClipboardList}
+                link={Routes.Applications.path}
+              />
+              <QuickActionCard
+                title="Publish Blog Post"
+                description="Draft and publish a new technical article."
+                icon={faBlog}
+                link={Routes.BlogPosts.path}
+              />
+              <QuickActionCard
+                title="Add Research Paper"
+                description="Upload new academic publications."
+                icon={faFlask}
+                link={Routes.Research.path}
+              />
+              <QuickActionCard
+                title="Create Subgroup"
+                description="Initialize a new specialized AI focus group."
+                icon={faLayerGroup}
+                link={Routes.Subgroups.path}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

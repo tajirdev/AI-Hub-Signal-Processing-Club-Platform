@@ -13,6 +13,7 @@ export const Routes = {
   Research: { path: "/research" },
   Resources: { path: "/resources" },
   Contacts: { path: "/contacts" },
+  Newsletter: { path: "/newsletter" },
   Profile: { path: "/profile" },
   NotFound: { path: "/404" },
 };
