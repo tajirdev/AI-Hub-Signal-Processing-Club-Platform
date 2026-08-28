@@ -88,12 +88,8 @@ export function Navbar() {
   return (
     <>
       <nav className={cn(
-        'fixed top-0 inset-x-0 z-50 transition-all duration-300',
-        mobileMenuOpen 
-          ? 'bg-transparent py-3' 
-          : isScrolled 
-            ? 'bg-white/90 dark:bg-[#071225]/90 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-800 py-3' 
-            : 'bg-transparent py-5'
+        'fixed top-0 inset-x-0 z-50 transition-all duration-300 bg-white dark:bg-[#071225] border-b border-gray-100 dark:border-gray-800',
+        isScrolled ? 'py-3 shadow-md' : 'py-5 shadow-sm'
       )}>
         <div className="max-w-[1280px] mx-auto px-6 md:px-8 flex items-center justify-between">
           
