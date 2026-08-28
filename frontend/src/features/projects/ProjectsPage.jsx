@@ -49,6 +49,7 @@ export function ProjectsPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | Projects';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProjects();
   }, [loadProjects]);
 

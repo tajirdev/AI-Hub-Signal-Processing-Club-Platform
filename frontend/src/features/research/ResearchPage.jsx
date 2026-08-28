@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import  { useState, useEffect, useCallback } from 'react';
 import { fetchResearch } from '../../services/endpoints';
 import { ResearchCard } from '../../components/cards/ResearchCard';
 import { LoadingState, EmptyState, ErrorState } from '../../components/ui/States';
@@ -33,7 +33,7 @@ export function ResearchPage() {
       const data = await fetchResearch({ 
         page, 
         limit: 9, 
-        title: debouncedSearch || undefined 
+        search: debouncedSearch || undefined 
       });
       // Handle the case where the API might return an array directly or a paginated object
       const items = Array.isArray(data) ? data : (data.results || data.items || []);
@@ -50,6 +50,7 @@ export function ResearchPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | Research';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadResearch();
   }, [loadResearch]);
 

@@ -46,6 +46,7 @@ export function NewsPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | News';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadNews();
   }, [loadNews]);
 

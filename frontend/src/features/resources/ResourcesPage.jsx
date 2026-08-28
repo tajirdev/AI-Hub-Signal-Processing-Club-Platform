@@ -49,6 +49,7 @@ export function ResourcesPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | Resources';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadResources();
   }, [loadResources]);
 

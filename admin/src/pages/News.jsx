@@ -42,8 +42,9 @@ export default function News() {
         categoriesAPI.getAll(),
       ]);
 
-      if (newsRes && newsRes.news) {
-        setNewsList(newsRes.news);
+      if (newsRes && (newsRes.items || newsRes.news)) {
+        setNewsList(newsRes.items || newsRes.news);
+        
         setTotalPages(newsRes.total_pages || 1);
         setTotalItems(newsRes.total || 0);
       } else if (Array.isArray(newsRes)) {

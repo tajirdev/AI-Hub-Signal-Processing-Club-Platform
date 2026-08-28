@@ -66,12 +66,13 @@ export default function Resources() {
         subgroupsAPI.getAll().catch(() => []),
       ]);
 
-      if (resRes && resRes.results) {
-        setResources(resRes.results);
+      if (resRes && (resRes.items || resRes.results || resRes.resources)) {
+        setResources(resRes.items || resRes.results || resRes.resources);
+        
         setTotalPages(Math.ceil((resRes.total || 1) / 10));
         setTotalItems(resRes.total || 0);
-      } else if (resRes && resRes.resources) {
-        setResources(resRes.resources);
+      } else if (false) {
+        
         setTotalPages(resRes.total_pages || 1);
         setTotalItems(resRes.total || 0);
       } else if (Array.isArray(resRes)) {

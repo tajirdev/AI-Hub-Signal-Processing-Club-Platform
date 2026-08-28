@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import  { useState, useEffect, useCallback } from 'react';
 import { fetchEvents } from '../../services/endpoints';
 import { EventCard } from '../../components/cards/EventCard';
 import { LoadingState, EmptyState, ErrorState } from '../../components/ui/States';
@@ -50,6 +50,7 @@ export function EventsPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | Events';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadEvents();
   }, [loadEvents]);
 

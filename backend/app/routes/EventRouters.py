@@ -38,7 +38,7 @@ def PostNew(
 
 
 
-@router.get("/", response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
+@router.get("/", tags=["EVENTS"])
 def get_blog(
     db: Session = Depends(get_db),
     page:int=1,search:str=None,
@@ -57,7 +57,7 @@ def get_blog(
 
 
 
-@router.get("/me",response_model=List[EventSchm.EventResponse], tags=["EVENTS"])
+@router.get("/me", tags=["EVENTS"])
 def GetMy(
     db:Session=Depends(get_db),
     current_user:ModoleUsers.Users=Depends(editor_required)

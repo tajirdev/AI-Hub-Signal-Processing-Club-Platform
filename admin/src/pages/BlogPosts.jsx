@@ -52,8 +52,9 @@ export default function BlogPosts() {
         categoriesAPI.getAll(),
       ]);
 
-      if (blogRes && blogRes.posts) {
-        setPosts(blogRes.posts);
+      if (blogRes && (blogRes.items || blogRes.posts)) {
+        setPosts(blogRes.items || blogRes.posts);
+        
         setTotalPages(blogRes.total_pages || 1);
         setTotalItems(blogRes.total || 0);
       } else if (Array.isArray(blogRes)) {

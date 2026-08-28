@@ -59,8 +59,9 @@ export default function Research() {
         membersAPI.getAll().catch(() => ({ results: [] })),
       ]);
 
-      if (resRes && resRes.research) {
-        setResearchList(resRes.research);
+      if (resRes && (resRes.items || resRes.research)) {
+        setResearchList(resRes.items || resRes.research);
+        
         setTotalPages(resRes.total_pages || 1);
         setTotalItems(resRes.total || 0);
       } else if (Array.isArray(resRes)) {

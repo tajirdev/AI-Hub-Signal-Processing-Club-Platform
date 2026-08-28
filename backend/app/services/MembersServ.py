@@ -259,6 +259,13 @@ class MembersServices:
                 r = ra.research
                 if r and (r.is_published or is_owner):
                     research.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Research"})
+        
+        # Research: The member created it (important for authors who didn't link their member profile)
+        if include_extra and user.research:
+            for r in user.research:
+                if r.is_published or is_owner:
+                    if not any(res['id'] == r.id for res in research):
+                        research.append({**{k: v for k, v in r.__dict__.items() if not k.startswith("_")}, "type": "Research"})
                     
         news = []
         events = []

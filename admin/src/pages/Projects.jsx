@@ -42,8 +42,9 @@ export default function Projects() {
         search: search || undefined,
       });
 
-      if (data && data.projects) {
-        setProjects(data.projects);
+      if (data && (data.items || data.projects)) {
+        setProjects(data.items || data.projects);
+        
         setTotalPages(data.total_pages || 1);
         setTotalItems(data.total || 0);
       } else if (Array.isArray(data)) {

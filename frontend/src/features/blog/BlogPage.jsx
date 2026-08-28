@@ -46,6 +46,7 @@ export function BlogPage() {
 
   useEffect(() => {
     document.title = 'SigniAI | Blog';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBlogPosts();
   }, [loadBlogPosts]);
 

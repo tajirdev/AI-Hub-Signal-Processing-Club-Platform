@@ -23,7 +23,7 @@ def New_research(
 ):
     return ResearchServices.addresearch(data, db, current_user)
 
-@router.get("/", response_model=list[ResearchResponse])
+@router.get("/")
 def show_all(
     db: Session = Depends(get_db),
     current_user: Optional[Users] = Depends(get_optional_current_user),

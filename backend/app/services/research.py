@@ -107,9 +107,11 @@ class ResearchServices:
             else:
                 query = query.order_by(desc(Research.publication_date).nullslast()) 
                             
-        skip = (page - 1) * limit 
-        results = query.offset(skip).limit(limit).all()
-        return results
+        total = query.count()
+        import math
+        skip = (page - 1) * limit
+        items = query.offset(skip).limit(limit).all()
+        return {"total": total, "total_pages": math.ceil(total / limit) if limit > 0 else 1, "items": items}
     
     @staticmethod
     def show_by_id(research_id: int, db: Session, current_user):
