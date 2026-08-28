@@ -35,7 +35,7 @@ const FORM_CONFIG = {
       { name: "title", label: "Title", type: "text", required: true },
       { name: "abstract", label: "Abstract", type: "textarea", required: true },
       { name: "content", label: "Content (Markdown)", type: "textarea" },
-      { name: "is_published", label: "Published?", type: "checkbox", default: false },
+      { name: "status", label: "Status", type: "select", options: ["draft", "published"], default: "draft" },
       { name: "cover_image", label: "Cover Image / Document", type: "file", accept: "image/*,application/pdf" }
     ]
   },
@@ -56,7 +56,7 @@ const FORM_CONFIG = {
       { name: "title", label: "Title", type: "text", required: true },
       { name: "excerpt", label: "Excerpt", type: "textarea" },
       { name: "content", label: "Content", type: "textarea", required: true },
-      { name: "is_published", label: "Published?", type: "checkbox", default: false },
+      { name: "status", label: "Status", type: "select", options: ["draft", "published"], default: "draft" },
       { name: "cover_image", label: "Cover Image / Document", type: "file", accept: "image/*,application/pdf" }
     ]
   }
