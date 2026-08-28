@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect } from "react";
+import { ensureExternalUrl } from '../../utils/url';
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Mail, Phone, Code, Globe, Briefcase, Calendar, Edit, ShieldAlert, LogOut, ArrowLeft } from "lucide-react";
+import { Mail, Phone, Code, Globe, Briefcase, ArrowLeft } from "lucide-react";
 import { fetchMemberById } from "../../services/endpoints";
 import { getImageUrl } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
@@ -206,9 +207,9 @@ export function MemberProfilePage() {
                 <div className="flex flex-col gap-2.5 mt-6 text-left">
                   <ContactItem icon={Mail} label="Email" value={user.email} href={`mailto:${user.email}`} />
                   <ContactItem icon={Phone} label="Phone" value={user.phone} href={user.phone ? `tel:${user.phone}` : null} />
-                  <ContactItem icon={Code} label="GitHub" value={profile.github ? "GitHub Profile" : null} href={profile.github} />
-                  <ContactItem icon={Globe} label="Portfolio" value={profile.portfolio ? "Website" : null} href={profile.portfolio} />
-                  <ContactItem icon={Briefcase} label="LinkedIn" value={profile.linkedin ? "LinkedIn" : null} href={profile.linkedin} />
+                  <ContactItem icon={Code} label="GitHub" value={profile.github ? "GitHub Profile" : null} href={ensureExternalUrl(profile.github)} />
+                  <ContactItem icon={Globe} label="Portfolio" value={profile.portfolio ? "Website" : null} href={ensureExternalUrl(profile.portfolio)} />
+                  <ContactItem icon={Briefcase} label="LinkedIn" value={profile.linkedin ? "LinkedIn" : null} href={ensureExternalUrl(profile.linkedin)} />
                 </div>
 
                 <div className="flex items-center justify-center gap-1.5 mt-6 text-xs text-gray-500">

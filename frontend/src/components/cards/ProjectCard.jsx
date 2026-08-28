@@ -1,3 +1,4 @@
+import { ensureExternalUrl } from '../../utils/url';
 import { GitBranch, ExternalLink } from "lucide-react";
 import { cn } from '../../utils/cn';
 import { Link } from "react-router-dom";
@@ -125,7 +126,7 @@ export function ProjectCard({ project, className }) {
         <div className="flex items-center gap-3 mt-4">
           {project.repository_url && (
             <a
-              href={project.repository_url}
+              href={ensureExternalUrl(project.repository_url)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View source code"
@@ -137,7 +138,7 @@ export function ProjectCard({ project, className }) {
           )}
           {project.demo_url && (
             <a
-              href={project.demo_url}
+              href={ensureExternalUrl(project.demo_url)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View live demo"

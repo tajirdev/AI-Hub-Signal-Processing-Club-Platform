@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+import { ensureExternalUrl } from '../../utils/url';
+import  { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchEventById } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
@@ -80,7 +81,7 @@ export function EventDetailsPage() {
 
             {event.registration_link && (
               <div className="mt-8">
-                <a href={event.registration_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-8 py-4 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity shadow-lg">
+                <a href={ensureExternalUrl(event.registration_link)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-8 py-4 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity shadow-lg">
                   <ExternalLink className="w-5 h-5 mr-2" />
                   Register Now
                 </a>

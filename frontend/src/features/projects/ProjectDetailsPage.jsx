@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+import { ensureExternalUrl } from '../../utils/url';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProjectById, fetchMembers } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
@@ -94,13 +95,13 @@ export function ProjectDetailsPage() {
 
             <div className="flex flex-wrap gap-4 mt-8">
               {project.repository_url && (
-                <a href={project.repository_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity">
+                <a href={ensureExternalUrl(project.repository_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity">
                   <GitBranch className="w-4 h-4 mr-2" />
                   View Source
                 </a>
               )}
               {project.demo_url && (
-                <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-amber text-navy font-bold rounded-full hover:bg-amber-hover transition-colors shadow-lg shadow-amber/20">
+                <a href={ensureExternalUrl(project.demo_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-amber text-navy font-bold rounded-full hover:bg-amber-hover transition-colors shadow-lg shadow-amber/20">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Live Demo
                 </a>

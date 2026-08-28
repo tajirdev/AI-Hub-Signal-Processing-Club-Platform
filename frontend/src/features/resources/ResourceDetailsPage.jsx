@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+import { ensureExternalUrl } from '../../utils/url';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchResourceById } from '../../services/endpoints';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ui/States';
@@ -70,8 +71,8 @@ export function ResourceDetailsPage() {
             </h1>
 
             <div className="flex flex-wrap gap-4 mt-8">
-              {resource.link && (
-                <a href={resource.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity">
+              {resource.external_url && (
+                <a href={ensureExternalUrl(resource.external_url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-6 py-3 bg-navy dark:bg-white text-white dark:text-navy font-bold rounded-full hover:opacity-90 transition-opacity">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Access External Link
                 </a>
