@@ -25,6 +25,8 @@ import { ResourceDetailsPage } from './features/resources/ResourceDetailsPage';
 import { OnboardingPage } from './features/auth/OnboardingPage';
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
+import { NotFoundPage } from './features/common/NotFoundPage';
+
 
 // Placeholder components for routes not yet implemented
 const PlaceholderPage = ({ title }) => (
@@ -63,7 +65,7 @@ function App() {
             <Route path="/members" element={<PlaceholderPage title="Members Directory" />} />
             <Route path="/contact" element={<ContactPage />} />
             
-            <Route path="*" element={<PlaceholderPage title="404 - Page Not Found" />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           {/* Authentication & Onboarding Forms without Navigation */}
