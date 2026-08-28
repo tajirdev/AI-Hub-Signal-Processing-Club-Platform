@@ -11,7 +11,7 @@ class Project(Base):
     description = Column(Text, nullable=False)
     repository_url = Column(String, nullable=True,unique=False)
     demo_url = Column(String, nullable=True)
-    thumbnail_id = Column(Integer,ForeignKey("media.id",ondelete="CASCADE"))
+    thumbnail_id = Column(Integer,ForeignKey("media.id",ondelete="SET NULL"))
     status = Column(String, default="active")
     technology_stack = Column(String, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
