@@ -1,0 +1,496 @@
+import React, { useState, useEffect } from 'react';
+import DataTable from '../components/DataTable';
+import Modal from '../components/Modal';
+import Toast from '../components/Toast';
+import { resourcesAPI } from '../api/resources';
+import { subgroupsAPI } from '../api/subgroups';
+import { getImageUrl } from '../api/client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faEdit,
+  faTrash,
+  faFolderOpen,
+  faFilePdf,
+  faVideo,
+  faDatabase,
+  faCode,
+  faLink,
+  faExternalLinkAlt,
+  faCloudUploadAlt,
+  faTrashAlt,
+  faFileAlt,
+} from '@fortawesome/free-solid-svg-icons';
+
+export default function Resources() {
+  const [resources, setResources] = useState([]);
+  const [subgroups, setSubgroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [toast, setToast] = useState(null);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    type: 'PDF',
+    subgroup_id: '',
+    external_url: '',
+    file: null,
+  });
+
+  const resourceTypes = [
+    { value: 'PDF', label: 'PDF Document', icon: faFilePdf, color: 'text-red-600 bg-red-50' },
+    { value: 'VIDEO', label: 'Video Lecture', icon: faVideo, color: 'text-blue-600 bg-blue-50' },
+    { value: 'DATASET', label: 'Dataset', icon: faDatabase, color: 'text-amber-600 bg-amber-50' },
+    { value: 'PRESENTATION', label: 'Presentation / Slides', icon: faCode, color: 'text-purple-600 bg-purple-50' },
+    { value: 'EXTERNAL_LINK', label: 'External Resource', icon: faLink, color: 'text-emerald-600 bg-emerald-50' },
+  ];
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [resRes, sgRes] = await Promise.all([
+        resourcesAPI.getAll({
+          page,
+          limit: 10,
+          search: search || undefined,
+          resource_type: selectedType || undefined,
+        }),
+        subgroupsAPI.getAll().catch(() => []),
+      ]);
+
+      if (resRes && (resRes.items || resRes.results || resRes.resources)) {
+        setResources(resRes.items || resRes.results || resRes.resources);
+        
+        setTotalPages(Math.ceil((resRes.total || 1) / 10));
+        setTotalItems(resRes.total || 0);
+      } else if (false) {
+        
+        setTotalPages(resRes.total_pages || 1);
+        setTotalItems(resRes.total || 0);
+      } else if (Array.isArray(resRes)) {
+        setResources(resRes);
+        setTotalPages(1);
+        setTotalItems(resRes.length);
+      } else {
+        setResources([]);
+      }
+
+      setSubgroups(Array.isArray(sgRes) ? sgRes : []);
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'Failed to fetch resources' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [page, search, selectedType]);
+
+  const handleOpenCreate = () => {
+    setEditingResource(null);
+    setFormData({
+      title: '',
+      description: '',
+      type: 'PDF',
+      subgroup_id: subgroups[0]?.id || '',
+      external_url: '',
+      file: null,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (res) => {
+    setEditingResource(res);
+    setFormData({
+      title: res.title || '',
+      description: res.description || '',
+      type: res.type || 'PDF',
+      subgroup_id: res.subgroup_id || subgroups[0]?.id || '',
+      external_url: res.external_url || '',
+      file: null,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteFile = async (resourceId) => {
+    if (!window.confirm('Are you sure you want to remove the uploaded file from this resource?')) return;
+    try {
+      await resourcesAPI.deleteFile(resourceId);
+      setToast({ type: 'success', message: 'Attached file removed successfully' });
+      if (editingResource) {
+        setEditingResource({ ...editingResource, file: null, file_id: null });
+      }
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'Failed to delete attached file' });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || formData.title.trim().length < 3) {
+      setToast({ type: 'error', message: 'Title must be at least 3 characters long' });
+      return;
+    }
+    if (!formData.subgroup_id) {
+      setToast({ type: 'error', message: 'Please select an associated subgroup' });
+      return;
+    }
+    if (!formData.external_url && !formData.file && !editingResource?.file) {
+      setToast({ type: 'error', message: 'Please provide either an external URL or upload a file' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description?.trim() || null,
+        type: formData.type || 'PDF',
+        subgroup_id: parseInt(formData.subgroup_id, 10),
+        external_url: formData.external_url?.trim() || null,
+      };
+
+      let targetId;
+      if (editingResource) {
+        targetId = editingResource.id;
+        await resourcesAPI.update(targetId, payload);
+        setToast({ type: 'success', message: 'Resource updated successfully' });
+      } else {
+        const res = await resourcesAPI.create(payload);
+        targetId = res.id;
+        setToast({ type: 'success', message: 'Resource added to library' });
+      }
+
+      if (formData.file && targetId) {
+        await resourcesAPI.uploadFile(targetId, formData.file);
+      }
+
+      setIsModalOpen(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      const detail = err.response?.data?.detail;
+      setToast({
+        type: 'error',
+        message: typeof detail === 'string'
+          ? detail
+          : (Array.isArray(detail) ? detail.map((d) => d.msg).join(', ') : 'Failed to save resource'),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this resource?')) return;
+    try {
+      await resourcesAPI.delete(id);
+      setToast({ type: 'success', message: 'Resource deleted successfully' });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'Failed to delete resource' });
+    }
+  };
+
+  const columns = [
+    {
+      header: 'Resource',
+      render: (r) => {
+        const typeConfig = resourceTypes.find((t) => t.value === r.type) || resourceTypes[0];
+        return (
+          <div className="flex items-center space-x-3">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs flex-shrink-0 ${typeConfig.color}`}>
+              <FontAwesomeIcon icon={typeConfig.icon} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-gray-900 text-xs truncate max-w-md" title={r.title}>
+                {r.title}
+              </p>
+              <p className="text-[11px] text-gray-500 line-clamp-1 max-w-md">{r.description || 'No description provided'}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      header: 'Type',
+      render: (r) => {
+        const typeConfig = resourceTypes.find((t) => t.value === r.type) || resourceTypes[0];
+        return (
+          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-700">
+            <FontAwesomeIcon icon={typeConfig.icon} className="text-[9px]" />
+            <span>{r.type}</span>
+          </span>
+        );
+      },
+    },
+    {
+      header: 'Subgroup',
+      render: (r) => {
+        const sg = subgroups.find((s) => s.id === r.subgroup_id);
+        return (
+          <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 text-purple-700">
+            {sg ? sg.name : `Subgroup #${r.subgroup_id}`}
+          </span>
+        );
+      },
+    },
+    {
+      header: 'File & Link Assets',
+      render: (r) => {
+        const hasFile = r.file && r.file.path;
+        const hasUrl = Boolean(r.external_url);
+
+        return (
+          <div className="flex flex-col space-y-1">
+            {hasFile && (
+              <a
+                href={getImageUrl(r.file.path)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center space-x-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded text-[11px] font-semibold transition-colors border border-blue-200/60 max-w-fit"
+                title={r.file.original_filename || 'Download Attached File'}
+              >
+                <FontAwesomeIcon icon={faFileAlt} className="text-blue-600" />
+                <span className="truncate max-w-[120px]">{r.file.original_filename || 'File Attached'}</span>
+                <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[8px] opacity-60" />
+              </a>
+            )}
+
+            {hasUrl && (
+              <a
+                href={r.external_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center space-x-1 text-emerald-700 hover:text-emerald-900 hover:underline text-[11px] font-medium max-w-fit"
+                title={r.external_url}
+              >
+                <FontAwesomeIcon icon={faLink} className="text-[10px]" />
+                <span className="truncate max-w-[120px]">External Link</span>
+                <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[8px] opacity-60" />
+              </a>
+            )}
+
+            {!hasFile && !hasUrl && (
+              <span className="text-[11px] text-gray-400 italic">No asset attached</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      header: 'Created',
+      render: (r) => (
+        <span className="text-[11px] text-gray-500 font-medium">
+          {r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A'}
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <DataTable
+        title="Learning Resources & Datasets Hub"
+        subtitle="Manage study materials, lab code notebooks, datasets, and video lectures in Object Storage."
+        searchPlaceholder="Search resources..."
+        searchValue={search}
+        onSearchChange={setSearch}
+        onCreateNew={handleOpenCreate}
+        createButtonText="Add Resource"
+        columns={columns}
+        data={resources}
+        loading={loading}
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={setPage}
+        filterComponent={
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Types</option>
+            {resourceTypes.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        }
+        actions={(row) => (
+          <div className="flex items-center justify-end space-x-1">
+            <button
+              onClick={() => handleOpenEdit(row)}
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Edit Resource"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              onClick={() => handleDelete(row.id)}
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete Resource"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
+
+      {/* Resource Form Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingResource ? 'Edit Resource' : 'Add Educational Resource'}
+        subtitle="Upload files to Object Storage or link external materials for club members."
+        onSubmit={handleSubmit}
+        submitText={editingResource ? 'Save Changes' : 'Add to Library'}
+        submitting={submitting}
+        maxWidth="max-w-xl"
+      >
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Resource Title *</label>
+          <input
+            type="text"
+            required
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder="e.g. Fourier Transform in Digital Signal Processing Lab Notebook"
+            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Resource Type *</label>
+            <select
+              required
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+            >
+              {resourceTypes.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Subgroup *</label>
+            <select
+              required
+              value={formData.subgroup_id}
+              onChange={(e) => setFormData({ ...formData, subgroup_id: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+            >
+              <option value="">-- Select Subgroup --</option>
+              {subgroups.map((sg) => (
+                <option key={sg.id} value={sg.id}>
+                  {sg.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Object Storage File Upload / Attached File Section */}
+        <div className="border border-gray-200 rounded-xl p-3.5 bg-gray-50/70 space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-bold text-gray-800 flex items-center space-x-1.5">
+              <FontAwesomeIcon icon={faCloudUploadAlt} className="text-blue-500" />
+              <span>Object Storage File (PDF, Dataset, Video, Slides)</span>
+            </label>
+            {editingResource?.file && (
+              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                File Attached
+              </span>
+            )}
+          </div>
+
+          {editingResource?.file && (
+            <div className="flex items-center justify-between p-2.5 bg-white border border-gray-200 rounded-lg text-xs">
+              <div className="flex items-center space-x-2 truncate">
+                <FontAwesomeIcon icon={faFileAlt} className="text-blue-600 text-base" />
+                <div className="truncate">
+                  <p className="font-semibold text-gray-900 truncate text-[11px]">
+                    {editingResource.file.original_filename || editingResource.file.path}
+                  </p>
+                  <a
+                    href={getImageUrl(editingResource.file.path)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[10px] text-blue-600 hover:underline flex items-center space-x-1"
+                  >
+                    <span>View uploaded asset</span>
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[8px]" />
+                  </a>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDeleteFile(editingResource.id)}
+                className="px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded text-[11px] font-bold flex items-center space-x-1 transition-colors"
+                title="Remove attached file"
+              >
+                <FontAwesomeIcon icon={faTrashAlt} />
+                <span>Remove</span>
+              </button>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-[11px] font-medium text-gray-600 mb-1">
+              {editingResource?.file ? 'Upload Replacement File' : 'Upload File'}
+            </label>
+            <input
+              type="file"
+              onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
+              className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white file:mr-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">External Resource URL (Optional)</label>
+          <input
+            type="url"
+            value={formData.external_url}
+            onChange={(e) => setFormData({ ...formData, external_url: e.target.value })}
+            placeholder="https://github.com/... or https://drive.google.com/..."
+            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          <span className="text-[10px] text-gray-400">Useful for external GitHub repositories, Google Drive folders, or YouTube videos</span>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+          <textarea
+            rows="3"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Description of contents, software tools required, and prerequisites..."
+            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+      </Modal>
+
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+    </div>
+  );
+}

@@ -48,9 +48,9 @@ Stores system roles.
 
 Examples:
 
-- Super Admin
+-  Admin
 - Editor
-- Contributor
+- member
 
 | Column |
 |---------|
